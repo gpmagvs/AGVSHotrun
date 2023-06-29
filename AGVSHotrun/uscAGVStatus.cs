@@ -28,9 +28,12 @@ namespace AGVSHotrun
 
         private void timer1_Tick(object sender, EventArgs e)
         {
-            var agv_infos = dbHelper.DBConn.AGVInfos.ToList();
-            agv_infos_binding = new BindingList<Models.AGVInfo>(agv_infos);
-            dataGridView1.Invalidate();
+            using (var conn = dbHelper.DBConn)
+            {
+                var agv_infos = dbHelper.DBConn.AGVInfos.ToList();
+                agv_infos_binding = new BindingList<Models.AGVInfo>(agv_infos);
+                dataGridView1.Invalidate();
+            }
         }
     }
 }
