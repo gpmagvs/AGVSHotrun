@@ -149,7 +149,7 @@ namespace AGVSHotrun.HotRun
             using (conn)
             {
                 ExecutingTask? createdTaskDto = null;
-                CancellationTokenSource cts = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+                CancellationTokenSource cts = new CancellationTokenSource(TimeSpan.FromSeconds(20));
                 while (createdTaskDto == null)
                 {
                     if (cts.IsCancellationRequested)
@@ -158,7 +158,8 @@ namespace AGVSHotrun.HotRun
                     }
                     try
                     {
-                        createdTaskDto = conn.ExecutingTasks.FirstOrDefault(task => (DateTime.Now - task.Receive_Time).TotalSeconds < 3 && task.ExeVehicleID == agvid);
+                        var tsks=conn.ExecutingTasks.Where(t => t.AGVID == agvid);
+                        createdTaskDto = tsks.OrderBy(t => t.Receive_Time).FirstOrDefault();
                     }
                     catch (Exception ex)
                     {
@@ -181,7 +182,7 @@ namespace AGVSHotrun.HotRun
                     {
                         return false;
                     }
-                    finishTaskDto = conn.Tasks.FirstOrDefault(task => task.Name == taskName && task.Status == 100);
+                    finishTaskDto = conn.Tasks.Where(t=>t.Name==taskName).FirstOrDefault(task => task.Status == 100);
                 }
                 return true;
             }
@@ -230,14 +231,6 @@ namespace AGVSHotrun.HotRun
         {
           
             AGVS_Dispath_Emulator dispatcher_helper = new AGVS_Dispath_Emulator();
-            var map_points = Store.MapData.Points.ToList();
-            string _toStation = ToStation;
-            if (Action != ACTION_TYPE.MOVE) //從圖資抓到二次定位點前的Point名稱
-            {
-                MapPoint toStationPt = map_points.First(pt => pt.Value.Name == ToStation).Value;
-                MapPoint hotRunToStationPt = Store.MapData.Points[toStationPt.Target.First().Key];
-                _toStation = hotRunToStationPt.Name;
-            }
             var result = await dispatcher_helper.Move(AgvName, AgvID, to_station);
             return result.Success;
         }
