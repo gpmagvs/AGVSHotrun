@@ -37,9 +37,6 @@ namespace AGVSHotrun
         }
         public void UI_Render_TIMER_Tick(object sender, EventArgs e)
         {
-            // 檢查目前選取的儲存格是否仍然存在
-            if (selectedRow >= 0)
-                dataGridView1.CurrentCell = dataGridView1[0, selectedRow];
             DataBinding.Clear();
           
                 using (var conn = dbHelper.DBConn)

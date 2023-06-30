@@ -50,6 +50,7 @@ namespace AGVSHotrun.UI
         {
             InitializeComponent();
             picMap.MouseWheel += PicMap_MouseWheel;
+            Store.OnAGVLocUpdate += (sedner, e) => picMap.Invalidate();
         }
 
         private void PicMap_MouseWheel(object? sender, MouseEventArgs e)
@@ -78,41 +79,48 @@ namespace AGVSHotrun.UI
                 var graph = e.Graphics;
                 graph.ScaleTransform(scale, scale);
                 StationRectagles = MapData.Points.Values.ToDictionary(pt => pt, pt => new RectangleF(DrawPoint(pt.Graph), new SizeF(8, 8)));
+
                 foreach (var station_point in MapData.Points.Values)
                 {
                     var rectang = StationRectagles[station_point];
-                    var textLoca = rectang.Location;
-                    textLoca.X = textLoca.X + 5;
-                    textLoca.Y = textLoca.Y - 22;
-                    graph.DrawString(station_point.Name, new Font("微軟正黑體", 12, FontStyle.Bold), Brushes.Green, textLoca);
                     if (station_point.Target.Count != 0)
                     {
                         foreach (var item in station_point.Target)
                         {
                             var targetPt = MapData.Points[item.Key];
                             var endRectangle = StationRectagles[targetPt];
-
                             var line_pen = new Pen(Brushes.Gray, 2);
                             var line_start_pt = new Point((int)(rectang.Location.X + rectang.Width / 2), (int)(rectang.Location.Y + rectang.Height / 2));
                             var line_end_pt = new Point((int)(endRectangle.Location.X + rectang.Width / 2), (int)(endRectangle.Location.Y + endRectangle.Height / 2));
                             graph.DrawLine(line_pen, line_start_pt, line_end_pt);
                         }
                     }
+                }
+                foreach (var station_point in MapData.Points.Values)
+                {
+                    var rectang = StationRectagles[station_point];
+                    var textLoca = rectang.Location;
+                    textLoca.X = textLoca.X + 5;
+                    textLoca.Y = textLoca.Y - 22;
 
+                    string station_name_dispaly = station_point.Name;
+                    bool agv_located = false;
+                    KeyValuePair<AGVInfo, MapPoint> has_agv = Store.AGVlocStore.FirstOrDefault(a => a.Value.Name == station_point.Name);
+
+                    if (has_agv.Value != null)
+                    {
+                        agv_located = true;
+                        station_name_dispaly += $",{has_agv.Key.AGVName}";
+                        bool highlight = HighlightAGVName == has_agv.Key.AGVName;
+                    }
+
+                    graph.DrawString(station_name_dispaly, new Font("微軟正黑體", 9, FontStyle.Bold), agv_located ? Brushes.Red : Brushes.Green, textLoca);
                     bool isSelected = SelectedMapPoint?.Name == station_point.Name;
                     var borderPen = new Pen(isSelected ? Brushes.Red : Brushes.Black, isSelected ? 8 : 2);
                     graph.DrawEllipse(borderPen, rectang);
-                    graph.FillEllipse(GetPointBrush(station_point), rectang);
+                    graph.FillEllipse(agv_located ? Brushes.Red : GetPointBrush(station_point), rectang);
 
-                    KeyValuePair<AGVInfo, MapPoint> has_agv = Store.AGVlocStore.FirstOrDefault(a => a.Value.Name == station_point.Name);
-                    if (has_agv.Value != null)
-                    {
-                        var agv_textloc = new PointF(textLoca.X, textLoca.Y - 22);
-                        bool highlight = HighlightAGVName == has_agv.Key.AGVName;
 
-                        graph.DrawString(has_agv.Key.AGVName, new Font("微軟正黑體", highlight ? 16 : 10, FontStyle.Bold), highlight ? Brushes.Red : Brushes.Gold, agv_textloc);
-                        graph.FillEllipse(Brushes.Gold, rectang);
-                    }
                 }
 
             }

@@ -19,7 +19,7 @@ namespace AGVSHotrun.HotRun
         public static event EventHandler<clsHotRunScript> OnHotRunStart;
         public static event EventHandler<clsHotRunScript> OnHotRunFinish;
         public static event EventHandler<clsHotRunScript> OnLoginExpireExcetionOccur;
-        public static event EventHandler<clsHotRunScript> OnLoopFinish;
+        public static event EventHandler<clsHotRunScript> OnLoopStateChange;
         public string ID { get; set; }
         public string AGVName { get; set; }
 
@@ -27,6 +27,15 @@ namespace AGVSHotrun.HotRun
 
         public int FinishNum { get; set; } = 0;
         public string Description { get; set; } = "";
+
+        public string StartStatus
+        {
+            get
+            {
+                return IsRunning ? "中止" : "開始";
+            }
+        }
+
         [JsonIgnore]
         public int TotalActionNum
         {
@@ -35,7 +44,18 @@ namespace AGVSHotrun.HotRun
                 return RunTasksDesigning.Count;
             }
         }
-
+        public string CurrentAction
+        {
+            get
+            {
+                if (IsRunning && _RunningTask != null)
+                {
+                    return $"{_RunningTask.Action}-From {_RunningTask.FromStation} To {_RunningTask.ToStation}";
+                }
+                else
+                    return "";
+            }
+        }
         [JsonIgnore]
         public DateTime StartTime { get; set; } = DateTime.MinValue;
         [JsonIgnore]
@@ -72,26 +92,36 @@ namespace AGVSHotrun.HotRun
         {
             RunTasksDesigning.Remove(runTaskDto);
         }
+        CancellationTokenSource AbortTestCTS = new CancellationTokenSource();
 
+        public void Abort()
+        {
+            AbortTestCTS.Cancel();
+        }
         public bool Start(out string message)
         {
             message = "";
-            RunTasksQueue.Clear();
             if (RunTasksDesigning.Any(tk => tk.ToStation == null))
             {
                 var indexes = RunTasksDesigning.FindAll(tk => tk.ToStation == null).Select(tk => RunTasksDesigning.IndexOf(tk) + 1);
                 message = $"動作 {string.Join(",", indexes)}  [目標站點_To Station] 設定有誤";
                 return false;
             }
-            foreach (var item in RunTasksDesigning)
-                RunTasksQueue.Enqueue(item);
+            var agv_current_pt = Store.AGVlocStore.First(ke => ke.Key.AGVName == AGVName).Value;
+
+            //if (RunTasksDesigning.First().ToStation == agv_current_pt.Name)
+            //{
+            //    message = $"{AGVName} 目前位置與HOT RUN 第一個動作位置相同, 請先將AGV移開 {agv_current_pt.Name} 或修改HOT RUN 腳本`";
+            //    return false;
+            //}
+            IsRunning = true;
+            AbortTestCTS = new CancellationTokenSource();
             Task.Run(() => _ExecutingTasksAsync());
             return true;
         }
-
+        clsRunTask _RunningTask;
         private async Task _ExecutingTasksAsync()
         {
-            IsRunning = true;
             try
             {
                 StartTime = DateTime.Now;
@@ -100,22 +130,57 @@ namespace AGVSHotrun.HotRun
                 int agvid = dbhelper.GetAGVID(AGVName);
                 OnHotRunStart?.Invoke(this, this);
                 FailureReason = "";
-
+                FinishNum = 0;
                 for (int i = 0; i < RepeatNum; i++)
                 {
-                    FinishNum = i;
+                    IsRunning = true;
+                    RunTasksQueue.Clear();
+                    foreach (var item in RunTasksDesigning)
+                        RunTasksQueue.Enqueue(item);
+                    OnLoopStateChange?.Invoke(this, this);
+
                     while (RunTasksQueue.Count != 0)
                     {
                         Thread.Sleep(1);
-                        RunTasksQueue.TryDequeue(out clsRunTask _RunningTask);
+                        if (!RunTasksQueue.TryDequeue(out var _RunningTask))
+                        {
+                            throw new Exception("從任務柱列中抓取動作失敗");
+                        }
+
+                        this._RunningTask = _RunningTask;
                         string? TaskName = "";
                         //Call API And Check Task Exist
-
+                        OnLoopStateChange?.Invoke(this, this);
                         bool taskCreated, task_finish;
+                        var agv_current_pt = Store.AGVlocStore.First(ke => ke.Key.AGVName == AGVName).Value;
+                        _RunningTask.StartTime = DateTime.Now;
                         if (_RunningTask.Action == ACTION_TYPE.CARRY)
                         {
-                            await _RunningTask.PostFromStationReq(AGVName, agvid);
-                            _RunningTask.TaskName = TaskName;
+                            if (_RunningTask.GetActualFromStationName() != agv_current_pt.Name)
+                            {
+                                await _RunningTask.PostFromStationReq(AGVName, agvid);
+                                _RunningTask.TaskName = TaskName;
+                                taskCreated = WaitTaskCreated(agvid, out TaskName);
+                                if (!taskCreated)
+                                {
+                                    FailureReason = "等待任務生成Timeout";
+                                    Success = false;
+                                    break;
+                                }
+                                task_finish = await WaitTaskFinish(TaskName);
+                                if (!task_finish)
+                                {
+                                    FailureReason = "等待任務完成Timeout";
+                                    Success = false;
+                                    break;
+                                }
+                            }
+
+
+                        }
+                        if (_RunningTask.GetActualToStationName() != agv_current_pt.Name)
+                        {
+                            await _RunningTask.PostToStationReq(AGVName, agvid);
                             taskCreated = WaitTaskCreated(agvid, out TaskName);
                             if (!taskCreated)
                             {
@@ -123,7 +188,6 @@ namespace AGVSHotrun.HotRun
                                 Success = false;
                                 break;
                             }
-                            _RunningTask.StartTime = DateTime.Now;
                             task_finish = await WaitTaskFinish(TaskName);
                             if (!task_finish)
                             {
@@ -133,30 +197,25 @@ namespace AGVSHotrun.HotRun
                             }
                         }
 
-                        _RunningTask.StartTime = DateTime.Now;
-                        await _RunningTask.PostToStationReq(AGVName, agvid);
-                        taskCreated = WaitTaskCreated(agvid, out TaskName);
-                        if (!taskCreated)
-                        {
-                            FailureReason = "等待任務生成Timeout";
-                            Success = false;
-                            break;
-                        }
-                        task_finish = await WaitTaskFinish(TaskName);
-                        if (!task_finish)
-                        {
-                            FailureReason = "等待任務完成Timeout";
-                            Success = false;
-                            break;
-                        }
                         _RunningTask.EndTime = DateTime.Now;
                     }
-                    OnLoopFinish?.Invoke(this, this);
+
+                    FinishNum = i + 1;
+                    OnLoopStateChange?.Invoke(this, this);
                 }
+                Success = true;
                 IsRunning = false;
                 EndTime = DateTime.Now;
                 OnHotRunFinish?.Invoke(this, this);
 
+            }
+            catch (TaskCanceledException ex)
+            {
+                IsRunning = false;
+                EndTime = DateTime.Now;
+                FailureReason = "使用者中斷測試(AGV Will Stop when current action done)";
+                Success = false;
+                OnHotRunFinish?.Invoke(this, this);
             }
             catch (AuthenticationFailedException ex)
             {
@@ -186,6 +245,9 @@ namespace AGVSHotrun.HotRun
                 CancellationTokenSource cts = new CancellationTokenSource(TimeSpan.FromSeconds(20));
                 while (createdTaskDto == null)
                 {
+                    if (AbortTestCTS.IsCancellationRequested)
+                        throw new TaskCanceledException();
+
                     if (cts.IsCancellationRequested)
                     {
                         return false;
@@ -212,6 +274,9 @@ namespace AGVSHotrun.HotRun
                 CancellationTokenSource cts = new CancellationTokenSource(TimeSpan.FromSeconds(180));
                 while (finishTaskDto == null)
                 {
+                    if (AbortTestCTS.IsCancellationRequested)
+                        throw new TaskCanceledException();
+
                     if (cts.IsCancellationRequested)
                     {
                         return false;
@@ -234,28 +299,19 @@ namespace AGVSHotrun.HotRun
         public string FromStation { get; set; }
         public string ToStation { get; set; }
         public string CSTID { get; set; } = "";
-
-        internal async Task<bool> PostFromStationReq(string AgvName, int AgvID)
+        public string GetActualFromStationName()
         {
             var map_points = Store.MapData.Points.ToList();
             string _toStation = FromStation;
             if (Action != ACTION_TYPE.MOVE && Action != ACTION_TYPE.PARK) //從圖資抓到二次定位點前的Point名稱
             {
                 MapPoint toStationPt = map_points.First(pt => pt.Value.Name == FromStation).Value;
-                MapPoint hotRunToStationPt = map_points[toStationPt.Target.First().Key].Value;
+                MapPoint hotRunToStationPt = Store.MapData.Points[toStationPt.Target.First().Key];
                 _toStation = hotRunToStationPt.Name;
             }
-            try
-            {
-                return await PostTaskHttpRequest(AgvName, AgvID, _toStation);
-            }
-            catch (Exception ex)
-            {
-                throw ex;
-            }
+            return _toStation;
         }
-
-        internal async Task<bool> PostToStationReq(string AgvName, int AgvID)
+        public string GetActualToStationName()
         {
             var map_points = Store.MapData.Points.ToList();
             string _toStation = ToStation;
@@ -265,11 +321,26 @@ namespace AGVSHotrun.HotRun
                 MapPoint hotRunToStationPt = Store.MapData.Points[toStationPt.Target.First().Key];
                 _toStation = hotRunToStationPt.Name;
             }
+            return _toStation;
+        }
+
+        internal async Task<bool> PostFromStationReq(string AgvName, int AgvID)
+        {
             try
             {
+                return await PostTaskHttpRequest(AgvName, AgvID, GetActualFromStationName());
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
 
-                return await PostTaskHttpRequest(AgvName, AgvID, _toStation);
-
+        internal async Task<bool> PostToStationReq(string AgvName, int AgvID)
+        {
+            try
+            {
+                return await PostTaskHttpRequest(AgvName, AgvID, GetActualToStationName());
             }
             catch (Exception ex)
             {

@@ -15,10 +15,9 @@ namespace AGVSHotrun
         {
             InitializeComponent();
             Store.OnScriptCreated += Store_OnScriptCreated;
-
             clsHotRunScript.OnHotRunStart += HotRunProgressStateChange;
             clsHotRunScript.OnHotRunFinish += ClsHotRunScript_OnHotRunFinish;
-            clsHotRunScript.OnLoopFinish += HotRunProgressStateChange;
+            clsHotRunScript.OnLoopStateChange += HotRunProgressStateChange;
             clsHotRunScript.OnLoginExpireExcetionOccur += ClsHotRunScript_OnLoginExpireExcetionOccur;
         }
 
@@ -66,12 +65,12 @@ namespace AGVSHotrun
         private BindingList<clsHotRunScript> hotRunScripts;
         private void Form1_Load(object sender, EventArgs e)
         {
+            hotRunScripts = new BindingList<clsHotRunScript>(Store.RunScriptsList);
+            dgvHotRunScripts.DataSource = hotRunScripts;
+            hotRunScripts.ResetBindings();
             labSystemInformation.Text = "資料庫連線中...";
             Task.Run(async () =>
             {
-                hotRunScripts = new BindingList<clsHotRunScript>(Store.RunScriptsList);
-                dgvHotRunScripts.DataSource = hotRunScripts;
-                hotRunScripts.ResetBindings();
 
                 bool sql_connected = await CheckSqlServerConnection();
                 Invoke(new Action(() =>
@@ -151,16 +150,19 @@ namespace AGVSHotrun
             {
                 if (script.IsRunning)
                 {
-                    MessageBox.Show("腳本已經在執行中", "STOP", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    if (MessageBox.Show("腳本已經在執行中 ,確定要中斷?", "STOP", MessageBoxButtons.OKCancel, MessageBoxIcon.Warning) == DialogResult.OK)
+                    {
+                        script.Abort();
+                        return;
+                    }
                     return;
                 }
+
                 if (!script.Start(out string errMsg))
                 {
                     MessageBox.Show(errMsg, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
-                else
-                {
-                }
+
             }
             if (click_column == colHotRunEdit)
             {

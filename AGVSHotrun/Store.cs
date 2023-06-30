@@ -13,6 +13,7 @@ namespace AGVSHotrun
     public static class Store
     {
         internal static event EventHandler OnScriptCreated;
+        internal static event EventHandler OnAGVLocUpdate;
         public static clsSysConfigs SysConfigs = new clsSysConfigs();
         public static Map MapData { get; set; }
 
@@ -31,7 +32,10 @@ namespace AGVSHotrun
             if (existScript != null)
             {
                 var index = RunScriptsList.IndexOf(existScript);
-                RunScriptsList[index] = script;
+                RunScriptsList[index].AGVName = script.AGVName;
+                RunScriptsList[index].RepeatNum = script.RepeatNum;
+                RunScriptsList[index].RunTasksDesigning = script.RunTasksDesigning;
+                RunScriptsList[index].Description = script.Description;
             }
             File.WriteAllText(SysConfigs.HotRunScriptStoredFile, JsonConvert.SerializeObject(RunScriptsList, Formatting.Indented));
             OnScriptCreated?.Invoke("Store", EventArgs.Empty);
@@ -82,6 +86,7 @@ namespace AGVSHotrun
                     try
                     {
                         AGVlocStore = dbhelper.DBConn.AGVInfos.ToDictionary(agv => agv, agv => MapData.Points[(int)agv.CurrentPos]);
+                        OnAGVLocUpdate?.Invoke("", EventArgs.Empty);
                     }
                     catch (Exception ex)
                     {

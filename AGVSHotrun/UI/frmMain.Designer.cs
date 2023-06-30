@@ -31,6 +31,7 @@ namespace AGVSHotrun
         private void InitializeComponent()
         {
             components = new System.ComponentModel.Container();
+            DataGridViewCellStyle dataGridViewCellStyle1 = new DataGridViewCellStyle();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(frmMain));
             AGVSDBHelper agvsdbHelper1 = new AGVSDBHelper();
             AGVSDBHelper agvsdbHelper2 = new AGVSDBHelper();
@@ -45,7 +46,9 @@ namespace AGVSHotrun
             Description = new DataGridViewTextBoxColumn();
             ID = new DataGridViewTextBoxColumn();
             aGVNameDataGridViewTextBoxColumn = new DataGridViewTextBoxColumn();
+            CurrentAction = new DataGridViewTextBoxColumn();
             RepeatNum = new DataGridViewTextBoxColumn();
+            FinishNum = new DataGridViewTextBoxColumn();
             TotalActionNum = new DataGridViewTextBoxColumn();
             StartTime = new DataGridViewTextBoxColumn();
             EndTime = new DataGridViewTextBoxColumn();
@@ -147,12 +150,14 @@ namespace AGVSHotrun
             dgvHotRunScripts.AutoGenerateColumns = false;
             dgvHotRunScripts.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
             dgvHotRunScripts.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            dgvHotRunScripts.Columns.AddRange(new DataGridViewColumn[] { colHotRunStart, Description, ID, aGVNameDataGridViewTextBoxColumn, RepeatNum, TotalActionNum, StartTime, EndTime, ResultDisplay, FailureReason, colHotRunEdit, colScriptRemove });
+            dgvHotRunScripts.Columns.AddRange(new DataGridViewColumn[] { colHotRunStart, Description, ID, aGVNameDataGridViewTextBoxColumn, CurrentAction, RepeatNum, FinishNum, TotalActionNum, StartTime, EndTime, ResultDisplay, FailureReason, colHotRunEdit, colScriptRemove });
             dgvHotRunScripts.DataSource = clsHotRunScriptBindingSource;
             dgvHotRunScripts.Dock = DockStyle.Top;
             dgvHotRunScripts.Location = new Point(0, 0);
             dgvHotRunScripts.Name = "dgvHotRunScripts";
             dgvHotRunScripts.ReadOnly = true;
+            dataGridViewCellStyle1.Alignment = DataGridViewContentAlignment.MiddleLeft;
+            dgvHotRunScripts.RowsDefaultCellStyle = dataGridViewCellStyle1;
             dgvHotRunScripts.RowTemplate.Height = 25;
             dgvHotRunScripts.Size = new Size(1246, 256);
             dgvHotRunScripts.TabIndex = 1;
@@ -160,11 +165,11 @@ namespace AGVSHotrun
             // 
             // colHotRunStart
             // 
+            colHotRunStart.DataPropertyName = "StartStatus";
             colHotRunStart.HeaderText = "Start";
             colHotRunStart.Name = "colHotRunStart";
             colHotRunStart.ReadOnly = true;
             colHotRunStart.Text = "開始";
-            colHotRunStart.UseColumnTextForButtonValue = true;
             // 
             // Description
             // 
@@ -187,12 +192,26 @@ namespace AGVSHotrun
             aGVNameDataGridViewTextBoxColumn.Name = "aGVNameDataGridViewTextBoxColumn";
             aGVNameDataGridViewTextBoxColumn.ReadOnly = true;
             // 
+            // CurrentAction
+            // 
+            CurrentAction.DataPropertyName = "CurrentAction";
+            CurrentAction.HeaderText = "當前動作";
+            CurrentAction.Name = "CurrentAction";
+            CurrentAction.ReadOnly = true;
+            // 
             // RepeatNum
             // 
             RepeatNum.DataPropertyName = "RepeatNum";
             RepeatNum.HeaderText = "重複次數";
             RepeatNum.Name = "RepeatNum";
             RepeatNum.ReadOnly = true;
+            // 
+            // FinishNum
+            // 
+            FinishNum.DataPropertyName = "FinishNum";
+            FinishNum.HeaderText = "已完成次數";
+            FinishNum.Name = "FinishNum";
+            FinishNum.ReadOnly = true;
             // 
             // TotalActionNum
             // 
@@ -385,7 +404,9 @@ namespace AGVSHotrun
         private DataGridViewTextBoxColumn Description;
         private DataGridViewTextBoxColumn ID;
         private DataGridViewTextBoxColumn aGVNameDataGridViewTextBoxColumn;
+        private DataGridViewTextBoxColumn CurrentAction;
         private DataGridViewTextBoxColumn RepeatNum;
+        private DataGridViewTextBoxColumn FinishNum;
         private DataGridViewTextBoxColumn TotalActionNum;
         private DataGridViewTextBoxColumn StartTime;
         private DataGridViewTextBoxColumn EndTime;
