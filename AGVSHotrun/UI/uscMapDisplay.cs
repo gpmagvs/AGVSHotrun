@@ -94,7 +94,7 @@ namespace AGVSHotrun.UI
                     graph.DrawEllipse(borderPen, rectang);
                     graph.FillEllipse(GetPointBrush(station_point), rectang);
 
-                    KeyValuePair<AGVInfo, MapPoint> has_agv = agvloc.FirstOrDefault(a => a.Value.Name == station_point.Name);
+                    KeyValuePair<AGVInfo, MapPoint> has_agv = Store.AGVlocStore.FirstOrDefault(a => a.Value.Name == station_point.Name);
                     if (has_agv.Value != null)
                     {
                         var agv_textloc = new PointF(textLoca.X, textLoca.Y - 22);
@@ -223,22 +223,6 @@ namespace AGVSHotrun.UI
                 map_point = SelectedMapPoint,
             });
         }
-        Dictionary<AGVInfo, MapPoint> agvloc = new Dictionary<AGVInfo, MapPoint>();
-        private void agv_loc_timer_Tick(object sender, EventArgs e)
-        {
-            Task.Factory.StartNew(() =>
-            {
-                try
-                {
-                    AGVSDBHelper dbhelper = new AGVSDBHelper();
-                    agvloc = dbhelper.DBConn.AGVInfos.ToDictionary(agv => agv, agv => MapData.Points[(int)agv.CurrentPos]);
-                }
-                catch (Exception ex)
-                {
-
-                }
-            });
-
-        }
+        
     }
 }

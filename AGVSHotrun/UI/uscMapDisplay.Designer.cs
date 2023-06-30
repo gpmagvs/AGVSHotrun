@@ -37,7 +37,6 @@
             LDULDStationMenuStrip = new ContextMenuStrip(components);
             btnAddULDRunTaskAction = new ToolStripMenuItem();
             btnAddLDRunTaskAction = new ToolStripMenuItem();
-            agv_loc_timer = new System.Windows.Forms.Timer(components);
             ((System.ComponentModel.ISupportInitialize)picMap).BeginInit();
             NormalPointContextMenuStrip.SuspendLayout();
             LDULDStationMenuStrip.SuspendLayout();
@@ -114,12 +113,6 @@
             btnAddLDRunTaskAction.Text = "放貨";
             btnAddLDRunTaskAction.Click += btnAddLDRunTaskAction_Click;
             // 
-            // agv_loc_timer
-            // 
-            agv_loc_timer.Enabled = true;
-            agv_loc_timer.Interval = 500;
-            agv_loc_timer.Tick += agv_loc_timer_Tick;
-            // 
             // uscMapDisplay
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
@@ -148,6 +141,5 @@
         private ContextMenuStrip LDULDStationMenuStrip;
         private ToolStripMenuItem btnAddULDRunTaskAction;
         private ToolStripMenuItem btnAddLDRunTaskAction;
-        private System.Windows.Forms.Timer agv_loc_timer;
     }
 }

@@ -68,5 +68,27 @@ namespace AGVSHotrun
                 File.WriteAllText(SysConfigs.HotRunScriptStoredFile, JsonConvert.SerializeObject(RunScriptsList, Formatting.Indented));
             }
         }
+
+        internal static Dictionary<AGVInfo, MapPoint> AGVlocStore = new Dictionary<AGVInfo, MapPoint>();
+        internal static void StartAGVLocSyncProcess()
+        {
+
+            Task.Run(() =>
+            {
+                AGVSDBHelper dbhelper = new AGVSDBHelper();
+                while (true)
+                {
+                    Thread.Sleep(1000);
+                    try
+                    {
+                        AGVlocStore = dbhelper.DBConn.AGVInfos.ToDictionary(agv => agv, agv => MapData.Points[(int)agv.CurrentPos]);
+                    }
+                    catch (Exception ex)
+                    {
+                    }
+                }
+
+            });
+        }
     }
 }
