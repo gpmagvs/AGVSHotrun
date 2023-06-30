@@ -21,13 +21,15 @@ namespace AGVSHotrun.UI
             InitializeComponent();
             uscRunTaskItem.OnRemoveButtonPush += UscRunTaskItem_OnRemoveButtonPush;
         }
-        public frmHotRunCreateHelper(clsHotRunScript script)
+        public frmHotRunCreateHelper(clsHotRunScript _script)
         {
             InitializeComponent();
             btnCreateNewHotRun.Text = "儲存";
             isEditOld = true;
             uscRunTaskItem.OnRemoveButtonPush += UscRunTaskItem_OnRemoveButtonPush;
-            this.script = JsonConvert.DeserializeObject<clsHotRunScript>(JsonConvert.SerializeObject(script)); //深層複製
+            script = JsonConvert.DeserializeObject<clsHotRunScript>(JsonConvert.SerializeObject(_script)); //深層複製
+            rtxbDescription.Text = script.Description;
+            numudTRepeatTime.Value = script.RepeatNum;
             uscMapDisplay1.HighlightAGVName = agvCombox1.AGVSelected = this.script.AGVName;
             uscRunTaskCreater1.Add(this.script.RunTasksDesigning);
         }
@@ -82,5 +84,14 @@ namespace AGVSHotrun.UI
             });
         }
 
+        private void rtxbDescription_TextChanged(object sender, EventArgs e)
+        {
+            script.Description = rtxbDescription.Text;
+        }
+
+        private void numudTRepeatTime_ValueChanged(object sender, EventArgs e)
+        {
+            script.RepeatNum = (int)numudTRepeatTime.Value;
+        }
     }
 }

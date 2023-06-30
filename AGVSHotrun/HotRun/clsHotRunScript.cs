@@ -1,6 +1,7 @@
 ﻿using AGVSHotrun.Models;
 using AGVSHotrun.VirtualAGVSystem;
 using AGVSystemCommonNet6.MAP;
+using Azure.Identity;
 using RosSharp.RosBridgeClient.MessageTypes.Std;
 using System;
 using System.Collections.Concurrent;
@@ -17,10 +18,15 @@ namespace AGVSHotrun.HotRun
     {
         public static event EventHandler<clsHotRunScript> OnHotRunStart;
         public static event EventHandler<clsHotRunScript> OnHotRunFinish;
-
+        public static event EventHandler<clsHotRunScript> OnLoginExpireExcetionOccur;
+        public static event EventHandler<clsHotRunScript> OnLoopFinish;
         public string ID { get; set; }
         public string AGVName { get; set; }
 
+        public int RepeatNum { get; set; } = 1;
+
+        public int FinishNum { get; set; } = 0;
+        public string Description { get; set; } = "";
         [JsonIgnore]
         public int TotalActionNum
         {
@@ -29,6 +35,7 @@ namespace AGVSHotrun.HotRun
                 return RunTasksDesigning.Count;
             }
         }
+
         [JsonIgnore]
         public DateTime StartTime { get; set; } = DateTime.MinValue;
         [JsonIgnore]
@@ -84,63 +91,82 @@ namespace AGVSHotrun.HotRun
 
         private async Task _ExecutingTasksAsync()
         {
-            StartTime = DateTime.Now;
-            EndTime = DateTime.MinValue;
-            AGVSDBHelper dbhelper = new AGVSDBHelper();
-            int agvid = dbhelper.GetAGVID(AGVName);
-            IsRunning = true;
-            OnHotRunStart?.Invoke(this, this);
-            FailureReason = "";
-            while (RunTasksQueue.Count != 0)
+            try
             {
-                Thread.Sleep(1);
-                RunTasksQueue.TryDequeue(out clsRunTask _RunningTask);
-                string? TaskName = "";
-                //Call API And Check Task Exist
+                StartTime = DateTime.Now;
+                EndTime = DateTime.MinValue;
+                AGVSDBHelper dbhelper = new AGVSDBHelper();
+                int agvid = dbhelper.GetAGVID(AGVName);
+                IsRunning = true;
+                OnHotRunStart?.Invoke(this, this);
+                FailureReason = "";
 
-                bool taskCreated, task_finish;
-                if (_RunningTask.Action == ACTION_TYPE.CARRY)
+                for (int i = 0; i < RepeatNum; i++)
                 {
-                    _RunningTask.PostFromStationReq(AGVName, agvid);
-                    _RunningTask.TaskName = TaskName;
-                    taskCreated = WaitTaskCreated(agvid, out TaskName);
-                    if (!taskCreated)
+                    FinishNum = i;
+                    while (RunTasksQueue.Count != 0)
                     {
-                        FailureReason = "等待任務生成Timeout";
-                        Success = false;
-                        break;
-                    }
-                    _RunningTask.StartTime = DateTime.Now;
-                    task_finish = await WaitTaskFinish(TaskName);
-                    if (!task_finish)
-                    {
-                        FailureReason = "等待任務完成Timeout";
-                        Success = false;
-                        break;
-                    }
-                }
+                        Thread.Sleep(1);
+                        RunTasksQueue.TryDequeue(out clsRunTask _RunningTask);
+                        string? TaskName = "";
+                        //Call API And Check Task Exist
 
-                _RunningTask.StartTime = DateTime.Now;
-                _RunningTask.PostToStationReq(AGVName, agvid);
-                taskCreated = WaitTaskCreated(agvid, out TaskName);
-                if (!taskCreated)
-                {
-                    FailureReason = "等待任務生成Timeout";
-                    Success = false;
-                    break;
+                        bool taskCreated, task_finish;
+                        if (_RunningTask.Action == ACTION_TYPE.CARRY)
+                        {
+                            _RunningTask.PostFromStationReq(AGVName, agvid);
+                            _RunningTask.TaskName = TaskName;
+                            taskCreated = WaitTaskCreated(agvid, out TaskName);
+                            if (!taskCreated)
+                            {
+                                FailureReason = "等待任務生成Timeout";
+                                Success = false;
+                                break;
+                            }
+                            _RunningTask.StartTime = DateTime.Now;
+                            task_finish = await WaitTaskFinish(TaskName);
+                            if (!task_finish)
+                            {
+                                FailureReason = "等待任務完成Timeout";
+                                Success = false;
+                                break;
+                            }
+                        }
+
+                        _RunningTask.StartTime = DateTime.Now;
+                        _RunningTask.PostToStationReq(AGVName, agvid);
+                        taskCreated = WaitTaskCreated(agvid, out TaskName);
+                        if (!taskCreated)
+                        {
+                            FailureReason = "等待任務生成Timeout";
+                            Success = false;
+                            break;
+                        }
+                        task_finish = await WaitTaskFinish(TaskName);
+                        if (!task_finish)
+                        {
+                            FailureReason = "等待任務完成Timeout";
+                            Success = false;
+                            break;
+                        }
+                        _RunningTask.EndTime = DateTime.Now;
+                    }
+                    OnLoopFinish?.Invoke(this, this);
                 }
-                task_finish = await WaitTaskFinish(TaskName);
-                if (!task_finish)
-                {
-                    FailureReason = "等待任務完成Timeout";
-                    Success = false;
-                    break;
-                }
-                _RunningTask.EndTime = DateTime.Now;
+                IsRunning = false;
+                EndTime = DateTime.Now;
+                OnHotRunFinish?.Invoke(this, this);
+
             }
-            IsRunning = false;
-            EndTime = DateTime.Now;
-            OnHotRunFinish?.Invoke(this, this);
+            catch (AuthenticationFailedException ex)
+            {
+                IsRunning = false;
+                EndTime = DateTime.Now;
+                FailureReason = "需要重新登入派車系統";
+                Success = false;
+                OnHotRunFinish?.Invoke(this, this);
+                OnLoginExpireExcetionOccur?.Invoke(this, this);
+            }
         }
         private bool WaitTaskCreated(int agvid, out string taskName)
         {
@@ -158,7 +184,7 @@ namespace AGVSHotrun.HotRun
                     }
                     try
                     {
-                        var tsks=conn.ExecutingTasks.Where(t => t.AGVID == agvid);
+                        var tsks = conn.ExecutingTasks.Where(t => t.AGVID == agvid);
                         createdTaskDto = tsks.OrderBy(t => t.Receive_Time).FirstOrDefault();
                     }
                     catch (Exception ex)
@@ -182,7 +208,7 @@ namespace AGVSHotrun.HotRun
                     {
                         return false;
                     }
-                    finishTaskDto = conn.Tasks.Where(t=>t.Name==taskName).FirstOrDefault(task => task.Status == 100);
+                    finishTaskDto = conn.Tasks.Where(t => t.Name == taskName).FirstOrDefault(task => task.Status == 100);
                 }
                 return true;
             }
@@ -229,9 +255,12 @@ namespace AGVSHotrun.HotRun
 
         private async Task<bool> PostTaskHttpRequest(string AgvName, int AgvID, string to_station)
         {
-          
             AGVS_Dispath_Emulator dispatcher_helper = new AGVS_Dispath_Emulator();
             var result = await dispatcher_helper.Move(AgvName, AgvID, to_station);
+            if (result.ResponseMsg.Contains("系統已閒置過久,請重新登入再進行手動派工"))
+            {
+                throw new AuthenticationFailedException(result.ResponseMsg);
+            }
             return result.Success;
         }
 

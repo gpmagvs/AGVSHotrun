@@ -15,23 +15,29 @@ namespace AGVSHotrun
         {
             InitializeComponent();
             Store.OnScriptCreated += Store_OnScriptCreated;
+
             clsHotRunScript.OnHotRunStart += HotRunProgressStateChange;
             clsHotRunScript.OnHotRunFinish += ClsHotRunScript_OnHotRunFinish;
+
+            clsHotRunScript.OnLoopFinish += HotRunProgressStateChange;
+            clsHotRunScript.OnLoginExpireExcetionOccur += ClsHotRunScript_OnLoginExpireExcetionOccur;
+        }
+
+        private void ClsHotRunScript_OnLoginExpireExcetionOccur(object? sender, clsHotRunScript e)
+        {
+            MessageBox.Show("需要重新登入派車系統", "", MessageBoxButtons.OK, MessageBoxIcon.Error);
         }
 
         private void ClsHotRunScript_OnHotRunFinish(object? sender, clsHotRunScript script)
         {
-            Invoke(new Action(() =>
-            {
-                hotRunScripts.ResetBindings();
-            }));
+            HotRunProgressStateChange(sender, script);
             if (!script.Success)
             {
                 MessageBox.Show($"Hot Run 執行失敗:{script.FailureReason}", script.FailureReason, MessageBoxButtons.OK, MessageBoxIcon.Warning);
             }
         }
 
-        private void HotRunProgressStateChange(object? sender, clsHotRunScript e)
+        private void HotRunProgressStateChange(object? sender, clsHotRunScript script)
         {
             Invoke(new Action(() =>
             {

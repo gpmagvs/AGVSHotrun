@@ -35,11 +35,16 @@
             agvCombox1 = new AGVCombox();
             btnSaveAndExit = new Button();
             splitContainer1 = new SplitContainer();
+            rtxbDescription = new RichTextBox();
+            label4 = new Label();
+            numudTRepeatTime = new NumericUpDown();
+            label3 = new Label();
             uscMapDisplay1 = new uscMapDisplay();
             ((System.ComponentModel.ISupportInitialize)splitContainer1).BeginInit();
             splitContainer1.Panel1.SuspendLayout();
             splitContainer1.Panel2.SuspendLayout();
             splitContainer1.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)numudTRepeatTime).BeginInit();
             SuspendLayout();
             // 
             // btnCreateNewHotRun
@@ -57,7 +62,7 @@
             // 
             label1.AutoSize = true;
             label1.Font = new Font("Microsoft JhengHei UI", 15F, FontStyle.Regular, GraphicsUnit.Point);
-            label1.Location = new Point(3, 79);
+            label1.Location = new Point(7, 79);
             label1.Name = "label1";
             label1.Size = new Size(92, 25);
             label1.TabIndex = 4;
@@ -67,7 +72,7 @@
             // 
             label2.AutoSize = true;
             label2.Font = new Font("Microsoft JhengHei UI", 15F, FontStyle.Regular, GraphicsUnit.Point);
-            label2.Location = new Point(3, 125);
+            label2.Location = new Point(7, 157);
             label2.Name = "label2";
             label2.Size = new Size(92, 25);
             label2.TabIndex = 5;
@@ -78,18 +83,18 @@
             uscRunTaskCreater1.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             uscRunTaskCreater1.BackColor = SystemColors.ControlLight;
             uscRunTaskCreater1.BorderStyle = BorderStyle.FixedSingle;
-            uscRunTaskCreater1.Location = new Point(4, 153);
+            uscRunTaskCreater1.Location = new Point(8, 185);
             uscRunTaskCreater1.Name = "uscRunTaskCreater1";
-            uscRunTaskCreater1.Size = new Size(855, 529);
+            uscRunTaskCreater1.Size = new Size(877, 497);
             uscRunTaskCreater1.TabIndex = 6;
             uscRunTaskCreater1.OnRunTaskItemCreated += uscRunTaskCreater1_OnRunTaskItemCreated;
             // 
             // agvCombox1
             // 
             agvCombox1.AGVSelected = null;
-            agvCombox1.Location = new Point(101, 79);
+            agvCombox1.Location = new Point(103, 79);
             agvCombox1.Name = "agvCombox1";
-            agvCombox1.Size = new Size(185, 29);
+            agvCombox1.Size = new Size(187, 29);
             agvCombox1.TabIndex = 7;
             agvCombox1.OnAGVSelected += agvCombox1_OnAGVSelected;
             // 
@@ -114,6 +119,10 @@
             // splitContainer1.Panel1
             // 
             splitContainer1.Panel1.BackColor = Color.White;
+            splitContainer1.Panel1.Controls.Add(rtxbDescription);
+            splitContainer1.Panel1.Controls.Add(label4);
+            splitContainer1.Panel1.Controls.Add(numudTRepeatTime);
+            splitContainer1.Panel1.Controls.Add(label3);
             splitContainer1.Panel1.Controls.Add(btnCreateNewHotRun);
             splitContainer1.Panel1.Controls.Add(btnSaveAndExit);
             splitContainer1.Panel1.Controls.Add(label1);
@@ -125,8 +134,48 @@
             // 
             splitContainer1.Panel2.Controls.Add(uscMapDisplay1);
             splitContainer1.Size = new Size(1441, 685);
-            splitContainer1.SplitterDistance = 861;
+            splitContainer1.SplitterDistance = 888;
             splitContainer1.TabIndex = 9;
+            // 
+            // rtxbDescription
+            // 
+            rtxbDescription.Location = new Point(433, 82);
+            rtxbDescription.Name = "rtxbDescription";
+            rtxbDescription.Size = new Size(425, 61);
+            rtxbDescription.TabIndex = 12;
+            rtxbDescription.Text = "";
+            rtxbDescription.TextChanged += rtxbDescription_TextChanged;
+            // 
+            // label4
+            // 
+            label4.AutoSize = true;
+            label4.Font = new Font("Microsoft JhengHei UI", 15F, FontStyle.Regular, GraphicsUnit.Point);
+            label4.Location = new Point(296, 79);
+            label4.Name = "label4";
+            label4.Size = new Size(132, 25);
+            label4.TabIndex = 11;
+            label4.Text = "測試腳本說明";
+            // 
+            // numudTRepeatTime
+            // 
+            numudTRepeatTime.Location = new Point(106, 120);
+            numudTRepeatTime.Maximum = new decimal(new int[] { 1000, 0, 0, 0 });
+            numudTRepeatTime.Minimum = new decimal(new int[] { 1, 0, 0, 0 });
+            numudTRepeatTime.Name = "numudTRepeatTime";
+            numudTRepeatTime.Size = new Size(184, 23);
+            numudTRepeatTime.TabIndex = 10;
+            numudTRepeatTime.Value = new decimal(new int[] { 1, 0, 0, 0 });
+            numudTRepeatTime.ValueChanged += numudTRepeatTime_ValueChanged;
+            // 
+            // label3
+            // 
+            label3.AutoSize = true;
+            label3.Font = new Font("Microsoft JhengHei UI", 15F, FontStyle.Regular, GraphicsUnit.Point);
+            label3.Location = new Point(8, 118);
+            label3.Name = "label3";
+            label3.Size = new Size(92, 25);
+            label3.TabIndex = 9;
+            label3.Text = "重複次數";
             // 
             // uscMapDisplay1
             // 
@@ -134,10 +183,11 @@
             uscMapDisplay1.BackColor = SystemColors.ControlDarkDark;
             uscMapDisplay1.BorderStyle = BorderStyle.FixedSingle;
             uscMapDisplay1.Dock = DockStyle.Fill;
+            uscMapDisplay1.HighlightAGVName = "";
             uscMapDisplay1.Location = new Point(0, 0);
             uscMapDisplay1.Name = "uscMapDisplay1";
             uscMapDisplay1.OnMapPointAddToRunActionClick = null;
-            uscMapDisplay1.Size = new Size(576, 685);
+            uscMapDisplay1.Size = new Size(549, 685);
             uscMapDisplay1.TabIndex = 1;
             // 
             // frmHotRunCreateHelper
@@ -156,6 +206,7 @@
             splitContainer1.Panel2.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)splitContainer1).EndInit();
             splitContainer1.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)numudTRepeatTime).EndInit();
             ResumeLayout(false);
         }
 
@@ -168,5 +219,9 @@
         private Button btnSaveAndExit;
         private SplitContainer splitContainer1;
         private uscMapDisplay uscMapDisplay1;
+        private Label label4;
+        private NumericUpDown numudTRepeatTime;
+        private Label label3;
+        private RichTextBox rtxbDescription;
     }
 }
