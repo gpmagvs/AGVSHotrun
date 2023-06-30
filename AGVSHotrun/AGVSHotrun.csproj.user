@@ -1,10 +1,40 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="Current" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <Compile Update="Form1.cs">
+    <Compile Update="UI\ActionComboBox.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Update="UI\AGVCombox.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Update="UI\frmHotRunCreateHelper.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Update="uscAGVStatus.cs">
+    <Compile Update="UI\frmMain.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Update="UI\MapStationCombBox.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Update="UI\uscAGVStatus.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Update="UI\uscExecuteTasks.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Update="UI\uscHotRunScriptDesinger.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Update="UI\uscMapDisplay.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Update="UI\uscRunTaskCreater.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Update="UI\uscRunTaskItem.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Update="UI\uscTaskDispatcher.cs">
       <SubType>UserControl</SubType>
     </Compile>
   </ItemGroup>

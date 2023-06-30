@@ -1,0 +1,172 @@
+﻿using AGVSHotrun.Models;
+using AGVSystemCommonNet6.MAP;
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement;
+
+namespace AGVSHotrun.UI
+{
+    public partial class uscMapDisplay : UserControl
+    {
+        public class clsPointAddToRunActionDto
+        {
+            public MapPoint map_point { get; set; }
+            public ACTION_TYPE action { get; set; }
+        }
+
+        internal static Map MapData => Store.MapData;
+
+        public MapPoint SelectedMapPoint { get; private set; }
+        public bool AllowRunTaskDispatch { get; set; } = false;
+
+
+        public Action<clsPointAddToRunActionDto> OnMapPointAddToRunActionClick { get; set; }
+
+        internal MapPoint hoverinigMapPoint;
+        internal Dictionary<MapPoint, RectangleF> StationRectagles = new Dictionary<MapPoint, RectangleF>();
+        internal float scale = 1.5f;
+        public uscMapDisplay()
+        {
+            InitializeComponent();
+        }
+
+        private void picMap_Paint(object sender, PaintEventArgs e)
+        {
+
+            if (MapData == null)
+                return;
+
+            try
+            {
+                var graph = e.Graphics;
+                StationRectagles = MapData.Points.Values.ToDictionary(pt => pt, pt => new RectangleF(DrawPoint(pt.Graph), new SizeF(8, 8)));
+                foreach (var station_point in MapData.Points.Values)
+                {
+                    var rectang = StationRectagles[station_point];
+                    var textLoca = rectang.Location;
+                    textLoca.X = textLoca.X + 5;
+                    textLoca.Y = textLoca.Y - 22;
+                    graph.DrawString(station_point.Name, new Font("微軟正黑體", 12, FontStyle.Bold), Brushes.Green, textLoca);
+                    if (station_point.Target.Count != 0)
+                    {
+                        foreach (var item in station_point.Target)
+                        {
+                            var targetPt = MapData.Points[item.Key];
+                            var endRectangle = StationRectagles[targetPt];
+
+                            var line_pen = new Pen(Brushes.Gray, 2);
+                            var line_start_pt = new Point((int)(rectang.Location.X + rectang.Width / 2), (int)(rectang.Location.Y + rectang.Height / 2));
+                            var line_end_pt = new Point((int)(endRectangle.Location.X + rectang.Width / 2), (int)(endRectangle.Location.Y + endRectangle.Height / 2));
+                            graph.DrawLine(line_pen, line_start_pt, line_end_pt);
+                        }
+                    }
+
+                    bool isSelected = SelectedMapPoint?.Name == station_point.Name;
+                    var borderPen = new Pen(isSelected ? Brushes.Red : Brushes.Black, isSelected ? 8 : 2);
+                    graph.DrawEllipse(borderPen, rectang);
+                    graph.FillEllipse(GetPointBrush(station_point), rectang);
+                }
+            }
+            catch (Exception ex)
+            {
+            }
+
+
+        }
+        private Brush GetPointBrush(MapPoint point)
+        {
+            if (point.IsEquipment)
+                return Brushes.Blue;
+            if (point.IsCharge)
+                return Brushes.Orange;
+
+            return Brushes.Green;
+        }
+        private Point DrawPoint(Graph graph_data, int offset = 0)
+        {
+            return new Point((int)(graph_data.X / scale) + offset, (int)(graph_data.Y / scale) + offset);
+        }
+
+        private void hScrollBar1_Scroll(object sender, ScrollEventArgs e)
+        {
+            scale = (float)(hScrollBar1.Value / 100.0);
+        }
+
+        private void picMap_MouseHover(object sender, EventArgs e)
+        {
+        }
+
+        private void picMap_MouseMove(object sender, MouseEventArgs e)
+        {
+            var cusorLoc = e.Location;
+            cusorLoc.Offset(-7, -7);
+            RectangleF cursor = new RectangleF(cusorLoc, new SizeF(40, 40));
+            hoverinigMapPoint = StationRectagles.FirstOrDefault(pt => pt.Value.IntersectsWith(cursor)).Key;
+            if (hoverinigMapPoint != null)
+            {
+                labCursorInfo.Text = $"{hoverinigMapPoint.Name} (Tag= {hoverinigMapPoint.TagNumber} , {hoverinigMapPoint.X}), {hoverinigMapPoint.Y}";
+                this.Cursor = Cursors.Hand;
+            }
+            else
+            {
+                labCursorInfo.Text = "";
+                Cursor = Cursors.Default;
+            }
+        }
+
+        private void picMap_MouseClick(object sender, MouseEventArgs e)
+        {
+            if (hoverinigMapPoint != null)
+            {
+                SelectedMapPoint = hoverinigMapPoint;
+                ContextMenuStrip menu = hoverinigMapPoint.IsEquipment ? LDULDStationMenuStrip : NormalPointContextMenuStrip;
+                picMap.ContextMenuStrip = menu;
+                picMap.Invalidate();
+            }
+            else
+            {
+                picMap.ContextMenuStrip = null;
+            }
+        }
+
+        private void picMap_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void btnAddNormalMoveAction_Click(object sender, EventArgs e)
+        {
+            OnMapPointAddToRunActionClick(new clsPointAddToRunActionDto
+            {
+                action = ACTION_TYPE.MOVE,
+                map_point = SelectedMapPoint,
+            });
+        }
+
+        private void btnAddULDRunTaskAction_Click(object sender, EventArgs e)
+        {
+
+            OnMapPointAddToRunActionClick(new clsPointAddToRunActionDto
+            {
+                action = ACTION_TYPE.UNLOAD,
+                map_point = SelectedMapPoint,
+            });
+        }
+
+        private void btnAddLDRunTaskAction_Click(object sender, EventArgs e)
+        {
+            OnMapPointAddToRunActionClick(new clsPointAddToRunActionDto
+            {
+                action = ACTION_TYPE.LOAD,
+                map_point = SelectedMapPoint,
+            });
+        }
+    }
+}

@@ -7,7 +7,7 @@ namespace AGVSHotrun.Models;
 public partial class ExecutingTask
 {
     [Key]
-    public string Name { get; set; } = null!;
+    public string Name { get; set; } 
 
     public int Status { get; set; }
 

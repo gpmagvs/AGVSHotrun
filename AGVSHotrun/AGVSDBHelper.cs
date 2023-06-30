@@ -3,6 +3,7 @@ using AGVSHotrun.Models;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -11,6 +12,8 @@ namespace AGVSHotrun
 {
     public class AGVSDBHelper
     {
+        internal static string DBConnection = "Server=127.0.0.1;Database=WebAGVSystem;User Id=sa;Password=12345678;Encrypt=False";
+
         public WebAGVSystemDbcontext DBConn
         {
             get
@@ -23,24 +26,29 @@ namespace AGVSHotrun
                 }
                 catch (Exception ex)
                 {
-                    throw ex;
+                    return null;
                 }
             }
         }
 
-
-
-        public Models.UserInfo test()
+        public int GetAGVID(string AGVName)
         {
-            using (var conn = DBConn)
+            if (Debugger.IsAttached)
             {
-                return conn.UserInfos.First();
+                return int.Parse(AGVName.Split('_')[1]);
+            }
+            using (var dbConn = DBConn)
+            {
+                var agv = dbConn.AGVInfos.FirstOrDefault(agv => agv.AGVName == AGVName);
+                if (agv == null)
+                    return 1;
+                return agv.AGVID;
             }
         }
 
         public List<Models.ExecutingTask> GetExecutingTasks()
         {
-            using(var conn = DBConn)
+            using (var conn = DBConn)
             {
                 return conn.ExecutingTasks.ToList();
             }
@@ -50,9 +58,12 @@ namespace AGVSHotrun
         {
             using (var conn = DBConn)
             {
-                 conn.ExecutingTasks.Add(executingTask);
+                conn.ExecutingTasks.Add(executingTask);
                 return conn.SaveChanges();
             }
         }
+
+
+
     }
 }
