@@ -28,7 +28,7 @@ namespace AGVSHotrun.UI
             isEditOld = true;
             uscRunTaskItem.OnRemoveButtonPush += UscRunTaskItem_OnRemoveButtonPush;
             this.script = JsonConvert.DeserializeObject<clsHotRunScript>(JsonConvert.SerializeObject(script)); //深層複製
-            agvCombox1.AGVSelected = this.script.AGVName;
+            uscMapDisplay1.HighlightAGVName = agvCombox1.AGVSelected = this.script.AGVName;
             uscRunTaskCreater1.Add(this.script.RunTasksDesigning);
         }
         bool isSaveAndExitFlag = false;
@@ -57,6 +57,7 @@ namespace AGVSHotrun.UI
         private void agvCombox1_OnAGVSelected(object sender, string AGVName)
         {
             script.AGVName = AGVName;
+            uscMapDisplay1.HighlightAGVName = AGVName;
         }
         private void UscRunTaskItem_OnRemoveButtonPush(object? sender, uscRunTaskItem RunTaskItemUI)
         {

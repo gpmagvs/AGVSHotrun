@@ -27,6 +27,7 @@ namespace AGVSHotrun.UI
         public MapPoint SelectedMapPoint { get; private set; }
         public bool AllowRunTaskDispatch { get; set; } = false;
 
+        public string HighlightAGVName { get; set; } = "";
 
         public Action<clsPointAddToRunActionDto> OnMapPointAddToRunActionClick { get; set; }
 
@@ -98,7 +99,9 @@ namespace AGVSHotrun.UI
                     if (has_agv.Value != null)
                     {
                         var agv_textloc = new PointF(textLoca.X, textLoca.Y - 22);
-                        graph.DrawString(has_agv.Key.AGVName, new Font("微軟正黑體", 12, FontStyle.Bold), Brushes.Gold, agv_textloc);
+                        bool highlight = HighlightAGVName == has_agv.Key.AGVName;
+
+                        graph.DrawString(has_agv.Key.AGVName, new Font("微軟正黑體", highlight ? 16 : 10, FontStyle.Bold), highlight ? Brushes.Red : Brushes.Gold, agv_textloc);
                         graph.FillEllipse(Brushes.Gold, rectang);
                     }
                 }
@@ -223,6 +226,6 @@ namespace AGVSHotrun.UI
                 map_point = SelectedMapPoint,
             });
         }
-        
+
     }
 }
