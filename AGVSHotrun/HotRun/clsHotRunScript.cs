@@ -228,10 +228,7 @@ namespace AGVSHotrun.HotRun
 
         private async Task<bool> PostTaskHttpRequest(string AgvName, int AgvID, string to_station)
         {
-            if (Debugger.IsAttached)
-            {
-                return true;
-            }
+          
             AGVS_Dispath_Emulator dispatcher_helper = new AGVS_Dispath_Emulator();
             var map_points = Store.MapData.Points.ToList();
             string _toStation = ToStation;

@@ -33,10 +33,7 @@ namespace AGVSHotrun
 
         public int GetAGVID(string AGVName)
         {
-            if (Debugger.IsAttached)
-            {
-                return int.Parse(AGVName.Split('_')[1]);
-            }
+          
             using (var dbConn = DBConn)
             {
                 var agv = dbConn.AGVInfos.FirstOrDefault(agv => agv.AGVName == AGVName);

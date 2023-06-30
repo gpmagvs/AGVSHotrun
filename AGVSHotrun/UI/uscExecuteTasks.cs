@@ -41,29 +41,7 @@ namespace AGVSHotrun
             if (selectedRow >= 0)
                 dataGridView1.CurrentCell = dataGridView1[0, selectedRow];
             DataBinding.Clear();
-            if (Debugger.IsAttached)
-            {
-                List<ExecutingTask> fakeData = new List<ExecutingTask>() {
-                     new ExecutingTask
-                     {
-                          AGVID=1,
-                           Name= $"*Local_{DateTime.Now.ToString()}"
-                     },
-                     new ExecutingTask
-                     {
-                          AGVID=2,
-                           Name= $"*Local_{DateTime.Now.ToString()}"
-                     }
-                };
-                foreach (var info in fakeData)
-                {
-                    DataBinding.Add(info);
-                }
-
-                DataBinding.ResetBindings();
-
-            }
-            else
+          
                 using (var conn = dbHelper.DBConn)
                 {
                     var datas = dbHelper.DBConn.ExecutingTasks.ToList();

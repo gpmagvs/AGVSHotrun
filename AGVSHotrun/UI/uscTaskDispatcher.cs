@@ -38,21 +38,13 @@ namespace AGVSHotrun
             {
                 if (_AGVName_Selected != null)
                 {
-                    if (!Debugger.IsAttached)
+
+                    return new AGVInfo()
                     {
-                        using (var conn = dbhelper.DBConn)
-                        {
-                            return conn.AGVInfos.FirstOrDefault(agv => agv.AGVName == _AGVName_Selected);
-                        }
-                    }
-                    else
-                    {
-                        return new AGVInfo()
-                        {
-                            AGVName = _AGVName_Selected,
-                            AGVID = int.Parse(_AGVName_Selected.Split('_')[1])
-                        };
-                    }
+                        AGVName = _AGVName_Selected,
+                        AGVID = int.Parse(_AGVName_Selected.Split('_')[1])
+                    };
+
                 }
                 else
                     return null;
@@ -119,18 +111,13 @@ namespace AGVSHotrun
         {
             cmbAGVSelect.Items.Clear();
 
-            if (Debugger.IsAttached)
+
+            using (var conn = dbhelper.DBConn)
             {
-                cmbAGVSelect.Items.AddRange(new string[2] { "AGV_1", "AGV_2" });
+                var agv_names = conn.AGVInfos.ToList().Select(agv => agv.AGVName).ToArray();
+                cmbAGVSelect.Items.AddRange(agv_names);
             }
-            else
-            {
-                using (var conn = dbhelper.DBConn)
-                {
-                    var agv_names = conn.AGVInfos.ToList().Select(agv => agv.AGVName).ToArray();
-                    cmbAGVSelect.Items.AddRange(agv_names);
-                }
-            }
+
 
         }
         private void cmbToStationSelect_SelectedIndexChanged(object sender, EventArgs e)

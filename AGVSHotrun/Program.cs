@@ -15,7 +15,7 @@ namespace AGVSHotrun
         {
             Store.LoadSystemConfig();
             Store.LoadHotRunScriptsStored();
-            Store.MapData = MapManager.LoadMapFromFile(Debugger.IsAttached ? "C:\\AGVS\\Map\\Map_UMTC_AOI.json" : Store.SysConfigs.MapFile);
+            Store.MapData = MapManager.LoadMapFromFile( Store.SysConfigs.MapFile);
 
             PowershellInit();
             // To customize application configuration such as set high DPI settings or default font,

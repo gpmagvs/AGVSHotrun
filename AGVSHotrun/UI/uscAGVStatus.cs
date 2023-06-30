@@ -46,25 +46,7 @@ namespace AGVSHotrun
             if (selectedRow >= 0)
                 dataGridView1.CurrentCell = dataGridView1[0, selectedRow];
 
-            if (Debugger.IsAttached)
-            {
-                List<AGVInfo> fakeData = new List<AGVInfo>() {
-                     new AGVInfo
-                     {
-                          AGVID = 1,
-                           AGVName ="AGV_1",
-                            AlarmCode = DateTime.Now.Second
-                     }
-                };
-                DataBinding.Clear();
-                foreach (var info in fakeData)
-                {
-                    DataBinding.Add(info);
-                }
-                DataBinding.ResetBindings();
-
-            }
-            else
+        
                 using (var conn = dbHelper.DBConn)
                 {
                     var agv_infos = dbHelper.DBConn.AGVInfos.ToList();
