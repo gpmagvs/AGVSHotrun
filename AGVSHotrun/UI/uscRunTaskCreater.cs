@@ -26,8 +26,8 @@ namespace AGVSHotrun.UI
 
         private void UscRunTaskItem_OnMoveDownButtonPush(object? sender, uscRunTaskItem RunTaskItemUI)
         {
-
-            int current_index = runTaskItemUiList.IndexOf(RunTaskItemUI);
+            var ui = runTaskItemUiList.First(ui => ui.Index == RunTaskItemUI.Index);
+            int current_index = runTaskItemUiList.IndexOf(ui);
             int new_index = current_index + 1;
 
             if (runTaskItemUiList.Count == new_index)
@@ -35,7 +35,7 @@ namespace AGVSHotrun.UI
 
             var to_change_ui = runTaskItemUiList[new_index];
 
-            runTaskItemUiList[new_index] = RunTaskItemUI;
+            runTaskItemUiList[new_index] = ui;
             runTaskItemUiList[current_index] = to_change_ui;
             fpnlActionContainer.Controls.Clear();
             fpnlActionContainer.Controls.AddRange(runTaskItemUiList.ToArray());
@@ -45,12 +45,13 @@ namespace AGVSHotrun.UI
 
         private void UscRunTaskItem_OnMoveUpButtonPush(object? sender, uscRunTaskItem RunTaskItemUI)
         {
-            int current_index = runTaskItemUiList.IndexOf(RunTaskItemUI);
+            var ui = runTaskItemUiList.First(ui => ui.Index == RunTaskItemUI.Index);
+            int current_index = runTaskItemUiList.IndexOf(ui);
             int new_index = current_index - 1;
             if (new_index < 0)
                 return;
             var to_change_ui = runTaskItemUiList[new_index];
-            runTaskItemUiList[new_index] = RunTaskItemUI;
+            runTaskItemUiList[new_index] = ui;
             runTaskItemUiList[current_index] = to_change_ui;
             fpnlActionContainer.Controls.Clear();
             fpnlActionContainer.Controls.AddRange(runTaskItemUiList.ToArray());
