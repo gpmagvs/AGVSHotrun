@@ -37,21 +37,12 @@ namespace AGVSHotrun
             statusStrip1 = new StatusStrip();
             labSystemInformation = new ToolStripStatusLabel();
             tabControl1 = new TabControl();
-            tabPage1 = new TabPage();
-            panel1 = new Panel();
-            uscagvStatus1 = new uscAGVStatus();
-            uscExecuteTasks1 = new uscExecuteTasks();
-            tabPage2 = new TabPage();
-            uscMapDisplay1 = new UI.uscMapDisplay();
             tabPage3 = new TabPage();
             panel2 = new Panel();
             uscMapDisplay2 = new UI.uscMapDisplay();
             dgvHotRunScripts = new DataGridView();
-            clsHotRunScriptBindingSource = new BindingSource(components);
-            toolTip1 = new ToolTip(components);
-            toolStrip1 = new ToolStrip();
-            btnNewHotRun = new ToolStripLabel();
             colHotRunStart = new DataGridViewButtonColumn();
+            Description = new DataGridViewTextBoxColumn();
             ID = new DataGridViewTextBoxColumn();
             aGVNameDataGridViewTextBoxColumn = new DataGridViewTextBoxColumn();
             RepeatNum = new DataGridViewTextBoxColumn();
@@ -60,27 +51,36 @@ namespace AGVSHotrun
             EndTime = new DataGridViewTextBoxColumn();
             ResultDisplay = new DataGridViewTextBoxColumn();
             FailureReason = new DataGridViewTextBoxColumn();
-            Description = new DataGridViewTextBoxColumn();
             colHotRunEdit = new DataGridViewButtonColumn();
             colScriptRemove = new DataGridViewButtonColumn();
+            clsHotRunScriptBindingSource = new BindingSource(components);
+            tabPage1 = new TabPage();
+            panel1 = new Panel();
+            uscagvStatus1 = new uscAGVStatus();
+            uscExecuteTasks1 = new uscExecuteTasks();
+            tabPage2 = new TabPage();
+            uscMapDisplay1 = new UI.uscMapDisplay();
+            toolTip1 = new ToolTip(components);
+            toolStrip1 = new ToolStrip();
+            btnNewHotRun = new ToolStripLabel();
             statusStrip1.SuspendLayout();
             tabControl1.SuspendLayout();
-            tabPage1.SuspendLayout();
-            panel1.SuspendLayout();
-            tabPage2.SuspendLayout();
             tabPage3.SuspendLayout();
             panel2.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)dgvHotRunScripts).BeginInit();
             ((System.ComponentModel.ISupportInitialize)clsHotRunScriptBindingSource).BeginInit();
+            tabPage1.SuspendLayout();
+            panel1.SuspendLayout();
+            tabPage2.SuspendLayout();
             toolStrip1.SuspendLayout();
             SuspendLayout();
             // 
             // statusStrip1
             // 
             statusStrip1.Items.AddRange(new ToolStripItem[] { labSystemInformation });
-            statusStrip1.Location = new Point(0, 590);
+            statusStrip1.Location = new Point(0, 604);
             statusStrip1.Name = "statusStrip1";
-            statusStrip1.Size = new Size(1228, 22);
+            statusStrip1.Size = new Size(1260, 22);
             statusStrip1.TabIndex = 5;
             statusStrip1.Text = "statusStrip1";
             // 
@@ -93,85 +93,25 @@ namespace AGVSHotrun
             // tabControl1
             // 
             tabControl1.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            tabControl1.Controls.Add(tabPage3);
             tabControl1.Controls.Add(tabPage1);
             tabControl1.Controls.Add(tabPage2);
-            tabControl1.Controls.Add(tabPage3);
-            tabControl1.Location = new Point(12, 36);
+            tabControl1.Font = new Font("Microsoft JhengHei UI", 11F, FontStyle.Bold, GraphicsUnit.Point);
+            tabControl1.ItemSize = new Size(96, 30);
+            tabControl1.Location = new Point(0, 28);
             tabControl1.Name = "tabControl1";
             tabControl1.SelectedIndex = 0;
-            tabControl1.Size = new Size(1204, 551);
+            tabControl1.Size = new Size(1260, 573);
+            tabControl1.SizeMode = TabSizeMode.Fixed;
             tabControl1.TabIndex = 6;
-            // 
-            // tabPage1
-            // 
-            tabPage1.Controls.Add(panel1);
-            tabPage1.Location = new Point(4, 24);
-            tabPage1.Name = "tabPage1";
-            tabPage1.Padding = new Padding(3);
-            tabPage1.Size = new Size(1196, 523);
-            tabPage1.TabIndex = 0;
-            tabPage1.Text = "狀態";
-            tabPage1.UseVisualStyleBackColor = true;
-            // 
-            // panel1
-            // 
-            panel1.Controls.Add(uscagvStatus1);
-            panel1.Controls.Add(uscExecuteTasks1);
-            panel1.Dock = DockStyle.Fill;
-            panel1.Location = new Point(3, 3);
-            panel1.Name = "panel1";
-            panel1.Size = new Size(1190, 517);
-            panel1.TabIndex = 0;
-            // 
-            // uscagvStatus1
-            // 
-            uscagvStatus1.dbHelper = agvsdbHelper1;
-            uscagvStatus1.Dock = DockStyle.Fill;
-            uscagvStatus1.Location = new Point(0, 0);
-            uscagvStatus1.Name = "uscagvStatus1";
-            uscagvStatus1.Size = new Size(1190, 141);
-            uscagvStatus1.TabIndex = 4;
-            // 
-            // uscExecuteTasks1
-            // 
-            uscExecuteTasks1.dbHelper = agvsdbHelper2;
-            uscExecuteTasks1.Dock = DockStyle.Bottom;
-            uscExecuteTasks1.Location = new Point(0, 141);
-            uscExecuteTasks1.Name = "uscExecuteTasks1";
-            uscExecuteTasks1.Size = new Size(1190, 376);
-            uscExecuteTasks1.TabIndex = 5;
-            // 
-            // tabPage2
-            // 
-            tabPage2.Controls.Add(uscMapDisplay1);
-            tabPage2.Location = new Point(4, 24);
-            tabPage2.Name = "tabPage2";
-            tabPage2.Padding = new Padding(3);
-            tabPage2.Size = new Size(1196, 523);
-            tabPage2.TabIndex = 1;
-            tabPage2.Text = "地圖";
-            tabPage2.UseVisualStyleBackColor = true;
-            // 
-            // uscMapDisplay1
-            // 
-            uscMapDisplay1.AllowRunTaskDispatch = false;
-            uscMapDisplay1.BackColor = SystemColors.ControlDarkDark;
-            uscMapDisplay1.BorderStyle = BorderStyle.FixedSingle;
-            uscMapDisplay1.Dock = DockStyle.Fill;
-            uscMapDisplay1.HighlightAGVName = "";
-            uscMapDisplay1.Location = new Point(3, 3);
-            uscMapDisplay1.Name = "uscMapDisplay1";
-            uscMapDisplay1.OnMapPointAddToRunActionClick = null;
-            uscMapDisplay1.Size = new Size(1190, 517);
-            uscMapDisplay1.TabIndex = 0;
             // 
             // tabPage3
             // 
             tabPage3.Controls.Add(panel2);
-            tabPage3.Location = new Point(4, 24);
+            tabPage3.Location = new Point(4, 34);
             tabPage3.Name = "tabPage3";
             tabPage3.Padding = new Padding(3);
-            tabPage3.Size = new Size(1196, 523);
+            tabPage3.Size = new Size(1252, 535);
             tabPage3.TabIndex = 2;
             tabPage3.Text = "HOT RUN";
             tabPage3.UseVisualStyleBackColor = true;
@@ -183,7 +123,7 @@ namespace AGVSHotrun
             panel2.Dock = DockStyle.Fill;
             panel2.Location = new Point(3, 3);
             panel2.Name = "panel2";
-            panel2.Size = new Size(1190, 517);
+            panel2.Size = new Size(1246, 529);
             panel2.TabIndex = 0;
             // 
             // uscMapDisplay2
@@ -193,10 +133,11 @@ namespace AGVSHotrun
             uscMapDisplay2.BorderStyle = BorderStyle.FixedSingle;
             uscMapDisplay2.Dock = DockStyle.Fill;
             uscMapDisplay2.HighlightAGVName = "";
-            uscMapDisplay2.Location = new Point(0, 182);
+            uscMapDisplay2.Location = new Point(0, 256);
+            uscMapDisplay2.Margin = new Padding(4);
             uscMapDisplay2.Name = "uscMapDisplay2";
             uscMapDisplay2.OnMapPointAddToRunActionClick = null;
-            uscMapDisplay2.Size = new Size(1190, 335);
+            uscMapDisplay2.Size = new Size(1246, 273);
             uscMapDisplay2.TabIndex = 2;
             // 
             // dgvHotRunScripts
@@ -206,40 +147,16 @@ namespace AGVSHotrun
             dgvHotRunScripts.AutoGenerateColumns = false;
             dgvHotRunScripts.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
             dgvHotRunScripts.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            dgvHotRunScripts.Columns.AddRange(new DataGridViewColumn[] { colHotRunStart, ID, aGVNameDataGridViewTextBoxColumn, RepeatNum, TotalActionNum, StartTime, EndTime, ResultDisplay, FailureReason, Description, colHotRunEdit, colScriptRemove });
+            dgvHotRunScripts.Columns.AddRange(new DataGridViewColumn[] { colHotRunStart, Description, ID, aGVNameDataGridViewTextBoxColumn, RepeatNum, TotalActionNum, StartTime, EndTime, ResultDisplay, FailureReason, colHotRunEdit, colScriptRemove });
             dgvHotRunScripts.DataSource = clsHotRunScriptBindingSource;
             dgvHotRunScripts.Dock = DockStyle.Top;
             dgvHotRunScripts.Location = new Point(0, 0);
             dgvHotRunScripts.Name = "dgvHotRunScripts";
             dgvHotRunScripts.ReadOnly = true;
             dgvHotRunScripts.RowTemplate.Height = 25;
-            dgvHotRunScripts.Size = new Size(1190, 182);
+            dgvHotRunScripts.Size = new Size(1246, 256);
             dgvHotRunScripts.TabIndex = 1;
             dgvHotRunScripts.CellClick += dgvHotRunScripts_CellClick;
-            // 
-            // clsHotRunScriptBindingSource
-            // 
-            clsHotRunScriptBindingSource.DataSource = typeof(HotRun.clsHotRunScript);
-            // 
-            // toolStrip1
-            // 
-            toolStrip1.Items.AddRange(new ToolStripItem[] { btnNewHotRun });
-            toolStrip1.Location = new Point(0, 0);
-            toolStrip1.Name = "toolStrip1";
-            toolStrip1.RenderMode = ToolStripRenderMode.System;
-            toolStrip1.Size = new Size(1228, 25);
-            toolStrip1.TabIndex = 7;
-            toolStrip1.Text = "toolStrip1";
-            // 
-            // btnNewHotRun
-            // 
-            btnNewHotRun.DisplayStyle = ToolStripItemDisplayStyle.Text;
-            btnNewHotRun.Image = (Image)resources.GetObject("btnNewHotRun.Image");
-            btnNewHotRun.ImageTransparentColor = Color.Magenta;
-            btnNewHotRun.Name = "btnNewHotRun";
-            btnNewHotRun.Size = new Size(108, 22);
-            btnNewHotRun.Text = "New Hot Run Test";
-            btnNewHotRun.Click += btnNewHotRun_Click;
             // 
             // colHotRunStart
             // 
@@ -248,6 +165,13 @@ namespace AGVSHotrun
             colHotRunStart.ReadOnly = true;
             colHotRunStart.Text = "開始";
             colHotRunStart.UseColumnTextForButtonValue = true;
+            // 
+            // Description
+            // 
+            Description.DataPropertyName = "Description";
+            Description.HeaderText = "腳本描述";
+            Description.Name = "Description";
+            Description.ReadOnly = true;
             // 
             // ID
             // 
@@ -305,13 +229,6 @@ namespace AGVSHotrun
             FailureReason.Name = "FailureReason";
             FailureReason.ReadOnly = true;
             // 
-            // Description
-            // 
-            Description.DataPropertyName = "Description";
-            Description.HeaderText = "腳本描述";
-            Description.Name = "Description";
-            Description.ReadOnly = true;
-            // 
             // colHotRunEdit
             // 
             colHotRunEdit.HeaderText = "Edit";
@@ -328,11 +245,100 @@ namespace AGVSHotrun
             colScriptRemove.Text = "移除";
             colScriptRemove.UseColumnTextForButtonValue = true;
             // 
+            // clsHotRunScriptBindingSource
+            // 
+            clsHotRunScriptBindingSource.DataSource = typeof(HotRun.clsHotRunScript);
+            // 
+            // tabPage1
+            // 
+            tabPage1.Controls.Add(panel1);
+            tabPage1.Font = new Font("Microsoft JhengHei UI", 9F, FontStyle.Bold, GraphicsUnit.Point);
+            tabPage1.Location = new Point(4, 34);
+            tabPage1.Name = "tabPage1";
+            tabPage1.Padding = new Padding(3);
+            tabPage1.Size = new Size(1252, 535);
+            tabPage1.TabIndex = 0;
+            tabPage1.Text = "狀態";
+            tabPage1.UseVisualStyleBackColor = true;
+            // 
+            // panel1
+            // 
+            panel1.Controls.Add(uscagvStatus1);
+            panel1.Controls.Add(uscExecuteTasks1);
+            panel1.Dock = DockStyle.Fill;
+            panel1.Location = new Point(3, 3);
+            panel1.Name = "panel1";
+            panel1.Size = new Size(1246, 529);
+            panel1.TabIndex = 0;
+            // 
+            // uscagvStatus1
+            // 
+            uscagvStatus1.dbHelper = agvsdbHelper1;
+            uscagvStatus1.Dock = DockStyle.Fill;
+            uscagvStatus1.Location = new Point(0, 0);
+            uscagvStatus1.Name = "uscagvStatus1";
+            uscagvStatus1.Size = new Size(1246, 153);
+            uscagvStatus1.TabIndex = 4;
+            // 
+            // uscExecuteTasks1
+            // 
+            uscExecuteTasks1.dbHelper = agvsdbHelper2;
+            uscExecuteTasks1.Dock = DockStyle.Bottom;
+            uscExecuteTasks1.Location = new Point(0, 153);
+            uscExecuteTasks1.Name = "uscExecuteTasks1";
+            uscExecuteTasks1.Size = new Size(1246, 376);
+            uscExecuteTasks1.TabIndex = 5;
+            // 
+            // tabPage2
+            // 
+            tabPage2.Controls.Add(uscMapDisplay1);
+            tabPage2.Location = new Point(4, 34);
+            tabPage2.Name = "tabPage2";
+            tabPage2.Padding = new Padding(3);
+            tabPage2.Size = new Size(1252, 535);
+            tabPage2.TabIndex = 1;
+            tabPage2.Text = "地圖";
+            tabPage2.UseVisualStyleBackColor = true;
+            // 
+            // uscMapDisplay1
+            // 
+            uscMapDisplay1.AllowRunTaskDispatch = false;
+            uscMapDisplay1.BackColor = SystemColors.ControlDarkDark;
+            uscMapDisplay1.BorderStyle = BorderStyle.FixedSingle;
+            uscMapDisplay1.Dock = DockStyle.Fill;
+            uscMapDisplay1.HighlightAGVName = "";
+            uscMapDisplay1.Location = new Point(3, 3);
+            uscMapDisplay1.Margin = new Padding(4);
+            uscMapDisplay1.Name = "uscMapDisplay1";
+            uscMapDisplay1.OnMapPointAddToRunActionClick = null;
+            uscMapDisplay1.Size = new Size(1246, 529);
+            uscMapDisplay1.TabIndex = 0;
+            // 
+            // toolStrip1
+            // 
+            toolStrip1.Items.AddRange(new ToolStripItem[] { btnNewHotRun });
+            toolStrip1.Location = new Point(0, 0);
+            toolStrip1.Name = "toolStrip1";
+            toolStrip1.RenderMode = ToolStripRenderMode.System;
+            toolStrip1.Size = new Size(1260, 25);
+            toolStrip1.TabIndex = 7;
+            toolStrip1.Text = "toolStrip1";
+            // 
+            // btnNewHotRun
+            // 
+            btnNewHotRun.DisplayStyle = ToolStripItemDisplayStyle.Text;
+            btnNewHotRun.Image = (Image)resources.GetObject("btnNewHotRun.Image");
+            btnNewHotRun.ImageTransparentColor = Color.Magenta;
+            btnNewHotRun.Name = "btnNewHotRun";
+            btnNewHotRun.Size = new Size(108, 22);
+            btnNewHotRun.Text = "New Hot Run Test";
+            btnNewHotRun.Click += btnNewHotRun_Click;
+            // 
             // frmMain
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(1228, 612);
+            ClientSize = new Size(1260, 626);
             Controls.Add(toolStrip1);
             Controls.Add(tabControl1);
             Controls.Add(statusStrip1);
@@ -344,13 +350,13 @@ namespace AGVSHotrun
             statusStrip1.ResumeLayout(false);
             statusStrip1.PerformLayout();
             tabControl1.ResumeLayout(false);
-            tabPage1.ResumeLayout(false);
-            panel1.ResumeLayout(false);
-            tabPage2.ResumeLayout(false);
             tabPage3.ResumeLayout(false);
             panel2.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)dgvHotRunScripts).EndInit();
             ((System.ComponentModel.ISupportInitialize)clsHotRunScriptBindingSource).EndInit();
+            tabPage1.ResumeLayout(false);
+            panel1.ResumeLayout(false);
+            tabPage2.ResumeLayout(false);
             toolStrip1.ResumeLayout(false);
             toolStrip1.PerformLayout();
             ResumeLayout(false);
@@ -376,6 +382,7 @@ namespace AGVSHotrun
         private BindingSource clsHotRunScriptBindingSource;
         private UI.uscMapDisplay uscMapDisplay2;
         private DataGridViewButtonColumn colHotRunStart;
+        private DataGridViewTextBoxColumn Description;
         private DataGridViewTextBoxColumn ID;
         private DataGridViewTextBoxColumn aGVNameDataGridViewTextBoxColumn;
         private DataGridViewTextBoxColumn RepeatNum;
@@ -384,7 +391,6 @@ namespace AGVSHotrun
         private DataGridViewTextBoxColumn EndTime;
         private DataGridViewTextBoxColumn ResultDisplay;
         private DataGridViewTextBoxColumn FailureReason;
-        private DataGridViewTextBoxColumn Description;
         private DataGridViewButtonColumn colHotRunEdit;
         private DataGridViewButtonColumn colScriptRemove;
     }

@@ -48,7 +48,7 @@ namespace AGVSHotrun.HotRun
         public bool Success { get; private set; }
 
         [JsonIgnore]
-        private bool IsRunning { get; set; }
+        internal bool IsRunning { get; set; }
         [JsonIgnore]
         public string ResultDisplay
         {
@@ -91,13 +91,13 @@ namespace AGVSHotrun.HotRun
 
         private async Task _ExecutingTasksAsync()
         {
+            IsRunning = true;
             try
             {
                 StartTime = DateTime.Now;
                 EndTime = DateTime.MinValue;
                 AGVSDBHelper dbhelper = new AGVSDBHelper();
                 int agvid = dbhelper.GetAGVID(AGVName);
-                IsRunning = true;
                 OnHotRunStart?.Invoke(this, this);
                 FailureReason = "";
 
@@ -166,6 +166,14 @@ namespace AGVSHotrun.HotRun
                 Success = false;
                 OnHotRunFinish?.Invoke(this, this);
                 OnLoginExpireExcetionOccur?.Invoke(this, this);
+            }
+            catch (Exception ex)
+            {
+                IsRunning = false;
+                EndTime = DateTime.Now;
+                FailureReason = ex.Message;
+                Success = false;
+                OnHotRunFinish?.Invoke(this, this);
             }
         }
         private bool WaitTaskCreated(int agvid, out string taskName)

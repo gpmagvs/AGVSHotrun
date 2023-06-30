@@ -18,23 +18,33 @@ namespace AGVSHotrun
 
             clsHotRunScript.OnHotRunStart += HotRunProgressStateChange;
             clsHotRunScript.OnHotRunFinish += ClsHotRunScript_OnHotRunFinish;
-
             clsHotRunScript.OnLoopFinish += HotRunProgressStateChange;
             clsHotRunScript.OnLoginExpireExcetionOccur += ClsHotRunScript_OnLoginExpireExcetionOccur;
         }
 
         private void ClsHotRunScript_OnLoginExpireExcetionOccur(object? sender, clsHotRunScript e)
         {
-            MessageBox.Show("需要重新登入派車系統", "", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            Invoke(new Action(() =>
+            {
+                MessageBox.Show(this, "需要重新登入派車系統", "", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }));
         }
 
         private void ClsHotRunScript_OnHotRunFinish(object? sender, clsHotRunScript script)
         {
-            HotRunProgressStateChange(sender, script);
-            if (!script.Success)
+            Invoke(new Action(() =>
             {
-                MessageBox.Show($"Hot Run 執行失敗:{script.FailureReason}", script.FailureReason, MessageBoxButtons.OK, MessageBoxIcon.Warning);
-            }
+                HotRunProgressStateChange(sender, script);
+                if (!script.Success)
+                {
+                    MessageBox.Show(this, $"{script.AGVName} -Hot Run 執行失敗:\r\n{script.FailureReason}", $"{script.AGVName} -{script.FailureReason}", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                }
+                else
+                {
+                    MessageBox.Show(this, $"{script.AGVName} - Hot Run 執行完成", "Hot Run 執行完成", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
+
+            }));
         }
 
         private void HotRunProgressStateChange(object? sender, clsHotRunScript script)
@@ -139,9 +149,17 @@ namespace AGVSHotrun
                 return;
             if (click_column == colHotRunStart)
             {
+                if (script.IsRunning)
+                {
+                    MessageBox.Show("腳本已經在執行中", "STOP", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    return;
+                }
                 if (!script.Start(out string errMsg))
                 {
                     MessageBox.Show(errMsg, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+                else
+                {
                 }
             }
             if (click_column == colHotRunEdit)
