@@ -107,8 +107,6 @@ namespace AGVSHotrun.HotRun
                 message = $"動作 {string.Join(",", indexes)}  [目標站點_To Station] 設定有誤";
                 return false;
             }
-            var agv_current_pt = Store.AGVlocStore.First(ke => ke.Key.AGVName == AGVName).Value;
-
             //if (RunTasksDesigning.First().ToStation == agv_current_pt.Name)
             //{
             //    message = $"{AGVName} 目前位置與HOT RUN 第一個動作位置相同, 請先將AGV移開 {agv_current_pt.Name} 或修改HOT RUN 腳本`";

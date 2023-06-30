@@ -6,6 +6,25 @@ using System.Threading.Tasks;
 
 namespace AGVSHotrun.Models
 {
+    public enum ONLINE_STATE
+    {
+        OFFLINE = 0,
+        ONLINE,
+    }
+    public enum AUTO_STATE
+    {
+        AUTO,
+        MANUAL
+    }
+
+    public enum RUN_STATE
+    {
+        IDLE = 1,
+        RUN,
+        DOWN,
+        Charging
+
+    }
     public enum ACTION_TYPE
     {
         MOVE = 0,

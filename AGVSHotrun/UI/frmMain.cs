@@ -151,11 +151,16 @@ namespace AGVSHotrun
                 if (script.IsRunning)
                 {
                     if (MessageBox.Show("腳本已經在執行中 ,確定要中斷?", "STOP", MessageBoxButtons.OKCancel, MessageBoxIcon.Warning) == DialogResult.OK)
-                    {
                         script.Abort();
-                        return;
-                    }
                     return;
+                }
+
+                //確認AGV狀態 > 如果是運轉中
+                var agv_states = aGVSDBHelper.GetAGVMainStatus(script.AGVName);
+                if (agv_states.RunStatus != RUN_STATE.IDLE)
+                {
+                    if (MessageBox.Show($"{script.AGVName} 目前狀態是 {agv_states.RunStatus} , 確定要執行腳本?", "STOP", MessageBoxButtons.OKCancel, MessageBoxIcon.Warning) == DialogResult.Cancel)
+                        return;
                 }
 
                 if (!script.Start(out string errMsg))

@@ -33,13 +33,40 @@ namespace AGVSHotrun
 
         public int GetAGVID(string AGVName)
         {
-          
             using (var dbConn = DBConn)
             {
                 var agv = dbConn.AGVInfos.FirstOrDefault(agv => agv.AGVName == AGVName);
                 if (agv == null)
                     return 1;
                 return agv.AGVID;
+            }
+        }
+
+        public clsAGVStates GetAGVMainStatus(string AGVName)
+        {
+            using (var dbConn = DBConn)
+            {
+                var agv = dbConn.AGVInfos.FirstOrDefault(agv => agv.AGVName == AGVName);
+                if (agv == null)
+                {
+                    return new clsAGVStates()
+                    {
+                        AutoStatus = AUTO_STATE.MANUAL,
+                        RunStatus = RUN_STATE.DOWN,
+                        OnlineStatus = ONLINE_STATE.OFFLINE
+                    };
+                }
+                else
+                {
+                    var main_status = Enum.GetValues(typeof(RUN_STATE)).Cast<RUN_STATE>().FirstOrDefault(st => (int)st == agv.AGVMainStatus);
+                    var online_status = Enum.GetValues(typeof(ONLINE_STATE)).Cast<ONLINE_STATE>().FirstOrDefault(st => (int)st == agv.AGVMode);
+                    return new clsAGVStates
+                    {
+                        RunStatus = main_status,
+                        OnlineStatus = online_status
+                    };
+                }
+
             }
         }
 
