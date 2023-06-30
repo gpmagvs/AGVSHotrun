@@ -28,6 +28,15 @@
     <Compile Update="UI\uscMapDisplay.cs">
       <SubType>UserControl</SubType>
     </Compile>
+    <Compile Update="UI\uscMapDisplay.cs.BASE.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Update="UI\uscMapDisplay.cs.LOCAL.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Update="UI\uscMapDisplay.cs.REMOTE.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
     <Compile Update="UI\uscRunTaskCreater.cs">
       <SubType>UserControl</SubType>
     </Compile>
