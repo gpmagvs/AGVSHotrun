@@ -37,6 +37,7 @@
             LDULDStationMenuStrip = new ContextMenuStrip(components);
             btnAddULDRunTaskAction = new ToolStripMenuItem();
             btnAddLDRunTaskAction = new ToolStripMenuItem();
+            agv_loc_timer = new System.Windows.Forms.Timer(components);
             ((System.ComponentModel.ISupportInitialize)picMap).BeginInit();
             NormalPointContextMenuStrip.SuspendLayout();
             LDULDStationMenuStrip.SuspendLayout();
@@ -55,8 +56,10 @@
             picMap.Click += picMap_Click;
             picMap.Paint += picMap_Paint;
             picMap.MouseClick += picMap_MouseClick;
+            picMap.MouseDown += picMap_MouseDown;
             picMap.MouseHover += picMap_MouseHover;
             picMap.MouseMove += picMap_MouseMove;
+            picMap.MouseUp += picMap_MouseUp;
             // 
             // hScrollBar1
             // 
@@ -64,7 +67,7 @@
             hScrollBar1.Name = "hScrollBar1";
             hScrollBar1.Size = new Size(411, 21);
             hScrollBar1.TabIndex = 1;
-            hScrollBar1.Value = 50;
+            hScrollBar1.Value = 1;
             hScrollBar1.Scroll += hScrollBar1_Scroll;
             // 
             // labCursorInfo
@@ -111,6 +114,12 @@
             btnAddLDRunTaskAction.Text = "放貨";
             btnAddLDRunTaskAction.Click += btnAddLDRunTaskAction_Click;
             // 
+            // agv_loc_timer
+            // 
+            agv_loc_timer.Enabled = true;
+            agv_loc_timer.Interval = 500;
+            agv_loc_timer.Tick += agv_loc_timer_Tick;
+            // 
             // uscMapDisplay
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
@@ -139,5 +148,6 @@
         private ContextMenuStrip LDULDStationMenuStrip;
         private ToolStripMenuItem btnAddULDRunTaskAction;
         private ToolStripMenuItem btnAddLDRunTaskAction;
+        private System.Windows.Forms.Timer agv_loc_timer;
     }
 }

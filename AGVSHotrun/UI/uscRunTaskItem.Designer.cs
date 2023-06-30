@@ -147,7 +147,7 @@
             btnRemove.FlatStyle = FlatStyle.Flat;
             btnRemove.Font = new Font("Microsoft JhengHei UI", 11F, FontStyle.Bold, GraphicsUnit.Point);
             btnRemove.ForeColor = Color.White;
-            btnRemove.Location = new Point(1012, 5);
+            btnRemove.Location = new Point(1015, 5);
             btnRemove.Name = "btnRemove";
             btnRemove.Size = new Size(100, 26);
             btnRemove.TabIndex = 10;
@@ -226,7 +226,7 @@
             Controls.Add(panel2);
             MinimumSize = new Size(879, 35);
             Name = "uscRunTaskItem";
-            Size = new Size(1115, 39);
+            Size = new Size(1136, 39);
             panel2.ResumeLayout(false);
             ResumeLayout(false);
             PerformLayout();

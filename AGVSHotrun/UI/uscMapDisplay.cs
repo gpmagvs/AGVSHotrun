@@ -1,5 +1,6 @@
 ﻿using AGVSHotrun.Models;
 using AGVSystemCommonNet6.MAP;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -29,12 +30,31 @@ namespace AGVSHotrun.UI
 
         public Action<clsPointAddToRunActionDto> OnMapPointAddToRunActionClick { get; set; }
 
+        bool isdrag = false;
+        int offset_x = 0;
+        int offset_y = 0;
         internal MapPoint hoverinigMapPoint;
         internal Dictionary<MapPoint, RectangleF> StationRectagles = new Dictionary<MapPoint, RectangleF>();
-        internal float scale = 1.5f;
+        internal float scale = 1;
         public uscMapDisplay()
         {
             InitializeComponent();
+            picMap.MouseWheel += PicMap_MouseWheel;
+        }
+
+        private void PicMap_MouseWheel(object? sender, MouseEventArgs e)
+        {
+            if (e.Delta > 0)
+            {
+                Console.WriteLine($"{e.Delta} 向上滚动");
+            }
+
+            else if (e.Delta < 0)
+            {
+                Console.WriteLine($"{e.Delta} 向下滚动");
+            }
+            scale += (float)(e.Delta / 1000.0);
+            picMap.Invalidate();
         }
 
         private void picMap_Paint(object sender, PaintEventArgs e)
@@ -46,6 +66,7 @@ namespace AGVSHotrun.UI
             try
             {
                 var graph = e.Graphics;
+                graph.ScaleTransform(scale, scale);
                 StationRectagles = MapData.Points.Values.ToDictionary(pt => pt, pt => new RectangleF(DrawPoint(pt.Graph), new SizeF(8, 8)));
                 foreach (var station_point in MapData.Points.Values)
                 {
@@ -72,7 +93,16 @@ namespace AGVSHotrun.UI
                     var borderPen = new Pen(isSelected ? Brushes.Red : Brushes.Black, isSelected ? 8 : 2);
                     graph.DrawEllipse(borderPen, rectang);
                     graph.FillEllipse(GetPointBrush(station_point), rectang);
+
+                    KeyValuePair<AGVInfo, MapPoint> has_agv = agvloc.FirstOrDefault(a => a.Value.Name == station_point.Name);
+                    if (has_agv.Value != null)
+                    {
+                        var agv_textloc = new PointF(textLoca.X, textLoca.Y - 22);
+                        graph.DrawString(has_agv.Key.AGVName, new Font("微軟正黑體", 12, FontStyle.Bold), Brushes.Gold, agv_textloc);
+                        graph.FillEllipse(Brushes.Gold, rectang);
+                    }
                 }
+
             }
             catch (Exception ex)
             {
@@ -89,25 +119,50 @@ namespace AGVSHotrun.UI
 
             return Brushes.Green;
         }
-        private Point DrawPoint(Graph graph_data, int offset = 0)
+        private Point DrawPoint(Graph graph_data)
         {
-            return new Point((int)(graph_data.X / scale) + offset, (int)(graph_data.Y / scale) + offset);
+            return new Point((int)(graph_data.X / 2.5f) + offset_x, (int)(graph_data.Y / 2.5f) + offset_y);
         }
 
         private void hScrollBar1_Scroll(object sender, ScrollEventArgs e)
         {
-            scale = (float)(hScrollBar1.Value / 100.0);
+            scale = (float)(1 + hScrollBar1.Value / 10.0);
+            picMap.Invalidate();
         }
 
         private void picMap_MouseHover(object sender, EventArgs e)
         {
         }
+        private void picMap_MouseDown(object sender, MouseEventArgs e)
+        {
+            drag_previous_mouse_loc = e.Location;
+            Cursor = Cursors.Hand;
+            isdrag = true;
+        }
 
+        private void picMap_MouseUp(object sender, MouseEventArgs e)
+        {
+            isdrag = false;
+            Cursor = Cursors.Default;
+        }
+        Point drag_previous_mouse_loc = new Point(0, 0);
         private void picMap_MouseMove(object sender, MouseEventArgs e)
         {
-            var cusorLoc = e.Location;
+
+            if (isdrag)
+            {
+                Cursor = Cursors.Hand;
+                var x_move = e.X - drag_previous_mouse_loc.X;
+                var y_move = e.Y - drag_previous_mouse_loc.Y;
+                offset_x += (int)(x_move / scale);
+                offset_y += (int)(y_move / scale);
+                drag_previous_mouse_loc = e.Location;
+                picMap.Invalidate();
+            }
+
+            var cusorLoc = new Point((int)(e.Location.X / scale), (int)(e.Location.Y / scale));
             cusorLoc.Offset(-7, -7);
-            RectangleF cursor = new RectangleF(cusorLoc, new SizeF(40, 40));
+            RectangleF cursor = new RectangleF(cusorLoc, new SizeF(40 / scale, 40 / scale));
             hoverinigMapPoint = StationRectagles.FirstOrDefault(pt => pt.Value.IntersectsWith(cursor)).Key;
             if (hoverinigMapPoint != null)
             {
@@ -167,6 +222,23 @@ namespace AGVSHotrun.UI
                 action = ACTION_TYPE.LOAD,
                 map_point = SelectedMapPoint,
             });
+        }
+        Dictionary<AGVInfo, MapPoint> agvloc = new Dictionary<AGVInfo, MapPoint>();
+        private void agv_loc_timer_Tick(object sender, EventArgs e)
+        {
+            Task.Factory.StartNew(() =>
+            {
+                try
+                {
+                    AGVSDBHelper dbhelper = new AGVSDBHelper();
+                    agvloc = dbhelper.DBConn.AGVInfos.ToDictionary(agv => agv, agv => MapData.Points[(int)agv.CurrentPos]);
+                }
+                catch (Exception ex)
+                {
+
+                }
+            });
+
         }
     }
 }
