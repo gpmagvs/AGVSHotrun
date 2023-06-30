@@ -114,7 +114,7 @@ namespace AGVSHotrun.HotRun
                         bool taskCreated, task_finish;
                         if (_RunningTask.Action == ACTION_TYPE.CARRY)
                         {
-                            _RunningTask.PostFromStationReq(AGVName, agvid);
+                            await _RunningTask.PostFromStationReq(AGVName, agvid);
                             _RunningTask.TaskName = TaskName;
                             taskCreated = WaitTaskCreated(agvid, out TaskName);
                             if (!taskCreated)
@@ -134,7 +134,7 @@ namespace AGVSHotrun.HotRun
                         }
 
                         _RunningTask.StartTime = DateTime.Now;
-                        _RunningTask.PostToStationReq(AGVName, agvid);
+                        await _RunningTask.PostToStationReq(AGVName, agvid);
                         taskCreated = WaitTaskCreated(agvid, out TaskName);
                         if (!taskCreated)
                         {
@@ -227,7 +227,7 @@ namespace AGVSHotrun.HotRun
         public string ToStation { get; set; }
         public string CSTID { get; set; } = "";
 
-        internal void PostFromStationReq(string AgvName, int AgvID)
+        internal async Task<bool> PostFromStationReq(string AgvName, int AgvID)
         {
             var map_points = Store.MapData.Points.ToList();
             string _toStation = FromStation;
@@ -237,10 +237,17 @@ namespace AGVSHotrun.HotRun
                 MapPoint hotRunToStationPt = map_points[toStationPt.Target.First().Key].Value;
                 _toStation = hotRunToStationPt.Name;
             }
-            PostTaskHttpRequest(AgvName, AgvID, _toStation);
+            try
+            {
+                return await PostTaskHttpRequest(AgvName, AgvID, _toStation);
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
         }
 
-        internal void PostToStationReq(string AgvName, int AgvID)
+        internal async Task<bool> PostToStationReq(string AgvName, int AgvID)
         {
             var map_points = Store.MapData.Points.ToList();
             string _toStation = ToStation;
@@ -250,7 +257,16 @@ namespace AGVSHotrun.HotRun
                 MapPoint hotRunToStationPt = Store.MapData.Points[toStationPt.Target.First().Key];
                 _toStation = hotRunToStationPt.Name;
             }
-            PostTaskHttpRequest(AgvName, AgvID, _toStation);
+            try
+            {
+
+                return await PostTaskHttpRequest(AgvName, AgvID, _toStation);
+
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
         }
 
         private async Task<bool> PostTaskHttpRequest(string AgvName, int AgvID, string to_station)
