@@ -198,7 +198,7 @@
             ClientSize = new Size(1441, 685);
             Controls.Add(splitContainer1);
             Name = "frmHotRunCreateHelper";
-            Text = "frmHotRunCreateHelper";
+            Text = "HOT RUN 測試腳本編輯器";
             WindowState = FormWindowState.Maximized;
             Load += frmHotRunCreateHelper_Load;
             splitContainer1.Panel1.ResumeLayout(false);
