@@ -118,6 +118,13 @@ namespace AGVSHotrun.HotRun
             return true;
         }
         clsRunTask _RunningTask;
+
+        public class clsTaskState
+        {
+            public string task_name;
+            public clsRunTask task_action;
+        }
+
         private async Task _ExecutingTasksAsync()
         {
             try
@@ -131,71 +138,61 @@ namespace AGVSHotrun.HotRun
                 FinishNum = 0;
                 for (int i = 0; i < RepeatNum; i++)
                 {
+                    Queue<clsTaskState> tasknameQueue = new Queue<clsTaskState>();
                     IsRunning = true;
-                    RunTasksQueue.Clear();
+
                     foreach (var item in RunTasksDesigning)
-                        RunTasksQueue.Enqueue(item);
+                    {
+                        bool taskCreated, task_finish;
+                        string? TaskName = "";
+
+                        if (item.Action == ACTION_TYPE.CARRY)
+                        {
+                            await item.PostFromStationReq(AGVName, agvid);
+                            taskCreated = WaitTaskCreated(agvid, out var _TaskName);
+                            tasknameQueue.Enqueue(new clsTaskState
+                            {
+                                task_name = _TaskName,
+                                task_action = item
+                            });
+                        }
+                        await item.PostToStationReq(AGVName, agvid);
+                        taskCreated = WaitTaskCreated(agvid, out var _TaskNameNormal);
+                        tasknameQueue.Enqueue(new clsTaskState
+                        {
+                            task_name = _TaskNameNormal,
+                            task_action = item
+                        });
+
+                    }
+
                     OnLoopStateChange?.Invoke(this, this);
 
-                    while (RunTasksQueue.Count != 0)
+                    while (tasknameQueue.Count != 0)
                     {
                         Thread.Sleep(1);
-                        if (!RunTasksQueue.TryDequeue(out var _RunningTask))
+                        if (!tasknameQueue.TryDequeue(out clsTaskState? TaskState))
                         {
                             throw new Exception("從任務柱列中抓取動作失敗");
                         }
 
-                        this._RunningTask = _RunningTask;
-                        string? TaskName = "";
-                        //Call API And Check Task Exist
+                        this._RunningTask = TaskState.task_action;
                         OnLoopStateChange?.Invoke(this, this);
-                        bool taskCreated, task_finish;
                         var agv_current_pt = Store.AGVlocStore.First(ke => ke.Key.AGVName == AGVName).Value;
                         _RunningTask.StartTime = DateTime.Now;
-                        if (_RunningTask.Action == ACTION_TYPE.CARRY)
+                        if(tasknameQueue.Count == 0)
                         {
-                            if (_RunningTask.GetActualFromStationName() != agv_current_pt.Name)
-                            {
-                                await _RunningTask.PostFromStationReq(AGVName, agvid);
-                                _RunningTask.TaskName = TaskName;
-                                taskCreated = WaitTaskCreated(agvid, out TaskName);
-                                if (!taskCreated)
-                                {
-                                    FailureReason = "等待任務生成Timeout";
-                                    Success = false;
-                                    break;
-                                }
-                                task_finish = await WaitTaskFinish(TaskName);
-                                if (!task_finish)
-                                {
-                                    FailureReason = "等待任務完成Timeout";
-                                    Success = false;
-                                    break;
-                                }
-                            }
-
-
+                            break;
                         }
-                        if (_RunningTask.GetActualToStationName() != agv_current_pt.Name)
+                        bool task_finish = await WaitTaskFinish(TaskState.task_name);
+                        if (!task_finish)
                         {
-                            await _RunningTask.PostToStationReq(AGVName, agvid);
-                            taskCreated = WaitTaskCreated(agvid, out TaskName);
-                            if (!taskCreated)
-                            {
-                                FailureReason = "等待任務生成Timeout";
-                                Success = false;
-                                break;
-                            }
-                            task_finish = await WaitTaskFinish(TaskName);
-                            if (!task_finish)
-                            {
-                                FailureReason = "等待任務完成Timeout";
-                                Success = false;
-                                break;
-                            }
+                            FailureReason = "等待任務完成Timeout";
+                            Success = false;
+                            break;
                         }
-
                         _RunningTask.EndTime = DateTime.Now;
+
                     }
 
                     FinishNum = i + 1;
@@ -253,7 +250,7 @@ namespace AGVSHotrun.HotRun
                     try
                     {
                         var tsks = conn.ExecutingTasks.Where(t => t.AGVID == agvid);
-                        createdTaskDto = tsks.OrderBy(t => t.Receive_Time).FirstOrDefault();
+                        createdTaskDto = tsks.OrderBy(t => t.Receive_Time).LastOrDefault();
                     }
                     catch (Exception ex)
                     {
@@ -269,7 +266,7 @@ namespace AGVSHotrun.HotRun
             using (conn)
             {
                 TaskDto? finishTaskDto = null;
-                CancellationTokenSource cts = new CancellationTokenSource(TimeSpan.FromSeconds(180));
+                CancellationTokenSource cts = new CancellationTokenSource(TimeSpan.FromSeconds(600));
                 while (finishTaskDto == null)
                 {
                     if (AbortTestCTS.IsCancellationRequested)
