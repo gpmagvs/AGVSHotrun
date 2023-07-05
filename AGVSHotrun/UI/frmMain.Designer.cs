@@ -42,20 +42,6 @@ namespace AGVSHotrun
             panel2 = new Panel();
             uscMapDisplay2 = new UI.uscMapDisplay();
             dgvHotRunScripts = new DataGridView();
-            colHotRunStart = new DataGridViewButtonColumn();
-            Description = new DataGridViewTextBoxColumn();
-            ID = new DataGridViewTextBoxColumn();
-            aGVNameDataGridViewTextBoxColumn = new DataGridViewTextBoxColumn();
-            CurrentAction = new DataGridViewTextBoxColumn();
-            RepeatNum = new DataGridViewTextBoxColumn();
-            FinishNum = new DataGridViewTextBoxColumn();
-            TotalActionNum = new DataGridViewTextBoxColumn();
-            StartTime = new DataGridViewTextBoxColumn();
-            EndTime = new DataGridViewTextBoxColumn();
-            ResultDisplay = new DataGridViewTextBoxColumn();
-            FailureReason = new DataGridViewTextBoxColumn();
-            colHotRunEdit = new DataGridViewButtonColumn();
-            colScriptRemove = new DataGridViewButtonColumn();
             clsHotRunScriptBindingSource = new BindingSource(components);
             tabPage1 = new TabPage();
             panel1 = new Panel();
@@ -66,6 +52,21 @@ namespace AGVSHotrun
             toolTip1 = new ToolTip(components);
             toolStrip1 = new ToolStrip();
             btnNewHotRun = new ToolStripLabel();
+            colHotRunStart = new DataGridViewButtonColumn();
+            Description = new DataGridViewTextBoxColumn();
+            ID = new DataGridViewTextBoxColumn();
+            aGVNameDataGridViewTextBoxColumn = new DataGridViewTextBoxColumn();
+            CurrentAction = new DataGridViewTextBoxColumn();
+            ProgressText = new DataGridViewTextBoxColumn();
+            RepeatNum = new DataGridViewTextBoxColumn();
+            FinishNum = new DataGridViewTextBoxColumn();
+            TotalActionNum = new DataGridViewTextBoxColumn();
+            StartTime = new DataGridViewTextBoxColumn();
+            EndTime = new DataGridViewTextBoxColumn();
+            ResultDisplay = new DataGridViewTextBoxColumn();
+            FailureReason = new DataGridViewTextBoxColumn();
+            colHotRunEdit = new DataGridViewButtonColumn();
+            colScriptRemove = new DataGridViewButtonColumn();
             statusStrip1.SuspendLayout();
             tabControl1.SuspendLayout();
             tabPage3.SuspendLayout();
@@ -150,7 +151,7 @@ namespace AGVSHotrun
             dgvHotRunScripts.AutoGenerateColumns = false;
             dgvHotRunScripts.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
             dgvHotRunScripts.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            dgvHotRunScripts.Columns.AddRange(new DataGridViewColumn[] { colHotRunStart, Description, ID, aGVNameDataGridViewTextBoxColumn, CurrentAction, RepeatNum, FinishNum, TotalActionNum, StartTime, EndTime, ResultDisplay, FailureReason, colHotRunEdit, colScriptRemove });
+            dgvHotRunScripts.Columns.AddRange(new DataGridViewColumn[] { colHotRunStart, Description, ID, aGVNameDataGridViewTextBoxColumn, CurrentAction, ProgressText, RepeatNum, FinishNum, TotalActionNum, StartTime, EndTime, ResultDisplay, FailureReason, colHotRunEdit, colScriptRemove });
             dgvHotRunScripts.DataSource = clsHotRunScriptBindingSource;
             dgvHotRunScripts.Dock = DockStyle.Top;
             dgvHotRunScripts.Location = new Point(0, 0);
@@ -162,107 +163,6 @@ namespace AGVSHotrun
             dgvHotRunScripts.Size = new Size(1246, 256);
             dgvHotRunScripts.TabIndex = 1;
             dgvHotRunScripts.CellClick += dgvHotRunScripts_CellClick;
-            // 
-            // colHotRunStart
-            // 
-            colHotRunStart.DataPropertyName = "StartStatus";
-            colHotRunStart.HeaderText = "Start";
-            colHotRunStart.Name = "colHotRunStart";
-            colHotRunStart.ReadOnly = true;
-            colHotRunStart.Text = "開始";
-            // 
-            // Description
-            // 
-            Description.DataPropertyName = "Description";
-            Description.HeaderText = "腳本描述";
-            Description.Name = "Description";
-            Description.ReadOnly = true;
-            // 
-            // ID
-            // 
-            ID.DataPropertyName = "ID";
-            ID.HeaderText = "創立時間(ID)";
-            ID.Name = "ID";
-            ID.ReadOnly = true;
-            // 
-            // aGVNameDataGridViewTextBoxColumn
-            // 
-            aGVNameDataGridViewTextBoxColumn.DataPropertyName = "AGVName";
-            aGVNameDataGridViewTextBoxColumn.HeaderText = "AGVName";
-            aGVNameDataGridViewTextBoxColumn.Name = "aGVNameDataGridViewTextBoxColumn";
-            aGVNameDataGridViewTextBoxColumn.ReadOnly = true;
-            // 
-            // CurrentAction
-            // 
-            CurrentAction.DataPropertyName = "CurrentAction";
-            CurrentAction.HeaderText = "當前動作";
-            CurrentAction.Name = "CurrentAction";
-            CurrentAction.ReadOnly = true;
-            // 
-            // RepeatNum
-            // 
-            RepeatNum.DataPropertyName = "RepeatNum";
-            RepeatNum.HeaderText = "重複次數";
-            RepeatNum.Name = "RepeatNum";
-            RepeatNum.ReadOnly = true;
-            // 
-            // FinishNum
-            // 
-            FinishNum.DataPropertyName = "FinishNum";
-            FinishNum.HeaderText = "已完成次數";
-            FinishNum.Name = "FinishNum";
-            FinishNum.ReadOnly = true;
-            // 
-            // TotalActionNum
-            // 
-            TotalActionNum.DataPropertyName = "TotalActionNum";
-            TotalActionNum.HeaderText = "動作數";
-            TotalActionNum.Name = "TotalActionNum";
-            TotalActionNum.ReadOnly = true;
-            // 
-            // StartTime
-            // 
-            StartTime.DataPropertyName = "StartTime";
-            StartTime.HeaderText = "開始時間";
-            StartTime.Name = "StartTime";
-            StartTime.ReadOnly = true;
-            // 
-            // EndTime
-            // 
-            EndTime.DataPropertyName = "EndTime";
-            EndTime.HeaderText = "結束時間";
-            EndTime.Name = "EndTime";
-            EndTime.ReadOnly = true;
-            // 
-            // ResultDisplay
-            // 
-            ResultDisplay.DataPropertyName = "ResultDisplay";
-            ResultDisplay.HeaderText = "執行結果";
-            ResultDisplay.Name = "ResultDisplay";
-            ResultDisplay.ReadOnly = true;
-            // 
-            // FailureReason
-            // 
-            FailureReason.DataPropertyName = "FailureReason";
-            FailureReason.HeaderText = "失敗描述";
-            FailureReason.Name = "FailureReason";
-            FailureReason.ReadOnly = true;
-            // 
-            // colHotRunEdit
-            // 
-            colHotRunEdit.HeaderText = "Edit";
-            colHotRunEdit.Name = "colHotRunEdit";
-            colHotRunEdit.ReadOnly = true;
-            colHotRunEdit.Text = "Edit";
-            colHotRunEdit.UseColumnTextForButtonValue = true;
-            // 
-            // colScriptRemove
-            // 
-            colScriptRemove.HeaderText = "移除";
-            colScriptRemove.Name = "colScriptRemove";
-            colScriptRemove.ReadOnly = true;
-            colScriptRemove.Text = "移除";
-            colScriptRemove.UseColumnTextForButtonValue = true;
             // 
             // clsHotRunScriptBindingSource
             // 
@@ -353,6 +253,116 @@ namespace AGVSHotrun
             btnNewHotRun.Text = "New Hot Run Test";
             btnNewHotRun.Click += btnNewHotRun_Click;
             // 
+            // colHotRunStart
+            // 
+            colHotRunStart.DataPropertyName = "StartStatus";
+            colHotRunStart.HeaderText = "Start";
+            colHotRunStart.Name = "colHotRunStart";
+            colHotRunStart.ReadOnly = true;
+            colHotRunStart.Text = "開始";
+            // 
+            // Description
+            // 
+            Description.DataPropertyName = "Description";
+            Description.HeaderText = "腳本描述";
+            Description.Name = "Description";
+            Description.ReadOnly = true;
+            // 
+            // ID
+            // 
+            ID.AutoSizeMode = DataGridViewAutoSizeColumnMode.AllCells;
+            ID.DataPropertyName = "ID";
+            ID.HeaderText = "創立時間(ID)";
+            ID.Name = "ID";
+            ID.ReadOnly = true;
+            ID.Width = 121;
+            // 
+            // aGVNameDataGridViewTextBoxColumn
+            // 
+            aGVNameDataGridViewTextBoxColumn.DataPropertyName = "AGVName";
+            aGVNameDataGridViewTextBoxColumn.HeaderText = "AGVName";
+            aGVNameDataGridViewTextBoxColumn.Name = "aGVNameDataGridViewTextBoxColumn";
+            aGVNameDataGridViewTextBoxColumn.ReadOnly = true;
+            // 
+            // CurrentAction
+            // 
+            CurrentAction.DataPropertyName = "CurrentAction";
+            CurrentAction.HeaderText = "當前動作";
+            CurrentAction.Name = "CurrentAction";
+            CurrentAction.ReadOnly = true;
+            // 
+            // ProgressText
+            // 
+            ProgressText.DataPropertyName = "ProgressText";
+            ProgressText.HeaderText = "Progress";
+            ProgressText.Name = "ProgressText";
+            ProgressText.ReadOnly = true;
+            // 
+            // RepeatNum
+            // 
+            RepeatNum.DataPropertyName = "RepeatNum";
+            RepeatNum.HeaderText = "重複次數";
+            RepeatNum.Name = "RepeatNum";
+            RepeatNum.ReadOnly = true;
+            // 
+            // FinishNum
+            // 
+            FinishNum.DataPropertyName = "FinishNum";
+            FinishNum.HeaderText = "已完成次數";
+            FinishNum.Name = "FinishNum";
+            FinishNum.ReadOnly = true;
+            // 
+            // TotalActionNum
+            // 
+            TotalActionNum.DataPropertyName = "TotalActionNum";
+            TotalActionNum.HeaderText = "動作數";
+            TotalActionNum.Name = "TotalActionNum";
+            TotalActionNum.ReadOnly = true;
+            // 
+            // StartTime
+            // 
+            StartTime.DataPropertyName = "StartTime";
+            StartTime.HeaderText = "開始時間";
+            StartTime.Name = "StartTime";
+            StartTime.ReadOnly = true;
+            // 
+            // EndTime
+            // 
+            EndTime.DataPropertyName = "EndTime";
+            EndTime.HeaderText = "結束時間";
+            EndTime.Name = "EndTime";
+            EndTime.ReadOnly = true;
+            // 
+            // ResultDisplay
+            // 
+            ResultDisplay.DataPropertyName = "ResultDisplay";
+            ResultDisplay.HeaderText = "執行結果";
+            ResultDisplay.Name = "ResultDisplay";
+            ResultDisplay.ReadOnly = true;
+            // 
+            // FailureReason
+            // 
+            FailureReason.DataPropertyName = "FailureReason";
+            FailureReason.HeaderText = "失敗描述";
+            FailureReason.Name = "FailureReason";
+            FailureReason.ReadOnly = true;
+            // 
+            // colHotRunEdit
+            // 
+            colHotRunEdit.HeaderText = "Edit";
+            colHotRunEdit.Name = "colHotRunEdit";
+            colHotRunEdit.ReadOnly = true;
+            colHotRunEdit.Text = "Edit";
+            colHotRunEdit.UseColumnTextForButtonValue = true;
+            // 
+            // colScriptRemove
+            // 
+            colScriptRemove.HeaderText = "移除";
+            colScriptRemove.Name = "colScriptRemove";
+            colScriptRemove.ReadOnly = true;
+            colScriptRemove.Text = "移除";
+            colScriptRemove.UseColumnTextForButtonValue = true;
+            // 
             // frmMain
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
@@ -405,6 +415,7 @@ namespace AGVSHotrun
         private DataGridViewTextBoxColumn ID;
         private DataGridViewTextBoxColumn aGVNameDataGridViewTextBoxColumn;
         private DataGridViewTextBoxColumn CurrentAction;
+        private DataGridViewTextBoxColumn ProgressText;
         private DataGridViewTextBoxColumn RepeatNum;
         private DataGridViewTextBoxColumn FinishNum;
         private DataGridViewTextBoxColumn TotalActionNum;

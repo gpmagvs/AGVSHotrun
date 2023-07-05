@@ -81,6 +81,9 @@ namespace AGVSHotrun.UI
         }
         internal void Add(clsRunTask runTask, bool newAdd = true)
         {
+            if (newAdd)
+                runTask.MoveOnly = runTask.Action != Models.ACTION_TYPE.MOVE;
+
             uscRunTaskItem runTaskItem = new uscRunTaskItem(runTask);
             runTaskItemUiList.Add(runTaskItem);
             runTaskItem.Index = runTaskItemUiList.Count;

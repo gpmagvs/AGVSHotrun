@@ -34,8 +34,8 @@
             cmbFromStations = new MapStationCombBox();
             cmbToStations = new MapStationCombBox();
             label3 = new Label();
-            comboBox1 = new ComboBox();
-            comboBox2 = new ComboBox();
+            cmbFromSlot = new ComboBox();
+            cmbToSlot = new ComboBox();
             label4 = new Label();
             txbCSTID = new TextBox();
             btnRemove = new Button();
@@ -43,6 +43,7 @@
             panel2 = new Panel();
             btnMoveDown = new Button();
             btnMoveUp = new Button();
+            ckbMoveOnly = new CheckBox();
             panel2.SuspendLayout();
             SuspendLayout();
             // 
@@ -76,7 +77,6 @@
             // 
             // cmbFromStations
             // 
-            cmbFromStations.Enabled = false;
             cmbFromStations.Location = new Point(245, 2);
             cmbFromStations.Name = "cmbFromStations";
             cmbFromStations.ShowStaionByAction = Models.ACTION_TYPE.MOVE;
@@ -103,22 +103,23 @@
             label3.TabIndex = 4;
             label3.Text = "To";
             // 
-            // comboBox1
+            // cmbFromSlot
             // 
-            comboBox1.Enabled = false;
-            comboBox1.FormattingEnabled = true;
-            comboBox1.Location = new Point(424, 6);
-            comboBox1.Name = "comboBox1";
-            comboBox1.Size = new Size(67, 23);
-            comboBox1.TabIndex = 6;
+            cmbFromSlot.FormattingEnabled = true;
+            cmbFromSlot.Location = new Point(424, 6);
+            cmbFromSlot.Name = "cmbFromSlot";
+            cmbFromSlot.Size = new Size(67, 23);
+            cmbFromSlot.TabIndex = 6;
+            cmbFromSlot.SelectedIndexChanged += cmbFromSlot_SelectedIndexChanged;
             // 
-            // comboBox2
+            // cmbToSlot
             // 
-            comboBox2.FormattingEnabled = true;
-            comboBox2.Location = new Point(719, 6);
-            comboBox2.Name = "comboBox2";
-            comboBox2.Size = new Size(67, 23);
-            comboBox2.TabIndex = 7;
+            cmbToSlot.FormattingEnabled = true;
+            cmbToSlot.Location = new Point(719, 6);
+            cmbToSlot.Name = "cmbToSlot";
+            cmbToSlot.Size = new Size(67, 23);
+            cmbToSlot.TabIndex = 7;
+            cmbToSlot.SelectedIndexChanged += cmbToSlot_SelectedIndexChanged;
             // 
             // label4
             // 
@@ -147,7 +148,7 @@
             btnRemove.FlatStyle = FlatStyle.Flat;
             btnRemove.Font = new Font("Microsoft JhengHei UI", 11F, FontStyle.Bold, GraphicsUnit.Point);
             btnRemove.ForeColor = Color.White;
-            btnRemove.Location = new Point(1015, 5);
+            btnRemove.Location = new Point(1077, 5);
             btnRemove.Name = "btnRemove";
             btnRemove.Size = new Size(100, 26);
             btnRemove.TabIndex = 10;
@@ -204,6 +205,21 @@
             btnMoveUp.UseVisualStyleBackColor = true;
             btnMoveUp.Click += btnMoveUp_Click;
             // 
+            // ckbMoveOnly
+            // 
+            ckbMoveOnly.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+            ckbMoveOnly.AutoSize = true;
+            ckbMoveOnly.Checked = true;
+            ckbMoveOnly.CheckState = CheckState.Checked;
+            ckbMoveOnly.Font = new Font("Microsoft JhengHei UI", 11F, FontStyle.Regular, GraphicsUnit.Point);
+            ckbMoveOnly.Location = new Point(1000, 8);
+            ckbMoveOnly.Name = "ckbMoveOnly";
+            ckbMoveOnly.Size = new Size(73, 23);
+            ckbMoveOnly.TabIndex = 14;
+            ckbMoveOnly.Text = "僅移動";
+            ckbMoveOnly.UseVisualStyleBackColor = true;
+            ckbMoveOnly.CheckedChanged += ckbMoveOnly_CheckedChanged;
+            // 
             // uscRunTaskItem
             // 
             AllowDrop = true;
@@ -211,12 +227,13 @@
             AutoScaleMode = AutoScaleMode.Font;
             BackColor = Color.White;
             BorderStyle = BorderStyle.FixedSingle;
+            Controls.Add(ckbMoveOnly);
             Controls.Add(labActionIndex);
             Controls.Add(btnRemove);
             Controls.Add(txbCSTID);
             Controls.Add(label4);
-            Controls.Add(comboBox2);
-            Controls.Add(comboBox1);
+            Controls.Add(cmbToSlot);
+            Controls.Add(cmbFromSlot);
             Controls.Add(cmbToStations);
             Controls.Add(label3);
             Controls.Add(cmbFromStations);
@@ -226,7 +243,7 @@
             Controls.Add(panel2);
             MinimumSize = new Size(879, 35);
             Name = "uscRunTaskItem";
-            Size = new Size(1136, 39);
+            Size = new Size(1198, 39);
             panel2.ResumeLayout(false);
             ResumeLayout(false);
             PerformLayout();
@@ -240,8 +257,8 @@
         private MapStationCombBox cmbFromStations;
         private MapStationCombBox cmbToStations;
         private Label label3;
-        private ComboBox comboBox1;
-        private ComboBox comboBox2;
+        private ComboBox cmbFromSlot;
+        private ComboBox cmbToSlot;
         private Label label4;
         private TextBox txbCSTID;
         private Button btnRemove;
@@ -249,5 +266,6 @@
         private Panel panel2;
         private Button btnMoveUp;
         private Button btnMoveDown;
+        private CheckBox ckbMoveOnly;
     }
 }

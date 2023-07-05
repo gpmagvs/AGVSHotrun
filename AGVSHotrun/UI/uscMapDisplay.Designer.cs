@@ -37,6 +37,7 @@
             LDULDStationMenuStrip = new ContextMenuStrip(components);
             btnAddULDRunTaskAction = new ToolStripMenuItem();
             btnAddLDRunTaskAction = new ToolStripMenuItem();
+            btnParkStripitem = new ToolStripMenuItem();
             ((System.ComponentModel.ISupportInitialize)picMap).BeginInit();
             NormalPointContextMenuStrip.SuspendLayout();
             LDULDStationMenuStrip.SuspendLayout();
@@ -95,9 +96,9 @@
             // 
             // LDULDStationMenuStrip
             // 
-            LDULDStationMenuStrip.Items.AddRange(new ToolStripItem[] { btnAddULDRunTaskAction, btnAddLDRunTaskAction });
+            LDULDStationMenuStrip.Items.AddRange(new ToolStripItem[] { btnAddULDRunTaskAction, btnAddLDRunTaskAction, btnParkStripitem });
             LDULDStationMenuStrip.Name = "NormalPointContextMenuStrip";
-            LDULDStationMenuStrip.Size = new Size(99, 48);
+            LDULDStationMenuStrip.Size = new Size(99, 70);
             // 
             // btnAddULDRunTaskAction
             // 
@@ -112,6 +113,12 @@
             btnAddLDRunTaskAction.Size = new Size(98, 22);
             btnAddLDRunTaskAction.Text = "放貨";
             btnAddLDRunTaskAction.Click += btnAddLDRunTaskAction_Click;
+            // 
+            // btnParkStripitem
+            // 
+            btnParkStripitem.Name = "btnParkStripitem";
+            btnParkStripitem.Size = new Size(98, 22);
+            btnParkStripitem.Text = "停車";
             // 
             // uscMapDisplay
             // 
@@ -141,5 +148,6 @@
         private ContextMenuStrip LDULDStationMenuStrip;
         private ToolStripMenuItem btnAddULDRunTaskAction;
         private ToolStripMenuItem btnAddLDRunTaskAction;
+        private ToolStripMenuItem btnParkStripitem;
     }
 }

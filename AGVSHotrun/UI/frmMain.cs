@@ -19,6 +19,15 @@ namespace AGVSHotrun
             clsHotRunScript.OnHotRunFinish += ClsHotRunScript_OnHotRunFinish;
             clsHotRunScript.OnLoopStateChange += HotRunProgressStateChange;
             clsHotRunScript.OnLoginExpireExcetionOccur += ClsHotRunScript_OnLoginExpireExcetionOccur;
+            clsHotRunScript.OnHttpExcetionOccur += ClsHotRunScript_OnHttpExcetionOccur;
+        }
+
+        private void ClsHotRunScript_OnHttpExcetionOccur(object? sender, clsHotRunScript e)
+        {
+            Invoke(new Action(() =>
+            {
+                MessageBox.Show(this, "無法與派車系統通訊", "", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }));
         }
 
         private void ClsHotRunScript_OnLoginExpireExcetionOccur(object? sender, clsHotRunScript e)
@@ -156,11 +165,15 @@ namespace AGVSHotrun
                 }
 
                 //確認AGV狀態 > 如果是運轉中
-                var agv_states = aGVSDBHelper.GetAGVMainStatus(script.AGVName);
-                if (agv_states.RunStatus != RUN_STATE.IDLE)
+                if (!Debugger.IsAttached)
                 {
-                    if (MessageBox.Show($"{script.AGVName} 目前狀態是 {agv_states.RunStatus} , 確定要執行腳本?", "STOP", MessageBoxButtons.OKCancel, MessageBoxIcon.Warning) == DialogResult.Cancel)
-                        return;
+
+                    var agv_states = aGVSDBHelper.GetAGVMainStatus(script.AGVName);
+                    if (agv_states.RunStatus != RUN_STATE.IDLE)
+                    {
+                        if (MessageBox.Show($"{script.AGVName} 目前狀態是 {agv_states.RunStatus} , 確定要執行腳本?", "STOP", MessageBoxButtons.OKCancel, MessageBoxIcon.Warning) == DialogResult.Cancel)
+                            return;
+                    }
                 }
 
                 if (!script.Start(out string errMsg))

@@ -19,6 +19,7 @@ namespace AGVSHotrun.HotRun
         public static event EventHandler<clsHotRunScript> OnHotRunStart;
         public static event EventHandler<clsHotRunScript> OnHotRunFinish;
         public static event EventHandler<clsHotRunScript> OnLoginExpireExcetionOccur;
+        public static event EventHandler<clsHotRunScript> OnHttpExcetionOccur;
         public static event EventHandler<clsHotRunScript> OnLoopStateChange;
         public string ID { get; set; }
         public string AGVName { get; set; }
@@ -56,6 +57,9 @@ namespace AGVSHotrun.HotRun
                     return "";
             }
         }
+
+        public string ProgressText { get; set; } = "0/0";
+
         [JsonIgnore]
         public DateTime StartTime { get; set; } = DateTime.MinValue;
         [JsonIgnore]
@@ -132,7 +136,7 @@ namespace AGVSHotrun.HotRun
                 StartTime = DateTime.Now;
                 EndTime = DateTime.MinValue;
                 AGVSDBHelper dbhelper = new AGVSDBHelper();
-                int agvid = dbhelper.GetAGVID(AGVName);
+                int agvid = Debugger.IsAttached ? 1 : dbhelper.GetAGVID(AGVName);
                 OnHotRunStart?.Invoke(this, this);
                 FailureReason = "";
                 FinishNum = 0;
@@ -146,7 +150,7 @@ namespace AGVSHotrun.HotRun
                         bool taskCreated, task_finish;
                         string? TaskName = "";
 
-                        if (item.Action == ACTION_TYPE.CARRY)
+                        if (item.MoveOnly && item.Action != ACTION_TYPE.MOVE)
                         {
                             await item.PostFromStationReq(AGVName, agvid);
                             taskCreated = WaitTaskCreated(agvid, out var _TaskName);
@@ -155,21 +159,38 @@ namespace AGVSHotrun.HotRun
                                 task_name = _TaskName,
                                 task_action = item
                             });
+                            if (item.Action == ACTION_TYPE.CARRY)
+                            {
+
+                                await item.PostToStationReq(AGVName, agvid);
+                                taskCreated = WaitTaskCreated(agvid, out var _TaskNameNormal);
+                                tasknameQueue.Enqueue(new clsTaskState
+                                {
+                                    task_name = _TaskNameNormal,
+                                    task_action = item
+                                });
+                            }
                         }
-                        await item.PostToStationReq(AGVName, agvid);
-                        taskCreated = WaitTaskCreated(agvid, out var _TaskNameNormal);
-                        tasknameQueue.Enqueue(new clsTaskState
+                        else
                         {
-                            task_name = _TaskNameNormal,
-                            task_action = item
-                        });
+                            await item.PostActionReq(AGVName, agvid);
+                            taskCreated = WaitTaskCreated(agvid, out var _TaskNameNormal);
+                            tasknameQueue.Enqueue(new clsTaskState
+                            {
+                                task_name = _TaskNameNormal,
+                                task_action = item
+                            });
+                        }
 
                     }
 
                     OnLoopStateChange?.Invoke(this, this);
 
+                    int _action_index = 1;
                     while (tasknameQueue.Count != 0)
                     {
+                        ProgressText = $"{_action_index}/{TotalActionNum}";
+                        OnLoopStateChange?.Invoke(this, this);
                         Thread.Sleep(1);
                         if (!tasknameQueue.TryDequeue(out clsTaskState? TaskState))
                         {
@@ -180,11 +201,13 @@ namespace AGVSHotrun.HotRun
                         OnLoopStateChange?.Invoke(this, this);
                         var agv_current_pt = Store.AGVlocStore.First(ke => ke.Key.AGVName == AGVName).Value;
                         _RunningTask.StartTime = DateTime.Now;
-                        if(tasknameQueue.Count == 0)
+                        if (tasknameQueue.Count == 0)
                         {
                             break;
                         }
+
                         bool task_finish = await WaitTaskFinish(TaskState.task_name);
+                        _action_index += 1;
                         if (!task_finish)
                         {
                             FailureReason = "等待任務完成Timeout";
@@ -211,6 +234,15 @@ namespace AGVSHotrun.HotRun
                 FailureReason = "使用者中斷測試(AGV Will Stop when current action done)";
                 Success = false;
                 OnHotRunFinish?.Invoke(this, this);
+            }
+            catch (HttpRequestException ex)
+            {
+                IsRunning = false;
+                EndTime = DateTime.Now;
+                FailureReason = "無法與派車系統通訊";
+                Success = false;
+                OnHotRunFinish?.Invoke(this, this);
+                OnHttpExcetionOccur?.Invoke(this, this);
             }
             catch (AuthenticationFailedException ex)
             {
@@ -291,14 +323,17 @@ namespace AGVSHotrun.HotRun
         public ACTION_TYPE Action { get; set; }
         public DateTime StartTime { get; set; }
         public DateTime EndTime { get; set; }
-        public string FromStation { get; set; }
-        public string ToStation { get; set; }
+        public string FromStation { get; set; } = "";
+        public string FromSlot { get; set; } = "";
+        public string ToStation { get; set; } = "";
+        public string ToSlot { get; set; } = "";
         public string CSTID { get; set; } = "";
+        public bool MoveOnly { get; set; } = true;
         public string GetActualFromStationName()
         {
             var map_points = Store.MapData.Points.ToList();
             string _toStation = FromStation;
-            if (Action != ACTION_TYPE.MOVE && Action != ACTION_TYPE.PARK) //從圖資抓到二次定位點前的Point名稱
+            if (MoveOnly && Action != ACTION_TYPE.MOVE && Action != ACTION_TYPE.PARK) //從圖資抓到二次定位點前的Point名稱
             {
                 MapPoint toStationPt = map_points.First(pt => pt.Value.Name == FromStation).Value;
                 MapPoint hotRunToStationPt = Store.MapData.Points[toStationPt.Target.First().Key];
@@ -310,7 +345,8 @@ namespace AGVSHotrun.HotRun
         {
             var map_points = Store.MapData.Points.ToList();
             string _toStation = ToStation;
-            if (Action != ACTION_TYPE.MOVE && Action != ACTION_TYPE.PARK) //從圖資抓到二次定位點前的Point名稱
+
+            if (MoveOnly && Action != ACTION_TYPE.MOVE && Action != ACTION_TYPE.PARK) //從圖資抓到二次定位點前的Point名稱
             {
                 MapPoint toStationPt = map_points.First(pt => pt.Value.Name == ToStation).Value;
                 MapPoint hotRunToStationPt = Store.MapData.Points[toStationPt.Target.First().Key];
@@ -319,11 +355,23 @@ namespace AGVSHotrun.HotRun
             return _toStation;
         }
 
+        internal async Task<bool> PostActionReq(string AgvName, int AgvID)
+        {
+            try
+            {
+                return await PostTaskHttpRequest(AgvName, AgvID, FromStation, FromSlot, ToStation, ToSlot, CSTID);
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+        }
+
         internal async Task<bool> PostFromStationReq(string AgvName, int AgvID)
         {
             try
             {
-                return await PostTaskHttpRequest(AgvName, AgvID, GetActualFromStationName());
+                return await PostTaskHttpRequest(AgvName, AgvID, GetActualFromStationName(), ToSlot, CSTID);
             }
             catch (Exception ex)
             {
@@ -335,7 +383,7 @@ namespace AGVSHotrun.HotRun
         {
             try
             {
-                return await PostTaskHttpRequest(AgvName, AgvID, GetActualToStationName());
+                return await PostTaskHttpRequest(AgvName, AgvID, GetActualToStationName(), ToSlot, CSTID);
             }
             catch (Exception ex)
             {
@@ -343,13 +391,45 @@ namespace AGVSHotrun.HotRun
             }
         }
 
-        private async Task<bool> PostTaskHttpRequest(string AgvName, int AgvID, string to_station)
+        private async Task<bool> PostTaskHttpRequest(string AgvName, int AgvID, string from_station, string from_slot, string to_station = "", string to_slot = "", string cstid = "")
         {
             AGVS_Dispath_Emulator dispatcher_helper = new AGVS_Dispath_Emulator();
-            var result = await dispatcher_helper.Move(AgvName, AgvID, to_station);
+            AGVS_Dispath_Emulator.ExcuteResult? result = null;
+            if (MoveOnly)
+                result = await dispatcher_helper.Move(AgvName, AgvID, from_station);
+            else
+            {
+                switch (Action)
+                {
+                    case ACTION_TYPE.MOVE:
+                        result = await dispatcher_helper.Move(AgvName, AgvID, from_station);
+                        break;
+                    case ACTION_TYPE.LOAD:
+                        result = await dispatcher_helper.Load(AgvName, AgvID, from_station, from_slot, cstid);
+                        break;
+                    case ACTION_TYPE.UNLOAD:
+                        result = await dispatcher_helper.Unload(AgvName, AgvID, from_station, from_slot, cstid);
+                        break;
+                    case ACTION_TYPE.CARRY:
+                        result = await dispatcher_helper.Carry(AgvName, AgvID, from_station, from_slot, to_station, to_slot, cstid);
+                        break;
+                    case ACTION_TYPE.CHARGE:
+                        result = await dispatcher_helper.Charge(AgvName, AgvID, from_station, from_slot, cstid);
+                        break;
+                    case ACTION_TYPE.PARK:
+                        result = await dispatcher_helper.Park(AgvName, AgvID, from_station, from_slot);
+                        break;
+                    default:
+                        break;
+                }
+            }
             if (result.ResponseMsg.Contains("系統已閒置過久,請重新登入再進行手動派工"))
             {
                 throw new AuthenticationFailedException(result.ResponseMsg);
+            }
+            if (result.ResponseMsg.Contains("無法連接至遠端伺服器"))
+            {
+                throw new HttpRequestException(result.ResponseMsg);
             }
             return result.Success;
         }

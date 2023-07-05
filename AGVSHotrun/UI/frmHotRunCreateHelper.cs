@@ -80,7 +80,7 @@ namespace AGVSHotrun.UI
             uscRunTaskCreater1.Add(new clsRunTask
             {
                 Action = dto.action,
-                ToStation = dto.map_point.Name
+                FromStation = dto.map_point.Name
             });
         }
 

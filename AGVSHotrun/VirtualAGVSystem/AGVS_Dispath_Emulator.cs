@@ -7,6 +7,7 @@ using System.Linq;
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
+using static System.Collections.Specialized.BitVector32;
 
 namespace AGVSHotrun.VirtualAGVSystem
 {
@@ -71,7 +72,8 @@ namespace AGVSHotrun.VirtualAGVSystem
             Parking,
             Unload,
             Load,
-            Charge
+            Charge,
+            Transfer
         }
 
         string url = "http://127.0.0.1:6600/mission/request?";
@@ -117,7 +119,6 @@ namespace AGVSHotrun.VirtualAGVSystem
         {
             var psFile = CreateTaskCmdPSFile(ACTION.Move, CarName, AGV_ID + "", Station);
             var output = POWERSHELL_HELPER.Run(psFile);
-            File.Delete(psFile);
             return new ExcuteResult
             {
                 ErrorMsg = "",
@@ -130,7 +131,6 @@ namespace AGVSHotrun.VirtualAGVSystem
         {
             var psFile = CreateTaskCmdPSFile(ACTION.Parking, CarName, AGV_ID + "", Station, slot);
             var output = POWERSHELL_HELPER.Run(psFile);
-            File.Delete(psFile);
 
             return new ExcuteResult
             {
@@ -140,12 +140,11 @@ namespace AGVSHotrun.VirtualAGVSystem
             };
         }
 
-        public async Task<ExcuteResult> Load(string CarName, int AGV_ID, string Station, string slot,string CST_ID="")
+        public async Task<ExcuteResult> Load(string CarName, int AGV_ID, string Station, string slot, string CST_ID = "")
         {
             var psFile = CreateTaskCmdPSFile(ACTION.Load, CarName, AGV_ID + "", Station, slot, CST_ID);
             var output = POWERSHELL_HELPER.Run(psFile);
-            if (!Debugger.IsAttached)
-                File.Delete(psFile);
+
             return new ExcuteResult
             {
                 ErrorMsg = "",
@@ -158,8 +157,7 @@ namespace AGVSHotrun.VirtualAGVSystem
         {
             var psFile = CreateTaskCmdPSFile(ACTION.Unload, CarName, AGV_ID + "", Station, slot, CST_ID);
             var output = POWERSHELL_HELPER.Run(psFile);
-            if (!Debugger.IsAttached)
-                File.Delete(psFile);
+ 
             return new ExcuteResult
             {
                 ErrorMsg = "",
@@ -171,8 +169,19 @@ namespace AGVSHotrun.VirtualAGVSystem
         {
             var psFile = CreateTaskCmdPSFile(ACTION.Charge, CarName, AGV_ID + "", Station, slot, CST_ID);
             var output = POWERSHELL_HELPER.Run(psFile);
-            if (!Debugger.IsAttached)
-                File.Delete(psFile);
+            return new ExcuteResult
+            {
+                ErrorMsg = "",
+                ResponseMsg = output,
+                fileName = psFile,
+            };
+        }
+
+        internal async Task<ExcuteResult?> Carry(string CarName, int AGV_ID, string FromStation, string FromSlot, string ToStation, string ToSlot, string CST_ID = "")
+        {
+            var psFile = CreateTaskCmdPSFile(ACTION.Transfer, CarName, AGV_ID + "", FromStation, FromSlot, ToStation, ToSlot, CST_ID);
+            var output = POWERSHELL_HELPER.Run(psFile);
+     
             return new ExcuteResult
             {
                 ErrorMsg = "",
@@ -200,7 +209,7 @@ namespace AGVSHotrun.VirtualAGVSystem
             {
                 get
                 {
-                    return ResponseMsg.Contains("403")| ResponseMsg.Contains("200"); 
+                    return ResponseMsg.Contains("403") | ResponseMsg.Contains("200");
                 }
             }
             public string ResponseMsg { get; set; }
@@ -214,6 +223,32 @@ namespace AGVSHotrun.VirtualAGVSystem
         }
 
 
+        private string CreateTaskCmdPSFile(ACTION action, string CarName, string AGV_ID, string From_Station, string From_Slot, string To_Station, string To_Slot, string CST_ID)
+        {
+            if (From_Station.Contains("|"))
+            {
+                From_Station = From_Station.Replace("|", "%7C");
+            }
+            if (To_Station.Contains("|"))
+            {
+                To_Station = To_Station.Replace("|", "%7C");
+            }
+            string content = GetDispatchCmdTemplatePSContent();
+            content = content.Replace("s%3AdxkjsEgCfNN2aq40Pbvs1rTryFKM53Eu.pCWvdU%2FtbbAAFEWxhxYnlRpuVvN5MgbgDAY7QZC18uI", $"{Cookies.Cookies_Connect_SID}");
+            content = content.Replace("TPrw6Q8Aol3EBu1YAAAP", $"{Cookies.Cookies_io}");
+            content = content.Replace("Action=Move", $"Action={action.ToString()}");
+            content = content.Replace("CarName=AGV_1", $"CarName={CarName}");
+            content = content.Replace("AGVID=1", $"AGVID={AGV_ID}");
+            content = content.Replace("FromStation=35", $"FromStation={From_Station}");
+            content = content.Replace("FromSlot=1", $"FromSlot={From_Slot}");
+            content = content.Replace("ToStation=", $"ToStation={To_Station}");
+            content = content.Replace("ToSlot=1", $"ToSlot={To_Slot}");
+            content = content.Replace("CSTID=", $"CSTID={CST_ID}");
+            Directory.CreateDirectory("temp");
+            string psFileName = $"temp/{CarName}_{action}_From_{From_Station}-{From_Slot}_TO_{To_Station}-{To_Slot}_{DateTime.Now.Ticks}.ps1";
+            File.WriteAllText(psFileName, content);
+            return psFileName;
+        }
         private string CreateTaskCmdPSFile(ACTION action, string CarName, string AGV_ID, string station_no, string slot_id = "1", string CST_ID = "")
         {
             if (station_no.Contains("|"))
@@ -248,5 +283,6 @@ namespace AGVSHotrun.VirtualAGVSystem
             SaveCookies();
 
         }
+
     }
 }

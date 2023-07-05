@@ -200,7 +200,9 @@ namespace AGVSHotrun.UI
         {
             if (hoverinigMapPoint != null)
             {
+
                 SelectedMapPoint = hoverinigMapPoint;
+                btnParkStripitem.Enabled = SelectedMapPoint.IsParking;
                 ContextMenuStrip menu = hoverinigMapPoint.IsEquipment ? LDULDStationMenuStrip : NormalPointContextMenuStrip;
                 picMap.ContextMenuStrip = menu;
                 picMap.Invalidate();
