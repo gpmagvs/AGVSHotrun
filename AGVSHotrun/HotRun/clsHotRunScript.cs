@@ -1,5 +1,6 @@
 ﻿using AGVSHotrun.Models;
 using AGVSHotrun.VirtualAGVSystem;
+using AGVSystemCommonNet6.AGVDispatch.Messages;
 using AGVSystemCommonNet6.MAP;
 using Azure.Identity;
 using RosSharp.RosBridgeClient.MessageTypes.Std;
@@ -11,6 +12,7 @@ using System.Linq;
 using System.Text;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
+using ACTION_TYPE = AGVSHotrun.Models.ACTION_TYPE;
 
 namespace AGVSHotrun.HotRun
 {
@@ -162,51 +164,44 @@ namespace AGVSHotrun.HotRun
                 FailureReason = "";
                 FinishNum = 0;
                 clsRunTask interupt_move_task = null;
+                clsRunTask last_loop_final_task_action = null;
+
+                bool isQueueMonitorStart = false;
+                _ = Task.Run(async () =>
+                {
+                    var conn = DBHelper.DBConn;
+                    using (conn)
+                    {
+                        ExecutingTask? createdTaskDto = null;
+                        while (createdTaskDto == null)
+                        {
+                            await Task.Delay(1000);
+                            try
+                            {
+                                var tsks = conn.ExecutingTasks.Where(t => t.AGVID == agvid);
+                                if (tsks.Count() == 0 && isQueueMonitorStart)
+                                {
+                                    Success = true;
+                                    IsRunning = false;
+                                    OnLoopStateChange?.Invoke(this, this);
+                                    OnHotRunFinish?.Invoke(this, this);
+                                    break;
+                                }
+                            }
+                            catch (Exception ex)
+                            {
+                            }
+                        }
+                    }
+                });
+
+
+
                 //TEST Loop迴圈
                 for (int i = 0; i < RepeatNum; i++)
                 {
                     Queue<clsTaskState> tasknameQueue = new Queue<clsTaskState>();
                     IsRunning = true;
-                    bool isQueueMonitorStart = false;
-                    async void WaitTaskDoneWorker(Queue<clsTaskState> tasknameQueue)
-                    {
-                        while (!isQueueMonitorStart)
-                        {
-                            await Task.Delay(1);
-                        }
-                        int _action_index = 1;
-                        while (tasknameQueue.Count != 0)
-                        {
-                            ProgressText = $"{_action_index}/{TotalActionNum}";
-                            OnLoopStateChange?.Invoke(this, this);
-                            Thread.Sleep(1);
-                            if (!tasknameQueue.TryDequeue(out clsTaskState? TaskState))
-                            {
-                                throw new Exception("從任務柱列中抓取動作失敗");
-                            }
-
-                            this._RunningTask = TaskState.task_action;
-                            OnLoopStateChange?.Invoke(this, this);
-                            var agv_current_pt = agv.Value;
-                            _RunningTask.StartTime = DateTime.Now;
-                            if (tasknameQueue.Count == 0)
-                            {
-                                break;
-                            }
-                            bool task_finish = await WaitTaskFinish(TaskState.task_name);
-                            _action_index += 1;
-                            if (!task_finish)
-                            {
-                                FailureReason = "等待任務完成Timeout";
-                                Success = false;
-                                break;
-                            }
-                            _RunningTask.EndTime = DateTime.Now;
-                        }
-                    }
-
-                    Task.Run(() => WaitTaskDoneWorker(tasknameQueue));
-
                     for (int action_index = 0; action_index < RunTasksDesigning.Count; action_index++)
                     {
                         clsRunTask task_action = RunTasksDesigning[action_index];
@@ -216,7 +211,7 @@ namespace AGVSHotrun.HotRun
                         if (task_action.MoveOnly && task_action.Action != ACTION_TYPE.MOVE)
                         {
                             await task_action.PostFromStationReq(AGVName, agvid);
-                            taskCreated = WaitTaskCreated(agvid, out var _TaskName);
+                            taskCreated = WaitTaskCreated(agvid, ACTION_TYPE.MOVE.ToString().ToLower(), out var _TaskName);
                             tasknameQueue.Enqueue(new clsTaskState
                             {
                                 task_name = _TaskName,
@@ -226,23 +221,28 @@ namespace AGVSHotrun.HotRun
                             {
 
                                 await task_action.PostToStationReq(AGVName, agvid);
-                                taskCreated = WaitTaskCreated(agvid, out var _TaskNameNormal);
+                                taskCreated = WaitTaskCreated(agvid, ACTION_TYPE.MOVE.ToString().ToLower(), out var _TaskNameNormal);
                                 tasknameQueue.Enqueue(new clsTaskState
                                 {
                                     task_name = _TaskNameNormal,
                                     task_action = task_action
                                 });
+                                task_action.TaskName = _TaskNameNormal;
                             }
+                            else
+
+                                task_action.TaskName = _TaskName;
                         }
                         else
                         {
                             await task_action.PostActionReq(AGVName, agvid);
-                            taskCreated = WaitTaskCreated(agvid, out var RunningTaskName);
+                            taskCreated = WaitTaskCreated(agvid, task_action.Action.ToString().ToLower(), out var RunningTaskName);
+                            task_action.TaskName = RunningTaskName;
                             clsRunTask? next_action = action_index + 1 == RunTasksDesigning.Count ? null : RunTasksDesigning[action_index + 1];
                             if (next_action != null)
                             {
                                 bool issamesource = next_action.IsSameSource(task_action);
-                                if (issamesource)
+                                if (issamesource && next_action.Action != ACTION_TYPE.MOVE)
                                 {
                                     //
                                     interupt_move_task = new clsRunTask()
@@ -251,8 +251,10 @@ namespace AGVSHotrun.HotRun
                                         MoveOnly = true,
                                         FromStation = next_action.FromStation,
                                     };
+                                    interupt_move_task.FromStation = interupt_move_task.GetSecondaryPt(interupt_move_task.FromStation);
+
                                     await interupt_move_task.PostActionReq(AGVName, agvid);
-                                    var interupt_move_taskCreated = WaitTaskCreated(agvid, out var _TaskName);
+                                    var interupt_move_taskCreated = WaitTaskCreated(agvid, ACTION_TYPE.MOVE.ToString().ToLower(), out var _TaskName);
                                     interupt_move_task.TaskName = _TaskName;
 
                                     tasknameQueue.Enqueue(new clsTaskState
@@ -274,21 +276,46 @@ namespace AGVSHotrun.HotRun
                                 task_name = RunningTaskName,
                                 task_action = task_action
                             });
+                            //最後一個動作
+                            if (action_index == RunTasksDesigning.Count - 1)
+                            {
+                                last_loop_final_task_action = task_action;
+
+                                if (i < RepeatNum - 1) //1J6G4YJO4C.4U H4
+                                {
+                                    if (task_action.Action != ACTION_TYPE.MOVE)
+                                    {
+                                        var interupt_move_task2 = new clsRunTask()
+                                        {
+                                            Action = ACTION_TYPE.MOVE,
+                                            MoveOnly = true,
+                                            FromStation = task_action.FromStation,
+                                        };
+                                        interupt_move_task2.FromStation = interupt_move_task2.GetSecondaryPt(interupt_move_task2.FromStation);
+
+                                        await interupt_move_task2.PostActionReq(AGVName, agvid);
+                                        var interupt_move_taskCreated = WaitTaskCreated(agvid, ACTION_TYPE.MOVE.ToString().ToLower(), out var _TaskName);
+
+                                        tasknameQueue.Enqueue(new clsTaskState
+                                        {
+                                            task_name = _TaskName,
+                                            task_action = interupt_move_task2
+                                        });
+                                        //等待結束
+                                        bool isRunningTaskFinish = await WaitTaskFinish(RunningTaskName);
+                                    }
+                                }
+                            }
 
                         }
                         isQueueMonitorStart = true;
+
+
                     }
-
-                    OnLoopStateChange?.Invoke(this, this);
-
 
                     FinishNum = i + 1;
                     OnLoopStateChange?.Invoke(this, this);
                 }
-                Success = true;
-                IsRunning = false;
-                EndTime = DateTime.Now;
-                OnHotRunFinish?.Invoke(this, this);
 
             }
             catch (TaskCanceledException ex)
@@ -326,7 +353,7 @@ namespace AGVSHotrun.HotRun
                 OnHotRunFinish?.Invoke(this, this);
             }
         }
-        private bool WaitTaskCreated(int agvid, out string taskName)
+        private bool WaitTaskCreated(int agvid, string action_type, out string taskName)
         {
             taskName = "";
             var conn = DBHelper.DBConn;
@@ -346,7 +373,7 @@ namespace AGVSHotrun.HotRun
                     try
                     {
                         var tsks = conn.ExecutingTasks.Where(t => t.AGVID == agvid);
-                        createdTaskDto = tsks.OrderBy(t => t.Receive_Time).LastOrDefault();
+                        createdTaskDto = tsks.Where(t => t.ActionType.ToLower() == action_type).OrderBy(t => t.Receive_Time).LastOrDefault();
                     }
                     catch (Exception ex)
                     {
@@ -365,17 +392,25 @@ namespace AGVSHotrun.HotRun
                 CancellationTokenSource cts = new CancellationTokenSource(TimeSpan.FromSeconds(600));
                 while (true)
                 {
-                    if (AbortTestCTS.IsCancellationRequested)
-                        throw new TaskCanceledException();
+                    try
+                    {
 
-                    if (cts.IsCancellationRequested)
+                        if (AbortTestCTS.IsCancellationRequested)
+                            throw new TaskCanceledException();
+
+                        if (cts.IsCancellationRequested)
+                        {
+                            return false;
+                        }
+                        IQueryable<TaskDto> TaskDto = conn.Tasks.Where(t => t.Name == taskName); //101 cancel, 100 finish
+                        if (TaskDto.Count() > 0)
+                        {
+                            return true;
+                        }
+                    }
+                    catch (TaskCanceledException)
                     {
                         return false;
-                    }
-                    IQueryable<TaskDto> TaskDto = conn.Tasks.Where(t => t.Name == taskName); //101 cancel, 100 finish
-                    if (TaskDto.Count() > 0)
-                    {
-                        return true;
                     }
                 }
             }
@@ -396,6 +431,15 @@ namespace AGVSHotrun.HotRun
         public string ToSlot { get; set; } = "";
         public string CSTID { get; set; } = "";
         public bool MoveOnly { get; set; } = true;
+
+        public string GetSecondaryPt(string Station)
+        {
+            var map_points = Store.MapData.Points.ToList();
+            MapPoint toStationPt = map_points.First(pt => pt.Value.Name == Station).Value;
+            MapPoint hotRunToStationPt = Store.MapData.Points[toStationPt.Target.First().Key];
+            return hotRunToStationPt.Name;
+        }
+
         public string GetActualFromStationName()
         {
             var map_points = Store.MapData.Points.ToList();
