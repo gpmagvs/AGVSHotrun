@@ -89,6 +89,22 @@ namespace AGVSHotrun.VirtualAGVSystem
                 fileName = psFile,
             };
         }
+        /// <summary>
+        /// 取消任務
+        /// </summary>
+        /// <returns></returns>
+        public async static Task<ExcuteResult> CancelTask(string taskName)
+        {
+            await Login();
+            var psFile = CreateCancelTaskCmdPsFile(taskName);
+            var output = POWERSHELL_HELPER.Run(psFile);
+            return new ExcuteResult
+            {
+                ErrorMsg = "",
+                ResponseMsg = output,
+                fileName = psFile,
+            };
+        }
 
         public async Task<ExcuteResult> Move(string CarName, int AGV_ID, string Station)
         {
@@ -219,6 +235,17 @@ namespace AGVSHotrun.VirtualAGVSystem
             var template = File.ReadAllText("login_request.ps1");
             template = template.Replace("127.0.0.1:6600", $"{AGVSHost}:{AGVSPort}");
             template = template.Replace("127.0.0.1", AGVSHost);
+            Directory.CreateDirectory("temp");
+            string psFileName = $"temp/lgoin_{DateTime.Now.Ticks}.ps1";
+            File.WriteAllText(psFileName, template);
+            return psFileName;
+        }
+        private static string CreateCancelTaskCmdPsFile(string taskName)
+        {
+            var template = File.ReadAllText("cancel_task_template.ps1");
+            template = template.Replace("127.0.0.1:6600", $"{AGVSHost}:{AGVSPort}");
+            template = template.Replace("127.0.0.1", AGVSHost);
+            template = template.Replace("TaskName=*Local_20230718103059880", $"TaskName={taskName}");
             Directory.CreateDirectory("temp");
             string psFileName = $"temp/lgoin_{DateTime.Now.Ticks}.ps1";
             File.WriteAllText(psFileName, template);

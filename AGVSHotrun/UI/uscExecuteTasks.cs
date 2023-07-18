@@ -30,24 +30,35 @@ namespace AGVSHotrun
         }
         int selectedRow = -1;
         int selectedColumn = -1;
+
         private void dataGridView1_CellClick(object sender, DataGridViewCellEventArgs e)
         {
             selectedRow = dataGridView1.CurrentCell.RowIndex;
             selectedColumn = dataGridView1.CurrentCell.ColumnIndex;
+
+            if (e.RowIndex < 0 | e.ColumnIndex < 0)
+                return;
+
+            ExecutingTask data = dataGridView1.Rows[e.RowIndex].DataBoundItem as ExecutingTask;
+            var taskName = data.Name;
+
+
+
         }
+
         public void UI_Render_TIMER_Tick(object sender, EventArgs e)
         {
             DataBinding.Clear();
-          
-                using (var conn = dbHelper.DBConn)
+
+            using (var conn = dbHelper.DBConn)
+            {
+                var datas = dbHelper.DBConn.ExecutingTasks.ToList();
+                foreach (var data in datas)
                 {
-                    var datas = dbHelper.DBConn.ExecutingTasks.ToList();
-                    foreach (var data in datas)
-                    {
-                        DataBinding.Add(data);
-                    }
-                    DataBinding.ResetBindings();
+                    DataBinding.Add(data);
                 }
+                DataBinding.ResetBindings();
+            }
 
         }
 

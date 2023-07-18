@@ -29,6 +29,9 @@
     <None Update="agv_task_cmd_template.ps1">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Update="cancel_task_template.ps1">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="login_request.ps1">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

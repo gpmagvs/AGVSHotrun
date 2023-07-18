@@ -29,8 +29,11 @@
         private void InitializeComponent()
         {
             components = new System.ComponentModel.Container();
-            DataGridViewCellStyle dataGridViewCellStyle2 = new DataGridViewCellStyle();
+            DataGridViewCellStyle dataGridViewCellStyle1 = new DataGridViewCellStyle();
             dataGridView1 = new DataGridView();
+            executingTaskBindingSource = new BindingSource(components);
+            timer1 = new System.Windows.Forms.Timer(components);
+            colCancelTaskBtn = new DataGridViewButtonColumn();
             nameDataGridViewTextBoxColumn = new DataGridViewTextBoxColumn();
             actionTypeDataGridViewTextBoxColumn = new DataGridViewTextBoxColumn();
             statusDataGridViewTextBoxColumn = new DataGridViewTextBoxColumn();
@@ -55,8 +58,6 @@
             fromStationPortNoDataGridViewTextBoxColumn = new DataGridViewTextBoxColumn();
             toStationPortNoDataGridViewTextBoxColumn = new DataGridViewTextBoxColumn();
             exeVehiclePosDataGridViewTextBoxColumn = new DataGridViewTextBoxColumn();
-            executingTaskBindingSource = new BindingSource(components);
-            timer1 = new System.Windows.Forms.Timer(components);
             ((System.ComponentModel.ISupportInitialize)dataGridView1).BeginInit();
             ((System.ComponentModel.ISupportInitialize)executingTaskBindingSource).BeginInit();
             SuspendLayout();
@@ -67,16 +68,16 @@
             dataGridView1.AllowUserToDeleteRows = false;
             dataGridView1.AutoGenerateColumns = false;
             dataGridView1.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            dataGridView1.Columns.AddRange(new DataGridViewColumn[] { nameDataGridViewTextBoxColumn, actionTypeDataGridViewTextBoxColumn, statusDataGridViewTextBoxColumn, receiveTimeDataGridViewTextBoxColumn, fromStationNameDataGridViewTextBoxColumn, fromStationDataGridViewTextBoxColumn, fromStationIdDataGridViewTextBoxColumn, toStationNameDataGridViewTextBoxColumn, toStationDataGridViewTextBoxColumn, toStationIdDataGridViewTextBoxColumn, aGVIDDataGridViewTextBoxColumn, cSTIDDataGridViewTextBoxColumn, priorityDataGridViewTextBoxColumn, repeatTimeDataGridViewTextBoxColumn, exeVehicleIDDataGridViewTextBoxColumn, startTimeDataGridViewTextBoxColumn, distanceDataGridViewTextBoxColumn, acquireTimeDataGridViewTextBoxColumn, depositTimeDataGridViewTextBoxColumn, assignUserNameDataGridViewTextBoxColumn, cSTTypeDataGridViewTextBoxColumn, fromStationPortNoDataGridViewTextBoxColumn, toStationPortNoDataGridViewTextBoxColumn, exeVehiclePosDataGridViewTextBoxColumn });
+            dataGridView1.Columns.AddRange(new DataGridViewColumn[] { colCancelTaskBtn, nameDataGridViewTextBoxColumn, actionTypeDataGridViewTextBoxColumn, statusDataGridViewTextBoxColumn, receiveTimeDataGridViewTextBoxColumn, fromStationNameDataGridViewTextBoxColumn, fromStationDataGridViewTextBoxColumn, fromStationIdDataGridViewTextBoxColumn, toStationNameDataGridViewTextBoxColumn, toStationDataGridViewTextBoxColumn, toStationIdDataGridViewTextBoxColumn, aGVIDDataGridViewTextBoxColumn, cSTIDDataGridViewTextBoxColumn, priorityDataGridViewTextBoxColumn, repeatTimeDataGridViewTextBoxColumn, exeVehicleIDDataGridViewTextBoxColumn, startTimeDataGridViewTextBoxColumn, distanceDataGridViewTextBoxColumn, acquireTimeDataGridViewTextBoxColumn, depositTimeDataGridViewTextBoxColumn, assignUserNameDataGridViewTextBoxColumn, cSTTypeDataGridViewTextBoxColumn, fromStationPortNoDataGridViewTextBoxColumn, toStationPortNoDataGridViewTextBoxColumn, exeVehiclePosDataGridViewTextBoxColumn });
             dataGridView1.DataSource = executingTaskBindingSource;
-            dataGridViewCellStyle2.Alignment = DataGridViewContentAlignment.MiddleLeft;
-            dataGridViewCellStyle2.BackColor = SystemColors.Window;
-            dataGridViewCellStyle2.Font = new Font("Microsoft JhengHei UI", 9F, FontStyle.Regular, GraphicsUnit.Point);
-            dataGridViewCellStyle2.ForeColor = SystemColors.ControlText;
-            dataGridViewCellStyle2.SelectionBackColor = Color.Aquamarine;
-            dataGridViewCellStyle2.SelectionForeColor = Color.Black;
-            dataGridViewCellStyle2.WrapMode = DataGridViewTriState.False;
-            dataGridView1.DefaultCellStyle = dataGridViewCellStyle2;
+            dataGridViewCellStyle1.Alignment = DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle1.BackColor = SystemColors.Window;
+            dataGridViewCellStyle1.Font = new Font("Microsoft JhengHei UI", 9F, FontStyle.Regular, GraphicsUnit.Point);
+            dataGridViewCellStyle1.ForeColor = SystemColors.ControlText;
+            dataGridViewCellStyle1.SelectionBackColor = Color.Aquamarine;
+            dataGridViewCellStyle1.SelectionForeColor = Color.Black;
+            dataGridViewCellStyle1.WrapMode = DataGridViewTriState.False;
+            dataGridView1.DefaultCellStyle = dataGridViewCellStyle1;
             dataGridView1.Dock = DockStyle.Fill;
             dataGridView1.Location = new Point(0, 0);
             dataGridView1.Name = "dataGridView1";
@@ -86,6 +87,23 @@
             dataGridView1.Size = new Size(1080, 391);
             dataGridView1.TabIndex = 0;
             dataGridView1.CellClick += dataGridView1_CellClick;
+            // 
+            // executingTaskBindingSource
+            // 
+            executingTaskBindingSource.DataSource = typeof(Models.ExecutingTask);
+            // 
+            // timer1
+            // 
+            timer1.Interval = 1000;
+            timer1.Tick += UI_Render_TIMER_Tick;
+            // 
+            // colCancelTaskBtn
+            // 
+            colCancelTaskBtn.HeaderText = "";
+            colCancelTaskBtn.Name = "colCancelTaskBtn";
+            colCancelTaskBtn.ReadOnly = true;
+            colCancelTaskBtn.Text = "取消任務";
+            colCancelTaskBtn.UseColumnTextForButtonValue = true;
             // 
             // nameDataGridViewTextBoxColumn
             // 
@@ -255,15 +273,6 @@
             exeVehiclePosDataGridViewTextBoxColumn.Name = "exeVehiclePosDataGridViewTextBoxColumn";
             exeVehiclePosDataGridViewTextBoxColumn.ReadOnly = true;
             // 
-            // executingTaskBindingSource
-            // 
-            executingTaskBindingSource.DataSource = typeof(Models.ExecutingTask);
-            // 
-            // timer1
-            // 
-            timer1.Interval = 1000;
-            timer1.Tick += UI_Render_TIMER_Tick;
-            // 
             // uscExecuteTasks
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
@@ -281,6 +290,7 @@
         private DataGridView dataGridView1;
         private BindingSource executingTaskBindingSource;
         private System.Windows.Forms.Timer timer1;
+        private DataGridViewButtonColumn colCancelTaskBtn;
         private DataGridViewTextBoxColumn nameDataGridViewTextBoxColumn;
         private DataGridViewTextBoxColumn actionTypeDataGridViewTextBoxColumn;
         private DataGridViewTextBoxColumn statusDataGridViewTextBoxColumn;
