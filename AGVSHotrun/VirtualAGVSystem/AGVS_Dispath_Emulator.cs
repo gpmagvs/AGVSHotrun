@@ -25,25 +25,14 @@ namespace AGVSHotrun.VirtualAGVSystem
             Charge,
             Transfer
         }
-        public clsCookie Cookies = new clsCookie();
+        public static clsCookie Cookies = new clsCookie();
 
         public AGVS_Dispath_Emulator()
         {
-            LoadCookies();
         }
-        private string cookies_json_file = "cookie.json";
+        private static string cookies_json_file = "cookie.json";
         private static string agvs_host_json_file = "agvs.json";
-        private void LoadCookies()
-        {
-            if (File.Exists(cookies_json_file))
-            {
-                Cookies = JsonConvert.DeserializeObject<clsCookie>(File.ReadAllText(cookies_json_file));
-            }
-            else
-            {
-                SaveCookies();
-            }
-        }
+       
         public static void LoadAGVSHost()
         {
             if (File.Exists(agvs_host_json_file))
@@ -63,15 +52,9 @@ namespace AGVSHotrun.VirtualAGVSystem
         {
             File.WriteAllText(agvs_host_json_file, JsonConvert.SerializeObject(new { IP = AGVSHost, Port = AGVSPort }, Formatting.Indented));
         }
-        private void SaveCookies()
+        private static void SaveCookies()
         {
             File.WriteAllText(cookies_json_file, JsonConvert.SerializeObject(Cookies, Formatting.Indented));
-        }
-
-        public AGVS_Dispath_Emulator(string cookie_connect_sid, string cookie_io)
-        {
-            this.Cookies.Cookies_Connect_SID = cookie_connect_sid;
-            this.Cookies.Cookies_io = cookie_io;
         }
 
         /// <summary>
@@ -80,7 +63,7 @@ namespace AGVSHotrun.VirtualAGVSystem
         /// <returns></returns>
         public async static Task<ExcuteResult> Login()
         {
-            var psFile = CreateLoginCmsPsFile();
+            var psFile = await CreateLoginCmsPsFile();
             var output = POWERSHELL_HELPER.Run(psFile);
             return new ExcuteResult
             {
@@ -215,8 +198,8 @@ namespace AGVSHotrun.VirtualAGVSystem
             string content = GetDispatchCmdTemplatePSContent();
             content = content.Replace("http://127.0.0.1:6600", $"http://{AGVSHost}:{AGVSPort}");
             content = content.Replace("127.0.0.1", AGVSHost);
-            //content = content.Replace("s%3AdxkjsEgCfNN2aq40Pbvs1rTryFKM53Eu.pCWvdU%2FtbbAAFEWxhxYnlRpuVvN5MgbgDAY7QZC18uI", $"{Cookies.Cookies_Connect_SID}");
-            //content = content.Replace("TPrw6Q8Aol3EBu1YAAAP", $"{Cookies.Cookies_io}");
+            content = content.Replace("this_is_connect.sid", Cookies.Cookies_Connect_SID);
+            content = content.Replace("this_is_io", Cookies.Cookies_io);
             content = content.Replace("Action=Move", $"Action={action.ToString()}");
             content = content.Replace("CarName=AGV_1", $"CarName={CarName}");
             content = content.Replace("AGVID=1", $"AGVID={AGV_ID}");
@@ -230,11 +213,17 @@ namespace AGVSHotrun.VirtualAGVSystem
             File.WriteAllText(psFileName, content);
             return psFileName;
         }
-        private static string CreateLoginCmsPsFile()
+        private static async Task<string> CreateLoginCmsPsFile()
         {
+            Cookies.Cookies_Connect_SID = await GetwebsiteSID();
+            Cookies.Cookies_io = $"2BPc0hLL{DateTime.Now.ToString("yyMMddHHmmss")}";
+            SaveCookies();
+
             var template = File.ReadAllText("login_request.ps1");
             template = template.Replace("127.0.0.1:6600", $"{AGVSHost}:{AGVSPort}");
             template = template.Replace("127.0.0.1", AGVSHost);
+            template = template.Replace("this_is_connect.sid", Cookies.Cookies_Connect_SID);
+            template = template.Replace("this_is_io", Cookies.Cookies_io);
             Directory.CreateDirectory("temp");
             string psFileName = $"temp/lgoin_{DateTime.Now.Ticks}.ps1";
             File.WriteAllText(psFileName, template);
@@ -245,6 +234,8 @@ namespace AGVSHotrun.VirtualAGVSystem
             var template = File.ReadAllText("cancel_task_template.ps1");
             template = template.Replace("127.0.0.1:6600", $"{AGVSHost}:{AGVSPort}");
             template = template.Replace("127.0.0.1", AGVSHost);
+            template = template.Replace("this_is_connect.sid", Cookies.Cookies_Connect_SID);
+            template = template.Replace("this_is_io", Cookies.Cookies_io);
             template = template.Replace("TaskName=*Local_20230718103059880", $"TaskName={taskName}");
             Directory.CreateDirectory("temp");
             string psFileName = $"temp/lgoin_{DateTime.Now.Ticks}.ps1";
@@ -262,8 +253,9 @@ namespace AGVSHotrun.VirtualAGVSystem
 
             content = content.Replace("http://127.0.0.1:6600", $"http://{AGVSHost}:{AGVSPort}");
             content = content.Replace("127.0.0.1", AGVSHost);
-            //content = content.Replace("s%3AdxkjsEgCfNN2aq40Pbvs1rTryFKM53Eu.pCWvdU%2FtbbAAFEWxhxYnlRpuVvN5MgbgDAY7QZC18uI", $"{Cookies.Cookies_Connect_SID}");
-            //content = content.Replace("TPrw6Q8Aol3EBu1YAAAP", $"{Cookies.Cookies_io}");
+
+            content = content.Replace("this_is_connect.sid", Cookies.Cookies_Connect_SID);
+            content = content.Replace("this_is_io", Cookies.Cookies_io);
             content = content.Replace("Action=Move", $"Action={action.ToString()}");
             content = content.Replace("CarName=AGV_1", $"CarName={CarName}");
             content = content.Replace("AGVID=1", $"AGVID={AGV_ID}");
@@ -275,6 +267,25 @@ namespace AGVSHotrun.VirtualAGVSystem
             File.WriteAllText(psFileName, content);
             return psFileName;
         }
+
+        private static async Task<string> GetwebsiteSID()
+        {
+            try
+            {
+
+                var client = new HttpClient();
+                var response = await client.GetAsync($"http://{AGVSHost}:{AGVSPort}");
+                var cookieHeader = response.Headers.GetValues("Set-Cookie");
+                //connect.sid=s%3AKGQ-tYUAMeZVvwaq8TL5JbCB5bO5j_9q.8kdLcGJz%2FqrKdpv3wzEL%2B4m%2BgY9aZ7OiRDuT5yqDi6w; Path=/; Expires=Tue, 18 Jul 2023 05:28:04 GMT; HttpOnly
+                return cookieHeader.First().Split('=')[1].Split(';')[0];
+            }
+            catch (Exception ex)
+            {
+
+                throw ex;
+            }
+        }
+
         private string GetDispatchCmdTemplatePSContent()
         {
             return File.ReadAllText("agv_task_cmd_template.ps1");

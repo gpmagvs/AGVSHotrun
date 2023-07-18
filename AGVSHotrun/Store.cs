@@ -85,7 +85,10 @@ namespace AGVSHotrun
                     Thread.Sleep(1000);
                     try
                     {
-                        AGVlocStore = dbhelper.DBConn.AGVInfos.ToDictionary(agv => agv, agv => MapData.Points[(int)agv.CurrentPos]);
+                        AGVlocStore = dbhelper.DBConn.AGVInfos.ToDictionary(agv => agv, agv => agv.CurrentPos == 0 ? new MapPoint
+                        {
+
+                        } : MapData.Points[(int)agv.CurrentPos]);
                         OnAGVLocUpdate?.Invoke("", EventArgs.Empty);
                     }
                     catch (Exception ex)

@@ -138,6 +138,7 @@ namespace AGVSHotrun.HotRun
         {
             try
             {
+                KeyValuePair<AGVInfo, MapPoint> agv = Store.AGVlocStore.First(ke => ke.Key.AGVName == AGVName);
                 StartTime = DateTime.Now;
                 EndTime = DateTime.MinValue;
                 AGVSDBHelper dbhelper = new AGVSDBHelper();
@@ -204,7 +205,7 @@ namespace AGVSHotrun.HotRun
 
                         this._RunningTask = TaskState.task_action;
                         OnLoopStateChange?.Invoke(this, this);
-                        var agv_current_pt = Store.AGVlocStore.First(ke => ke.Key.AGVName == AGVName).Value;
+                        var agv_current_pt = agv.Value;
                         _RunningTask.StartTime = DateTime.Now;
                         if (tasknameQueue.Count == 0)
                         {
@@ -304,7 +305,7 @@ namespace AGVSHotrun.HotRun
             {
                 TaskDto? finishTaskDto = null;
                 CancellationTokenSource cts = new CancellationTokenSource(TimeSpan.FromSeconds(600));
-                while (finishTaskDto == null)
+                while (true)
                 {
                     if (AbortTestCTS.IsCancellationRequested)
                         throw new TaskCanceledException();
@@ -313,9 +314,12 @@ namespace AGVSHotrun.HotRun
                     {
                         return false;
                     }
-                    finishTaskDto = conn.Tasks.Where(t => t.Name == taskName).FirstOrDefault(task => task.Status == 100);
+                    IQueryable<TaskDto> TaskDto = conn.Tasks.Where(t => t.Name == taskName); //101 cancel, 100 finish
+                    if(TaskDto.Count() > 0)
+                    {
+                        return true;
+                    }
                 }
-                return true;
             }
         }
 

@@ -1,5 +1,6 @@
 ﻿using AGVSHotrun.Models;
 using AGVSHotrun.UI;
+using AGVSHotrun.VirtualAGVSystem;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -33,15 +34,13 @@ namespace AGVSHotrun
 
         private void dataGridView1_CellClick(object sender, DataGridViewCellEventArgs e)
         {
-            selectedRow = dataGridView1.CurrentCell.RowIndex;
-            selectedColumn = dataGridView1.CurrentCell.ColumnIndex;
-
             if (e.RowIndex < 0 | e.ColumnIndex < 0)
                 return;
 
             ExecutingTask data = dataGridView1.Rows[e.RowIndex].DataBoundItem as ExecutingTask;
             var taskName = data.Name;
-
+            if (e.ColumnIndex == 0)
+                AGVS_Dispath_Emulator.CancelTask(taskName);
 
 
         }

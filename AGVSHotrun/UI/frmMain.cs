@@ -76,7 +76,7 @@ namespace AGVSHotrun
         private BindingList<clsHotRunScript> hotRunScripts;
         private void Form1_Load(object sender, EventArgs e)
         {
-           AGVS_Dispath_Emulator.LoadAGVSHost();
+            AGVS_Dispath_Emulator.LoadAGVSHost();
             hotRunScripts = new BindingList<clsHotRunScript>(Store.RunScriptsList);
             dgvHotRunScripts.DataSource = hotRunScripts;
             hotRunScripts.ResetBindings();
@@ -178,11 +178,14 @@ namespace AGVSHotrun
                             return;
                     }
                 }
-
-                if (!script.Start(out string errMsg))
+                Task.Run(() =>
                 {
-                    MessageBox.Show(errMsg, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                }
+
+                    if (!script.Start(out string errMsg))
+                    {
+                        MessageBox.Show(errMsg, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
+                });
 
             }
             if (click_column == colHotRunEdit)
