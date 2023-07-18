@@ -198,6 +198,7 @@ namespace AGVSHotrun.VirtualAGVSystem
             }
             string content = GetDispatchCmdTemplatePSContent();
             content = content.Replace("http://127.0.0.1:6600", $"http://{AGVSHost}:{AGVSPort}");
+            content = content.Replace("127.0.0.1", AGVSHost);
             //content = content.Replace("s%3AdxkjsEgCfNN2aq40Pbvs1rTryFKM53Eu.pCWvdU%2FtbbAAFEWxhxYnlRpuVvN5MgbgDAY7QZC18uI", $"{Cookies.Cookies_Connect_SID}");
             //content = content.Replace("TPrw6Q8Aol3EBu1YAAAP", $"{Cookies.Cookies_io}");
             content = content.Replace("Action=Move", $"Action={action.ToString()}");
@@ -232,8 +233,10 @@ namespace AGVSHotrun.VirtualAGVSystem
 
             string content = GetDispatchCmdTemplatePSContent();
 
-            content = content.Replace("s%3AdxkjsEgCfNN2aq40Pbvs1rTryFKM53Eu.pCWvdU%2FtbbAAFEWxhxYnlRpuVvN5MgbgDAY7QZC18uI", $"{Cookies.Cookies_Connect_SID}");
-            content = content.Replace("TPrw6Q8Aol3EBu1YAAAP", $"{Cookies.Cookies_io}");
+            content = content.Replace("http://127.0.0.1:6600", $"http://{AGVSHost}:{AGVSPort}");
+            content = content.Replace("127.0.0.1", AGVSHost);
+            //content = content.Replace("s%3AdxkjsEgCfNN2aq40Pbvs1rTryFKM53Eu.pCWvdU%2FtbbAAFEWxhxYnlRpuVvN5MgbgDAY7QZC18uI", $"{Cookies.Cookies_Connect_SID}");
+            //content = content.Replace("TPrw6Q8Aol3EBu1YAAAP", $"{Cookies.Cookies_io}");
             content = content.Replace("Action=Move", $"Action={action.ToString()}");
             content = content.Replace("CarName=AGV_1", $"CarName={CarName}");
             content = content.Replace("AGVID=1", $"AGVID={AGV_ID}");
