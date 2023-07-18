@@ -7,6 +7,9 @@
     <Compile Update="UI\AGVCombox.cs">
       <SubType>UserControl</SubType>
     </Compile>
+    <Compile Update="UI\frmAGVSHost.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Update="UI\frmHotRunCreateHelper.cs">
       <SubType>Form</SubType>
     </Compile>

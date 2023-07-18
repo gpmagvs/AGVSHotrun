@@ -1,7 +1,7 @@
 $session = New-Object Microsoft.PowerShell.Commands.WebRequestSession
 $session.UserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/109.0.0.0 Safari/537.36"
-$session.Cookies.Add((New-Object System.Net.Cookie("connect.sid", "s%3AdxkjsEgCfNN2aq40Pbvs1rTryFKM53Eu.pCWvdU%2FtbbAAFEWxhxYnlRpuVvN5MgbgDAY7QZC18uI", "/", "127.0.0.1")))
-$session.Cookies.Add((New-Object System.Net.Cookie("io", "TPrw6Q8Aol3EBu1YAAAP", "/", "127.0.0.1")))
+$session.Cookies.Add((New-Object System.Net.Cookie("connect.sid", "s%3AoD-ffYVPQxQduGlE3AfYBr4HQwbiLy0x.sQ5J6CF8uxwSF%2BHA9f8QLyUjjVIjBBOcCyrBKlUfJVo", "/", "127.0.0.1")))
+$session.Cookies.Add((New-Object System.Net.Cookie("io", "2BPc0hLLkNIEmPbMAAA4", "/", "127.0.0.1")))
 Invoke-WebRequest -UseBasicParsing -Uri "http://127.0.0.1:6600/mission/request?CarName=AGV_1&AGVID=1&Action=Move&FromStation=35&FromSlot=1&ToStation=&ToSlot=1&Priority=5&RepeatTime=1&CSTID=" `
 -WebSession $session `
 -Headers @{

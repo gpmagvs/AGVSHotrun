@@ -1,5 +1,7 @@
 using AGVSHotrun.HotRun;
 using AGVSHotrun.Models;
+using AGVSHotrun.UI;
+using AGVSHotrun.VirtualAGVSystem;
 using AGVSystemCommonNet6.Configuration;
 using AGVSystemCommonNet6.MAP;
 using System.ComponentModel;
@@ -74,6 +76,7 @@ namespace AGVSHotrun
         private BindingList<clsHotRunScript> hotRunScripts;
         private void Form1_Load(object sender, EventArgs e)
         {
+           AGVS_Dispath_Emulator.LoadAGVSHost();
             hotRunScripts = new BindingList<clsHotRunScript>(Store.RunScriptsList);
             dgvHotRunScripts.DataSource = hotRunScripts;
             hotRunScripts.ResetBindings();
@@ -192,6 +195,12 @@ namespace AGVSHotrun
                 if (MessageBox.Show("確定要移除此腳本?", "Script Remove ", MessageBoxButtons.OKCancel, MessageBoxIcon.Warning) == DialogResult.OK)
                     Store.RemoveHotRunScript(script);
             }
+        }
+
+        private void toolStripDropDownButton1_Click(object sender, EventArgs e)
+        {
+            frmAGVSHost fm = new frmAGVSHost();
+            fm.ShowDialog();
         }
     }
 }

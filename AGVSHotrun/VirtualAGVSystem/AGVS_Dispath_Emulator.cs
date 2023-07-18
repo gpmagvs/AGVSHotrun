@@ -2,70 +2,20 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.Design;
-using System.Diagnostics;
 using System.Linq;
 using System.Net;
+using System.Reflection.Metadata;
 using System.Text;
 using System.Threading.Tasks;
 using static System.Collections.Specialized.BitVector32;
 
 namespace AGVSHotrun.VirtualAGVSystem
 {
-    public class AGVS_Dispath_Emulator
+    public partial class AGVS_Dispath_Emulator
     {
+        public static string AGVSHost = "127.0.0.1";
+        public static int AGVSPort = 6600;
 
-        public class POWERSHELL_HELPER
-        {
-
-            public static string Run(string powershellFile)
-            {
-                try
-                {
-
-                    var filePath = powershellFile;
-                    var process = new Process();
-                    process.StartInfo.FileName = "powershell.exe";
-                    process.StartInfo.Arguments = $"-File {powershellFile}";
-                    process.StartInfo.RedirectStandardOutput = true;
-                    process.StartInfo.UseShellExecute = false;
-                    process.StartInfo.CreateNoWindow = true;
-                    process.Start();
-                    string output = process.StandardOutput.ReadToEnd();
-                    process.WaitForExit();
-
-                    return output;
-                }
-                catch (Exception ex)
-                {
-                    return ex.Message;
-                }
-
-            }
-        }
-
-
-
-        public class TaskObj
-        {
-            public string CarName { get; set; }
-            public int AGVID { get; set; } = 1;
-            public string Action { get; set; }
-
-            public string FromStation { get; set; }
-            public string FromSlot { get; set; }
-            public string ToStation { get; set; }
-            public string ToSlot { get; set; }
-
-            public int Priority { get; set; } = 5;
-            public int RepeatTime { get; set; } = 1;
-            public string CSTID { get; set; } = "";
-
-            public string ToQueryString()
-            {
-                return $"CarName={CarName}&AGVID={AGVID}&Action={Action}&FromStation={FromStation}&FromSlot={FromSlot}&ToStation={ToStation}&ToSlot={ToSlot}&Priority={Priority}&RepeatTime={RepeatTime}&CSTID={CSTID}";
-            }
-
-        }
         public enum ACTION
         {
             Move,
@@ -75,15 +25,6 @@ namespace AGVSHotrun.VirtualAGVSystem
             Charge,
             Transfer
         }
-
-        string url = "http://127.0.0.1:6600/mission/request?";
-
-        public class clsCookie
-        {
-            public string Cookies_Connect_SID = "s%3AdxkjsEgCfNN2aq40Pbvs1rTryFKM53Eu.pCWvdU%2FtbbAAFEWxhxYnlRpuVvN5MgbgDAY7QZC18uI";
-            public string Cookies_io = "TPrw6Q8Aol3EBu1YAAAP";
-
-        }
         public clsCookie Cookies = new clsCookie();
 
         public AGVS_Dispath_Emulator()
@@ -91,6 +32,7 @@ namespace AGVSHotrun.VirtualAGVSystem
             LoadCookies();
         }
         private string cookies_json_file = "cookie.json";
+        private static string agvs_host_json_file = "agvs.json";
         private void LoadCookies()
         {
             if (File.Exists(cookies_json_file))
@@ -102,7 +44,25 @@ namespace AGVSHotrun.VirtualAGVSystem
                 SaveCookies();
             }
         }
+        public static void LoadAGVSHost()
+        {
+            if (File.Exists(agvs_host_json_file))
+            {
+                var json = File.ReadAllText(agvs_host_json_file);
+                var obj = JsonConvert.DeserializeObject<Dictionary<string, object>>(json);
+                AGVSHost = obj["IP"].ToString();
+                AGVSPort = Convert.ToInt16(obj["Port"].ToString());
+            }
+            else
+            {
+                File.WriteAllText(agvs_host_json_file, JsonConvert.SerializeObject(new { IP = AGVSHost, Port = AGVSPort }, Formatting.Indented));
+            }
+        }
 
+        internal static void SaveHostSetting()
+        {
+            File.WriteAllText(agvs_host_json_file, JsonConvert.SerializeObject(new { IP = AGVSHost, Port = AGVSPort }, Formatting.Indented));
+        }
         private void SaveCookies()
         {
             File.WriteAllText(cookies_json_file, JsonConvert.SerializeObject(Cookies, Formatting.Indented));
@@ -114,6 +74,21 @@ namespace AGVSHotrun.VirtualAGVSystem
             this.Cookies.Cookies_io = cookie_io;
         }
 
+        /// <summary>
+        /// 登入
+        /// </summary>
+        /// <returns></returns>
+        public async static Task<ExcuteResult> Login()
+        {
+            var psFile = CreateLoginCmsPsFile();
+            var output = POWERSHELL_HELPER.Run(psFile);
+            return new ExcuteResult
+            {
+                ErrorMsg = "",
+                ResponseMsg = output,
+                fileName = psFile,
+            };
+        }
 
         public async Task<ExcuteResult> Move(string CarName, int AGV_ID, string Station)
         {
@@ -157,7 +132,7 @@ namespace AGVSHotrun.VirtualAGVSystem
         {
             var psFile = CreateTaskCmdPSFile(ACTION.Unload, CarName, AGV_ID + "", Station, slot, CST_ID);
             var output = POWERSHELL_HELPER.Run(psFile);
- 
+
             return new ExcuteResult
             {
                 ErrorMsg = "",
@@ -181,25 +156,13 @@ namespace AGVSHotrun.VirtualAGVSystem
         {
             var psFile = CreateTaskCmdPSFile(ACTION.Transfer, CarName, AGV_ID + "", FromStation, FromSlot, ToStation, ToSlot, CST_ID);
             var output = POWERSHELL_HELPER.Run(psFile);
-     
+
             return new ExcuteResult
             {
                 ErrorMsg = "",
                 ResponseMsg = output,
                 fileName = psFile,
             };
-        }
-        public async Task<string> TryGetConnectionCookies()
-        {
-            string cookies_str = "";
-            using (HttpClient _client = new HttpClient())
-            {
-                var ret = await _client.GetAsync("http://127.0.0.1:6600/index");
-                IEnumerable<string> cookies = ret.Headers.GetValues("Set-Cookie");
-                cookies_str = string.Join(",", cookies);
-            }
-
-            return cookies_str;
         }
 
 
@@ -234,8 +197,9 @@ namespace AGVSHotrun.VirtualAGVSystem
                 To_Station = To_Station.Replace("|", "%7C");
             }
             string content = GetDispatchCmdTemplatePSContent();
-            content = content.Replace("s%3AdxkjsEgCfNN2aq40Pbvs1rTryFKM53Eu.pCWvdU%2FtbbAAFEWxhxYnlRpuVvN5MgbgDAY7QZC18uI", $"{Cookies.Cookies_Connect_SID}");
-            content = content.Replace("TPrw6Q8Aol3EBu1YAAAP", $"{Cookies.Cookies_io}");
+            content = content.Replace("http://127.0.0.1:6600", $"http://{AGVSHost}:{AGVSPort}");
+            //content = content.Replace("s%3AdxkjsEgCfNN2aq40Pbvs1rTryFKM53Eu.pCWvdU%2FtbbAAFEWxhxYnlRpuVvN5MgbgDAY7QZC18uI", $"{Cookies.Cookies_Connect_SID}");
+            //content = content.Replace("TPrw6Q8Aol3EBu1YAAAP", $"{Cookies.Cookies_io}");
             content = content.Replace("Action=Move", $"Action={action.ToString()}");
             content = content.Replace("CarName=AGV_1", $"CarName={CarName}");
             content = content.Replace("AGVID=1", $"AGVID={AGV_ID}");
@@ -247,6 +211,16 @@ namespace AGVSHotrun.VirtualAGVSystem
             Directory.CreateDirectory("temp");
             string psFileName = $"temp/{CarName}_{action}_From_{From_Station}-{From_Slot}_TO_{To_Station}-{To_Slot}_{DateTime.Now.Ticks}.ps1";
             File.WriteAllText(psFileName, content);
+            return psFileName;
+        }
+        private static string CreateLoginCmsPsFile()
+        {
+            var template = File.ReadAllText("login_request.ps1");
+            template = template.Replace("127.0.0.1:6600", $"{AGVSHost}:{AGVSPort}");
+            template = template.Replace("127.0.0.1", AGVSHost);
+            Directory.CreateDirectory("temp");
+            string psFileName = $"temp/lgoin_{DateTime.Now.Ticks}.ps1";
+            File.WriteAllText(psFileName, template);
             return psFileName;
         }
         private string CreateTaskCmdPSFile(ACTION action, string CarName, string AGV_ID, string station_no, string slot_id = "1", string CST_ID = "")
