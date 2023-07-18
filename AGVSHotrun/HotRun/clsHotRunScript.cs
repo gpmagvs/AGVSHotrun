@@ -132,11 +132,6 @@ namespace AGVSHotrun.HotRun
                 message = $"動作 {string.Join(",", indexes)}  [目標站點_To Station] 設定有誤";
                 return false;
             }
-            //if (RunTasksDesigning.First().ToStation == agv_current_pt.Name)
-            //{
-            //    message = $"{AGVName} 目前位置與HOT RUN 第一個動作位置相同, 請先將AGV移開 {agv_current_pt.Name} 或修改HOT RUN 腳本`";
-            //    return false;
-            //}
             IsRunning = true;
             AbortTestCTS = new CancellationTokenSource();
             Task.Run(() => _ExecutingTasksAsync());
@@ -166,83 +161,126 @@ namespace AGVSHotrun.HotRun
                 OnHotRunStart?.Invoke(this, this);
                 FailureReason = "";
                 FinishNum = 0;
+                clsRunTask interupt_move_task = null;
+                //TEST Loop迴圈
                 for (int i = 0; i < RepeatNum; i++)
                 {
                     Queue<clsTaskState> tasknameQueue = new Queue<clsTaskState>();
                     IsRunning = true;
-
-                    foreach (var item in RunTasksDesigning)
+                    bool isQueueMonitorStart = false;
+                    async void WaitTaskDoneWorker(Queue<clsTaskState> tasknameQueue)
                     {
+                        while (!isQueueMonitorStart)
+                        {
+                            await Task.Delay(1);
+                        }
+                        int _action_index = 1;
+                        while (tasknameQueue.Count != 0)
+                        {
+                            ProgressText = $"{_action_index}/{TotalActionNum}";
+                            OnLoopStateChange?.Invoke(this, this);
+                            Thread.Sleep(1);
+                            if (!tasknameQueue.TryDequeue(out clsTaskState? TaskState))
+                            {
+                                throw new Exception("從任務柱列中抓取動作失敗");
+                            }
+
+                            this._RunningTask = TaskState.task_action;
+                            OnLoopStateChange?.Invoke(this, this);
+                            var agv_current_pt = agv.Value;
+                            _RunningTask.StartTime = DateTime.Now;
+                            if (tasknameQueue.Count == 0)
+                            {
+                                break;
+                            }
+                            bool task_finish = await WaitTaskFinish(TaskState.task_name);
+                            _action_index += 1;
+                            if (!task_finish)
+                            {
+                                FailureReason = "等待任務完成Timeout";
+                                Success = false;
+                                break;
+                            }
+                            _RunningTask.EndTime = DateTime.Now;
+                        }
+                    }
+
+                    Task.Run(() => WaitTaskDoneWorker(tasknameQueue));
+
+                    for (int action_index = 0; action_index < RunTasksDesigning.Count; action_index++)
+                    {
+                        clsRunTask task_action = RunTasksDesigning[action_index];
                         bool taskCreated, task_finish;
                         string? TaskName = "";
-
-                        if (item.MoveOnly && item.Action != ACTION_TYPE.MOVE)
+                        //惟Carry、Load Unload 且設定為僅移動
+                        if (task_action.MoveOnly && task_action.Action != ACTION_TYPE.MOVE)
                         {
-                            await item.PostFromStationReq(AGVName, agvid);
+                            await task_action.PostFromStationReq(AGVName, agvid);
                             taskCreated = WaitTaskCreated(agvid, out var _TaskName);
                             tasknameQueue.Enqueue(new clsTaskState
                             {
                                 task_name = _TaskName,
-                                task_action = item
+                                task_action = task_action
                             });
-                            if (item.Action == ACTION_TYPE.CARRY)
+                            if (task_action.Action == ACTION_TYPE.CARRY)
                             {
 
-                                await item.PostToStationReq(AGVName, agvid);
+                                await task_action.PostToStationReq(AGVName, agvid);
                                 taskCreated = WaitTaskCreated(agvid, out var _TaskNameNormal);
                                 tasknameQueue.Enqueue(new clsTaskState
                                 {
                                     task_name = _TaskNameNormal,
-                                    task_action = item
+                                    task_action = task_action
                                 });
                             }
                         }
                         else
                         {
-                            await item.PostActionReq(AGVName, agvid);
-                            taskCreated = WaitTaskCreated(agvid, out var _TaskNameNormal);
+                            await task_action.PostActionReq(AGVName, agvid);
+                            taskCreated = WaitTaskCreated(agvid, out var RunningTaskName);
+                            clsRunTask? next_action = action_index + 1 == RunTasksDesigning.Count ? null : RunTasksDesigning[action_index + 1];
+                            if (next_action != null)
+                            {
+                                bool issamesource = next_action.IsSameSource(task_action);
+                                if (issamesource)
+                                {
+                                    //
+                                    interupt_move_task = new clsRunTask()
+                                    {
+                                        Action = ACTION_TYPE.MOVE,
+                                        MoveOnly = true,
+                                        FromStation = next_action.FromStation,
+                                    };
+                                    await interupt_move_task.PostActionReq(AGVName, agvid);
+                                    var interupt_move_taskCreated = WaitTaskCreated(agvid, out var _TaskName);
+                                    interupt_move_task.TaskName = _TaskName;
+
+                                    tasknameQueue.Enqueue(new clsTaskState
+                                    {
+                                        task_name = _TaskName,
+                                        task_action = interupt_move_task
+                                    });
+                                    //等待結束
+                                    bool isRunningTaskFinish = await WaitTaskFinish(RunningTaskName);
+                                    //取消任務
+                                }
+                                else
+                                {
+                                    interupt_move_task = null;
+                                }
+                            }
                             tasknameQueue.Enqueue(new clsTaskState
                             {
-                                task_name = _TaskNameNormal,
-                                task_action = item
+                                task_name = RunningTaskName,
+                                task_action = task_action
                             });
-                        }
 
+                        }
+                        isQueueMonitorStart = true;
                     }
 
                     OnLoopStateChange?.Invoke(this, this);
 
-                    int _action_index = 1;
-                    while (tasknameQueue.Count != 0)
-                    {
-                        ProgressText = $"{_action_index}/{TotalActionNum}";
-                        OnLoopStateChange?.Invoke(this, this);
-                        Thread.Sleep(1);
-                        if (!tasknameQueue.TryDequeue(out clsTaskState? TaskState))
-                        {
-                            throw new Exception("從任務柱列中抓取動作失敗");
-                        }
-
-                        this._RunningTask = TaskState.task_action;
-                        OnLoopStateChange?.Invoke(this, this);
-                        var agv_current_pt = agv.Value;
-                        _RunningTask.StartTime = DateTime.Now;
-                        if (tasknameQueue.Count == 0)
-                        {
-                            break;
-                        }
-
-                        bool task_finish = await WaitTaskFinish(TaskState.task_name);
-                        _action_index += 1;
-                        if (!task_finish)
-                        {
-                            FailureReason = "等待任務完成Timeout";
-                            Success = false;
-                            break;
-                        }
-                        _RunningTask.EndTime = DateTime.Now;
-
-                    }
 
                     FinishNum = i + 1;
                     OnLoopStateChange?.Invoke(this, this);
@@ -382,6 +420,13 @@ namespace AGVSHotrun.HotRun
                 _toStation = hotRunToStationPt.Name;
             }
             return _toStation;
+        }
+
+
+        internal bool IsSameSource(clsRunTask task_action)
+        {
+            return this.FromStation == task_action.FromStation | this.ToStation == task_action.FromStation |
+                this.FromStation == task_action.ToStation | this.ToStation == task_action.ToStation;
         }
 
         internal async Task<bool> PostActionReq(string AgvName, int AgvID)
