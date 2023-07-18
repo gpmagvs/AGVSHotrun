@@ -104,6 +104,7 @@ namespace AGVSHotrun.HotRun
         }
         public bool Start(out string message)
         {
+            var loginResult = Login().Result;
             message = "";
             if (RunTasksDesigning.Any(tk => tk.ToStation == null))
             {
@@ -121,8 +122,25 @@ namespace AGVSHotrun.HotRun
             Task.Run(() => _ExecutingTasksAsync());
             return true;
         }
+        public async Task<(bool, string io)> Login()
+        {
+            var cookie_io = "yFXWYdDf62XXbyzlAAA9";
+            var client = new HttpClient();
+            var request = new HttpRequestMessage();
+            request.RequestUri = new Uri("http://192.168.0.1:6600/user/login");
+            request.Method = HttpMethod.Post;
+            request.Headers.Add("Accept", "*/*");
+            request.Headers.Add("User-Agent", "Thunder Client (https://www.thunderclient.com)");
+            request.Headers.Add("Cookie", $"connect.sid=s%3AoD-ffYVPQxQduGlE3AfYBr4HQwbiLy0x.sQ5J6CF8uxwSF%2BHA9f8QLyUjjVIjBBOcCyrBKlUfJVo; io={cookie_io}");
+            var bodyString = "[{\"name\":\"UserName\",\"value\":\"ENG\"},{\"name\":\"Password\",\"value\":\"12345678\"}]\r";
+            var content = new StringContent(bodyString, Encoding.UTF8, "application/json");
+            request.Content = content;
+            var response = await client.SendAsync(request);
+            var result = await response.Content.ReadAsStringAsync();
+            Console.WriteLine(result);
+            return (true, cookie_io);
+        }
         clsRunTask _RunningTask;
-
         public class clsTaskState
         {
             public string task_name;
