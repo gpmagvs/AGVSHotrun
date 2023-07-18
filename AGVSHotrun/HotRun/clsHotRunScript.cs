@@ -1,5 +1,6 @@
 ﻿using AGVSHotrun.Models;
 using AGVSHotrun.VirtualAGVSystem;
+using AGVSystemCommonNet6;
 using AGVSystemCommonNet6.AGVDispatch.Messages;
 using AGVSystemCommonNet6.MAP;
 using Azure.Identity;
@@ -176,10 +177,12 @@ namespace AGVSHotrun.HotRun
                         while (createdTaskDto == null)
                         {
                             await Task.Delay(1000);
+                            if (!IsRunning)
+                                break;
                             try
                             {
                                 var tsks = conn.ExecutingTasks.Where(t => t.AGVID == agvid);
-                                if (tsks.Count() == 0 && isQueueMonitorStart)
+                                if (tsks.Count() == 0 && isQueueMonitorStart && FinishNum == RepeatNum)
                                 {
                                     Success = true;
                                     IsRunning = false;
@@ -236,71 +239,71 @@ namespace AGVSHotrun.HotRun
                         else
                         {
                             await task_action.PostActionReq(AGVName, agvid);
+                            if (interupt_move_task != null)
+                            {
+                                AGVS_Dispath_Emulator.CancelTask(interupt_move_task.TaskName);
+                            }
+
                             taskCreated = WaitTaskCreated(agvid, task_action.Action.ToString().ToLower(), out var RunningTaskName);
                             task_action.TaskName = RunningTaskName;
+
+                            tasknameQueue.Enqueue(new clsTaskState
+                            {
+                                task_name = RunningTaskName,
+                                task_action = task_action
+                            });
+
                             clsRunTask? next_action = action_index + 1 == RunTasksDesigning.Count ? null : RunTasksDesigning[action_index + 1];
                             if (next_action != null)
                             {
-                                bool issamesource = next_action.IsSameSource(task_action);
+                                bool issamesource = IsSameSource(tasknameQueue, next_action);
                                 if (issamesource && next_action.Action != ACTION_TYPE.MOVE)
                                 {
                                     //
+                                    MapPoint chargePoint = Store.MapData.Points.ToList().First(pt => pt.Value.IsChargeAble()).Value;
                                     interupt_move_task = new clsRunTask()
                                     {
                                         Action = ACTION_TYPE.MOVE,
-                                        MoveOnly = true,
-                                        FromStation = next_action.FromStation,
+                                        FromStation = chargePoint.Name,
                                     };
                                     interupt_move_task.FromStation = interupt_move_task.GetSecondaryPt(interupt_move_task.FromStation);
-
                                     await interupt_move_task.PostActionReq(AGVName, agvid);
                                     var interupt_move_taskCreated = WaitTaskCreated(agvid, ACTION_TYPE.MOVE.ToString().ToLower(), out var _TaskName);
                                     interupt_move_task.TaskName = _TaskName;
-
-                                    tasknameQueue.Enqueue(new clsTaskState
-                                    {
-                                        task_name = _TaskName,
-                                        task_action = interupt_move_task
-                                    });
                                     //等待結束
                                     bool isRunningTaskFinish = await WaitTaskFinish(RunningTaskName);
                                     //取消任務
+
                                 }
                                 else
                                 {
                                     interupt_move_task = null;
                                 }
                             }
-                            tasknameQueue.Enqueue(new clsTaskState
-                            {
-                                task_name = RunningTaskName,
-                                task_action = task_action
-                            });
+                            //tasknameQueue.Enqueue(new clsTaskState
+                            //{
+                            //    task_name = RunningTaskName,
+                            //    task_action = task_action
+                            //});
                             //最後一個動作
                             if (action_index == RunTasksDesigning.Count - 1)
                             {
-                                last_loop_final_task_action = task_action;
 
                                 if (i < RepeatNum - 1) //1J6G4YJO4C.4U H4
                                 {
                                     if (task_action.Action != ACTION_TYPE.MOVE)
                                     {
-                                        var interupt_move_task2 = new clsRunTask()
+                                        MapPoint chargePoint = Store.MapData.Points.ToList().First(pt => pt.Value.IsChargeAble()).Value;
+
+                                        interupt_move_task = new clsRunTask()
                                         {
                                             Action = ACTION_TYPE.MOVE,
-                                            MoveOnly = true,
-                                            FromStation = task_action.FromStation,
+                                            FromStation = chargePoint.Name,
                                         };
-                                        interupt_move_task2.FromStation = interupt_move_task2.GetSecondaryPt(interupt_move_task2.FromStation);
-
-                                        await interupt_move_task2.PostActionReq(AGVName, agvid);
+                                        interupt_move_task.FromStation = interupt_move_task.GetSecondaryPt(interupt_move_task.FromStation);
+                                        await interupt_move_task.PostActionReq(AGVName, agvid);
                                         var interupt_move_taskCreated = WaitTaskCreated(agvid, ACTION_TYPE.MOVE.ToString().ToLower(), out var _TaskName);
-
-                                        tasknameQueue.Enqueue(new clsTaskState
-                                        {
-                                            task_name = _TaskName,
-                                            task_action = interupt_move_task2
-                                        });
+                                        interupt_move_task.TaskName = _TaskName;
                                         //等待結束
                                         bool isRunningTaskFinish = await WaitTaskFinish(RunningTaskName);
                                     }
@@ -352,6 +355,13 @@ namespace AGVSHotrun.HotRun
                 Success = false;
                 OnHotRunFinish?.Invoke(this, this);
             }
+        }
+        private bool IsSameSource(Queue<clsTaskState> tasknameQueue, clsRunTask next_action)
+        {
+            return tasknameQueue.Any(t => t.task_action.FromStation == next_action.FromStation |
+                                          t.task_action.FromStation == next_action.ToStation |
+                                          t.task_action.ToStation == next_action.FromStation |
+                                          t.task_action.ToStation == next_action.ToStation);
         }
         private bool WaitTaskCreated(int agvid, string action_type, out string taskName)
         {
@@ -466,12 +476,6 @@ namespace AGVSHotrun.HotRun
             return _toStation;
         }
 
-
-        internal bool IsSameSource(clsRunTask task_action)
-        {
-            return this.FromStation == task_action.FromStation | this.ToStation == task_action.FromStation |
-                this.FromStation == task_action.ToStation | this.ToStation == task_action.ToStation;
-        }
 
         internal async Task<bool> PostActionReq(string AgvName, int AgvID)
         {
