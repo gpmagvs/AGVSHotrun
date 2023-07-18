@@ -40,7 +40,10 @@ namespace AGVSHotrun
             ExecutingTask data = dataGridView1.Rows[e.RowIndex].DataBoundItem as ExecutingTask;
             var taskName = data.Name;
             if (e.ColumnIndex == 0)
-                AGVS_Dispath_Emulator.CancelTask(taskName);
+            {
+                if (MessageBox.Show($"確定要取消任務? ({taskName})", "Task Cancel", MessageBoxButtons.OKCancel, MessageBoxIcon.Warning) == DialogResult.OK)
+                    AGVS_Dispath_Emulator.CancelTask(taskName);
+            }
 
 
         }

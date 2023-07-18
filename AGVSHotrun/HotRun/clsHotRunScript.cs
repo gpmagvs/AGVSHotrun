@@ -33,7 +33,7 @@ namespace AGVSHotrun.HotRun
         {
             get
             {
-                return IsRunning ? "中止" : "開始";
+                return IsWaitLogin ? "Wait Login..." : IsRunning ? "中止" : "開始";
             }
         }
 
@@ -72,7 +72,11 @@ namespace AGVSHotrun.HotRun
         public bool Success { get; private set; }
 
         [JsonIgnore]
+        internal bool IsWaitLogin { get; set; }
+
+        [JsonIgnore]
         internal bool IsRunning { get; set; }
+
         [JsonIgnore]
         public string ResultDisplay
         {
@@ -97,14 +101,30 @@ namespace AGVSHotrun.HotRun
             RunTasksDesigning.Remove(runTaskDto);
         }
         CancellationTokenSource AbortTestCTS = new CancellationTokenSource();
+        CancellationTokenSource AbortLoginCTS = new CancellationTokenSource();
 
         public void Abort()
         {
             AbortTestCTS.Cancel();
+            AbortLoginCTS.Cancel();
+            IsWaitLogin = false;
+            IsRunning = false;
+            OnLoopStateChange?.Invoke(this, this);
         }
         public bool Start(out string message)
         {
-            var loginResult = Login().Result;
+            IsWaitLogin = true;
+            AbortLoginCTS = new CancellationTokenSource();
+            OnLoopStateChange?.Invoke(this, this);
+            var loginresult = Login().Result;
+            if (!loginresult.success)
+            {
+                IsWaitLogin = false;
+                message = loginresult.isCanceled ? "" : "登入派車系統失敗";
+                return false;
+            }
+            IsWaitLogin = false;
+            OnLoopStateChange?.Invoke(this, this);
             message = "";
             if (RunTasksDesigning.Any(tk => tk.ToStation == null))
             {
@@ -122,10 +142,10 @@ namespace AGVSHotrun.HotRun
             Task.Run(() => _ExecutingTasksAsync());
             return true;
         }
-        public async Task<bool> Login()
+        public async Task<(bool success, bool isCanceled)> Login()
         {
-            AGVS_Dispath_Emulator.ExcuteResult result = await AGVS_Dispath_Emulator.Login();
-            return result.Success;
+            AGVS_Dispath_Emulator.ExcuteResult result = await AGVS_Dispath_Emulator.Login(AbortLoginCTS.Token);
+            return (result.Success, result.IsCanceled);
         }
         clsRunTask _RunningTask;
         public class clsTaskState
@@ -315,7 +335,7 @@ namespace AGVSHotrun.HotRun
                         return false;
                     }
                     IQueryable<TaskDto> TaskDto = conn.Tasks.Where(t => t.Name == taskName); //101 cancel, 100 finish
-                    if(TaskDto.Count() > 0)
+                    if (TaskDto.Count() > 0)
                     {
                         return true;
                     }

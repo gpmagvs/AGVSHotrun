@@ -160,7 +160,7 @@ namespace AGVSHotrun
                 return;
             if (click_column == colHotRunStart)
             {
-                if (script.IsRunning)
+                if (script.IsRunning | script.IsWaitLogin)
                 {
                     if (MessageBox.Show("腳本已經在執行中 ,確定要中斷?", "STOP", MessageBoxButtons.OKCancel, MessageBoxIcon.Warning) == DialogResult.OK)
                         script.Abort();
@@ -180,10 +180,14 @@ namespace AGVSHotrun
                 }
                 Task.Run(() =>
                 {
-
                     if (!script.Start(out string errMsg))
                     {
-                        MessageBox.Show(errMsg, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        if (errMsg == "")
+                            return;
+                        Invoke(new Action(() =>
+                        {
+                            MessageBox.Show(this, errMsg, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        }));
                     }
                 });
 
