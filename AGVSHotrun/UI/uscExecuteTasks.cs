@@ -70,11 +70,12 @@ namespace AGVSHotrun
                 return;
             if (MessageBox.Show("確定要取消所有任務?", "取消任務確認", MessageBoxButtons.OKCancel, MessageBoxIcon.Question) == DialogResult.OK)
             {
-                Task.Factory.StartNew(async () =>
+                Task.Run(async () =>
                 {
-                    foreach (ExecutingTask task_ in DataBinding)
+                    var tasknames = DataBinding.Select(t => t.Name).ToList();
+                    foreach (string taskname in tasknames)
                     {
-                        await AGVS_Dispath_Emulator.CancelTask(task_.Name);
+                        await AGVS_Dispath_Emulator.CancelTask(taskname);
                     }
                 });
             }

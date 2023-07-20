@@ -216,7 +216,6 @@ namespace AGVSHotrun.VirtualAGVSystem
         {
             try
             {
-
                 Cookies.Cookies_Connect_SID = await GetwebsiteSID(cancelToken);
                 Cookies.Cookies_io = $"2BPc0hLL{DateTime.Now.ToString("yyMMddHHmmss")}";
                 SaveCookies();
@@ -258,7 +257,7 @@ namespace AGVSHotrun.VirtualAGVSystem
 
             string content = GetDispatchCmdTemplatePSContent();
 
-            content = content.Replace("http://127.0.0.1:6600", $"http://{AGVSIP}:{AGVSPORT}");
+            content = content.Replace("127.0.0.1:6600", $"{AGVSIP}:{AGVSPORT}");
             content = content.Replace("127.0.0.1", AGVSIP);
 
             content = content.Replace("this_is_connect.sid", Cookies.Cookies_Connect_SID);
@@ -297,13 +296,6 @@ namespace AGVSHotrun.VirtualAGVSystem
             return File.ReadAllText("agv_task_cmd_template.ps1");
         }
 
-        internal void SetCookie(string connect_sid, string io)
-        {
-            Cookies.Cookies_Connect_SID = connect_sid;
-            Cookies.Cookies_io = io;
-            SaveCookies();
-
-        }
 
     }
 }

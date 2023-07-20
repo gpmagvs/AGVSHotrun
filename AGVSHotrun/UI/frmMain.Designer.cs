@@ -143,6 +143,7 @@ namespace AGVSHotrun
             // 
             // splitContainer1.Panel1
             // 
+            splitContainer1.Panel1.AutoScroll = true;
             splitContainer1.Panel1.BackColor = Color.White;
             splitContainer1.Panel1.Controls.Add(uscExecuteTasks1);
             splitContainer1.Panel1.Controls.Add(label2);
@@ -160,10 +161,11 @@ namespace AGVSHotrun
             // 
             // uscExecuteTasks1
             // 
+            uscExecuteTasks1.AutoScroll = true;
             uscExecuteTasks1.dbHelper = agvsdbHelper1;
             uscExecuteTasks1.Dock = DockStyle.Fill;
             uscExecuteTasks1.Location = new Point(0, 187);
-            uscExecuteTasks1.Margin = new Padding(4, 4, 4, 4);
+            uscExecuteTasks1.Margin = new Padding(5);
             uscExecuteTasks1.Name = "uscExecuteTasks1";
             uscExecuteTasks1.Size = new Size(656, 195);
             uscExecuteTasks1.TabIndex = 6;
@@ -184,7 +186,7 @@ namespace AGVSHotrun
             uscagvStatus1.dbHelper = agvsdbHelper2;
             uscagvStatus1.Dock = DockStyle.Top;
             uscagvStatus1.Location = new Point(0, 19);
-            uscagvStatus1.Margin = new Padding(4, 4, 4, 4);
+            uscagvStatus1.Margin = new Padding(4);
             uscagvStatus1.Name = "uscagvStatus1";
             uscagvStatus1.Size = new Size(656, 149);
             uscagvStatus1.TabIndex = 7;
@@ -208,7 +210,7 @@ namespace AGVSHotrun
             uscMapDisplay2.Dock = DockStyle.Fill;
             uscMapDisplay2.HighlightAGVName = "";
             uscMapDisplay2.Location = new Point(0, 19);
-            uscMapDisplay2.Margin = new Padding(4, 4, 4, 4);
+            uscMapDisplay2.Margin = new Padding(4);
             uscMapDisplay2.Name = "uscMapDisplay2";
             uscMapDisplay2.OnMapPointAddToRunActionClick = null;
             uscMapDisplay2.Size = new Size(520, 363);
@@ -378,7 +380,7 @@ namespace AGVSHotrun
             uscMapDisplay1.Dock = DockStyle.Fill;
             uscMapDisplay1.HighlightAGVName = "";
             uscMapDisplay1.Location = new Point(3, 3);
-            uscMapDisplay1.Margin = new Padding(4, 4, 4, 4);
+            uscMapDisplay1.Margin = new Padding(4);
             uscMapDisplay1.Name = "uscMapDisplay1";
             uscMapDisplay1.OnMapPointAddToRunActionClick = null;
             uscMapDisplay1.Size = new Size(1180, 638);
@@ -477,11 +479,11 @@ namespace AGVSHotrun
         private DataGridViewButtonColumn colHotRunEdit;
         private DataGridViewButtonColumn colScriptRemove;
         private ToolStripDropDownButton toolStripDropDownButton1;
-        private uscExecuteTasks uscExecuteTasks1;
         private SplitContainer splitContainer1;
         private uscAGVStatus uscagvStatus1;
         private Label label2;
         private Label label1;
         private Label label3;
+        private uscExecuteTasks uscExecuteTasks1;
     }
 }
