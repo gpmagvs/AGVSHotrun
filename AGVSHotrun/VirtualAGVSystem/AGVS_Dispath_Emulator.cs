@@ -13,8 +13,8 @@ namespace AGVSHotrun.VirtualAGVSystem
 {
     public partial class AGVS_Dispath_Emulator
     {
-        public static string AGVSHost = "127.0.0.1";
-        public static int AGVSPort = 6600;
+        public static string AGVSIP => Store.SysConfigs.AGVSIP;
+        public static int AGVSPORT => Store.SysConfigs.AGVSPort;
 
         public enum ACTION
         {
@@ -31,27 +31,7 @@ namespace AGVSHotrun.VirtualAGVSystem
         {
         }
         private static string cookies_json_file = "cookie.json";
-        private static string agvs_host_json_file = "agvs.json";
 
-        public static void LoadAGVSHost()
-        {
-            if (File.Exists(agvs_host_json_file))
-            {
-                var json = File.ReadAllText(agvs_host_json_file);
-                var obj = JsonConvert.DeserializeObject<Dictionary<string, object>>(json);
-                AGVSHost = obj["IP"].ToString();
-                AGVSPort = Convert.ToInt16(obj["Port"].ToString());
-            }
-            else
-            {
-                File.WriteAllText(agvs_host_json_file, JsonConvert.SerializeObject(new { IP = AGVSHost, Port = AGVSPort }, Formatting.Indented));
-            }
-        }
-
-        internal static void SaveHostSetting()
-        {
-            File.WriteAllText(agvs_host_json_file, JsonConvert.SerializeObject(new { IP = AGVSHost, Port = AGVSPort }, Formatting.Indented));
-        }
         private static void SaveCookies()
         {
             File.WriteAllText(cookies_json_file, JsonConvert.SerializeObject(Cookies, Formatting.Indented));
@@ -215,8 +195,8 @@ namespace AGVSHotrun.VirtualAGVSystem
                 To_Station = To_Station.Replace("|", "%7C");
             }
             string content = GetDispatchCmdTemplatePSContent();
-            content = content.Replace("http://127.0.0.1:6600", $"http://{AGVSHost}:{AGVSPort}");
-            content = content.Replace("127.0.0.1", AGVSHost);
+            content = content.Replace("http://127.0.0.1:6600", $"http://{AGVSIP}:{AGVSPORT}");
+            content = content.Replace("127.0.0.1", AGVSIP);
             content = content.Replace("this_is_connect.sid", Cookies.Cookies_Connect_SID);
             content = content.Replace("this_is_io", Cookies.Cookies_io);
             content = content.Replace("Action=Move", $"Action={action.ToString()}");
@@ -247,8 +227,8 @@ namespace AGVSHotrun.VirtualAGVSystem
             }
 
             var template = File.ReadAllText("login_request.ps1");
-            template = template.Replace("127.0.0.1:6600", $"{AGVSHost}:{AGVSPort}");
-            template = template.Replace("127.0.0.1", AGVSHost);
+            template = template.Replace("127.0.0.1:6600", $"{AGVSIP}:{AGVSPORT}");
+            template = template.Replace("127.0.0.1", AGVSIP);
             template = template.Replace("this_is_connect.sid", Cookies.Cookies_Connect_SID);
             template = template.Replace("this_is_io", Cookies.Cookies_io);
             Directory.CreateDirectory("temp");
@@ -259,8 +239,8 @@ namespace AGVSHotrun.VirtualAGVSystem
         private static string CreateCancelTaskCmdPsFile(string taskName)
         {
             var template = File.ReadAllText("cancel_task_template.ps1");
-            template = template.Replace("127.0.0.1:6600", $"{AGVSHost}:{AGVSPort}");
-            template = template.Replace("127.0.0.1", AGVSHost);
+            template = template.Replace("127.0.0.1:6600", $"{AGVSIP}:{AGVSPORT}");
+            template = template.Replace("127.0.0.1", AGVSIP);
             template = template.Replace("this_is_connect.sid", Cookies.Cookies_Connect_SID);
             template = template.Replace("this_is_io", Cookies.Cookies_io);
             template = template.Replace("TaskName=*Local_20230718103059880", $"TaskName={taskName}");
@@ -278,8 +258,8 @@ namespace AGVSHotrun.VirtualAGVSystem
 
             string content = GetDispatchCmdTemplatePSContent();
 
-            content = content.Replace("http://127.0.0.1:6600", $"http://{AGVSHost}:{AGVSPort}");
-            content = content.Replace("127.0.0.1", AGVSHost);
+            content = content.Replace("http://127.0.0.1:6600", $"http://{AGVSIP}:{AGVSPORT}");
+            content = content.Replace("127.0.0.1", AGVSIP);
 
             content = content.Replace("this_is_connect.sid", Cookies.Cookies_Connect_SID);
             content = content.Replace("this_is_io", Cookies.Cookies_io);
@@ -300,7 +280,7 @@ namespace AGVSHotrun.VirtualAGVSystem
             try
             {
                 var client = new HttpClient();
-                var response = await client.GetAsync($"http://{AGVSHost}:{AGVSPort}", cancelToken);
+                var response = await client.GetAsync($"http://{AGVSIP}:{AGVSPORT}", cancelToken);
                 var cookieHeader = response.Headers.GetValues("Set-Cookie");
                 //connect.sid=s%3AKGQ-tYUAMeZVvwaq8TL5JbCB5bO5j_9q.8kdLcGJz%2FqrKdpv3wzEL%2B4m%2BgY9aZ7OiRDuT5yqDi6w; Path=/; Expires=Tue, 18 Jul 2023 05:28:04 GMT; HttpOnly
                 return cookieHeader.First().Split('=')[1].Split(';')[0];

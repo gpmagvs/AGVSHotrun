@@ -1,5 +1,6 @@
 ﻿using AGVSHotrun.HotRun;
 using AGVSHotrun.Models;
+using AGVSHotrun.VirtualAGVSystem;
 using AGVSystemCommonNet6.MAP;
 using Newtonsoft.Json;
 using System;
@@ -12,6 +13,7 @@ namespace AGVSHotrun
 {
     public static class Store
     {
+        const string CONFIG_FILE_NAME = "SystemConfigs.json";
         internal static event EventHandler OnScriptCreated;
         internal static event EventHandler OnAGVLocUpdate;
         public static clsSysConfigs SysConfigs = new clsSysConfigs();
@@ -51,15 +53,19 @@ namespace AGVSHotrun
 
         internal static void LoadSystemConfig()
         {
-            string config_file = "SystemConfigs.json";
-            if (File.Exists(config_file))
+            if (File.Exists(CONFIG_FILE_NAME))
             {
-                SysConfigs = JsonConvert.DeserializeObject<clsSysConfigs>(File.ReadAllText(config_file));
+                SysConfigs = JsonConvert.DeserializeObject<clsSysConfigs>(File.ReadAllText(CONFIG_FILE_NAME));
             }
             else
             {
-                File.WriteAllText(config_file, JsonConvert.SerializeObject(SysConfigs, Formatting.Indented));
+                File.WriteAllText(CONFIG_FILE_NAME, JsonConvert.SerializeObject(SysConfigs, Formatting.Indented));
             }
+        }
+        internal static void SaveHostSetting(string AGVSHost, int AGVSPort)
+        {
+            SysConfigs.AGVSHost = $"http://{AGVSHost}:{AGVSPort}";
+            File.WriteAllText(CONFIG_FILE_NAME, JsonConvert.SerializeObject(SysConfigs, Formatting.Indented));
         }
         internal static void LoadHotRunScriptsStored()
         {

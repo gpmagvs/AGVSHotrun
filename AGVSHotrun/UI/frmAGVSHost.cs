@@ -20,9 +20,7 @@ namespace AGVSHotrun.UI
 
         private void btnSave_Click(object sender, EventArgs e)
         {
-            AGVS_Dispath_Emulator.AGVSHost = txbAGVSIP.Text;
-            AGVS_Dispath_Emulator.AGVSPort = (int)numudAGVSPort.Value;
-            AGVS_Dispath_Emulator.SaveHostSetting();
+            Store.SaveHostSetting(txbAGVSIP.Text, (int)numudAGVSPort.Value);
             Close();
         }
 
@@ -33,8 +31,8 @@ namespace AGVSHotrun.UI
 
         private void frmAGVSHost_Load(object sender, EventArgs e)
         {
-            txbAGVSIP.Text = AGVS_Dispath_Emulator.AGVSHost;
-            numudAGVSPort.Value = AGVS_Dispath_Emulator.AGVSPort;
+            txbAGVSIP.Text = AGVS_Dispath_Emulator.AGVSIP;
+            numudAGVSPort.Value = AGVS_Dispath_Emulator.AGVSPORT;
         }
     }
 }

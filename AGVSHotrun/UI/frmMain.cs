@@ -76,7 +76,6 @@ namespace AGVSHotrun
         private BindingList<clsHotRunScript> hotRunScripts;
         private void Form1_Load(object sender, EventArgs e)
         {
-            AGVS_Dispath_Emulator.LoadAGVSHost();
             hotRunScripts = new BindingList<clsHotRunScript>(Store.RunScriptsList);
             dgvHotRunScripts.DataSource = hotRunScripts;
             hotRunScripts.ResetBindings();

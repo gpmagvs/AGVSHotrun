@@ -5,7 +5,7 @@ VisualStudioVersion = 17.5.33627.172
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AGVSHotrun", "AGVSHotrun\AGVSHotrun.csproj", "{AB772E1C-04F9-44F2-A292-F605F428B35F}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AGVSystemCommonNet6", "..\..\AGVSystemCommonNet6\AGVSystemCommonNet6.csproj", "{3C089078-5EA5-4025-ABAD-4706AE78806A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AGVSystemCommonNet6", "..\AGVSystemCommonNet6\AGVSystemCommonNet6.csproj", "{3C089078-5EA5-4025-ABAD-4706AE78806A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
