@@ -98,27 +98,28 @@
             // 
             LDULDStationMenuStrip.Items.AddRange(new ToolStripItem[] { btnAddULDRunTaskAction, btnAddLDRunTaskAction, btnParkStripitem });
             LDULDStationMenuStrip.Name = "NormalPointContextMenuStrip";
-            LDULDStationMenuStrip.Size = new Size(99, 70);
+            LDULDStationMenuStrip.Size = new Size(181, 92);
             // 
             // btnAddULDRunTaskAction
             // 
             btnAddULDRunTaskAction.Name = "btnAddULDRunTaskAction";
-            btnAddULDRunTaskAction.Size = new Size(98, 22);
+            btnAddULDRunTaskAction.Size = new Size(180, 22);
             btnAddULDRunTaskAction.Text = "取貨";
             btnAddULDRunTaskAction.Click += btnAddULDRunTaskAction_Click;
             // 
             // btnAddLDRunTaskAction
             // 
             btnAddLDRunTaskAction.Name = "btnAddLDRunTaskAction";
-            btnAddLDRunTaskAction.Size = new Size(98, 22);
+            btnAddLDRunTaskAction.Size = new Size(180, 22);
             btnAddLDRunTaskAction.Text = "放貨";
             btnAddLDRunTaskAction.Click += btnAddLDRunTaskAction_Click;
             // 
             // btnParkStripitem
             // 
             btnParkStripitem.Name = "btnParkStripitem";
-            btnParkStripitem.Size = new Size(98, 22);
+            btnParkStripitem.Size = new Size(180, 22);
             btnParkStripitem.Text = "停車";
+            btnParkStripitem.Click += btnParkStripitem_Click;
             // 
             // uscMapDisplay
             // 

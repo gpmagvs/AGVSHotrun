@@ -246,5 +246,13 @@ namespace AGVSHotrun.UI
             });
         }
 
+        private void btnParkStripitem_Click(object sender, EventArgs e)
+        {
+            OnMapPointAddToRunActionClick(new clsPointAddToRunActionDto
+            {
+                action = ACTION_TYPE.PARK,
+                map_point = SelectedMapPoint,
+            });
+        }
     }
 }
