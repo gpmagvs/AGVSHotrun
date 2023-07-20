@@ -64,5 +64,20 @@ namespace AGVSHotrun
 
         }
 
+        private void btnCancelAllTasks_Click(object sender, EventArgs e)
+        {
+            if (DataBinding.Count == 0)
+                return;
+            if (MessageBox.Show("確定要取消所有任務?", "取消任務確認", MessageBoxButtons.OKCancel, MessageBoxIcon.Question) == DialogResult.OK)
+            {
+                Task.Factory.StartNew(async () =>
+                {
+                    foreach (ExecutingTask task_ in DataBinding)
+                    {
+                        await AGVS_Dispath_Emulator.CancelTask(task_.Name);
+                    }
+                });
+            }
+        }
     }
 }
