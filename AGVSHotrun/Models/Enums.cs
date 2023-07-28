@@ -30,7 +30,7 @@ namespace AGVSHotrun.Models
         MOVE = 0,
         LOAD = 1,
         UNLOAD = 2,
-        CARRY = 3,
+        TRANSFER = 3,
         CHARGE = 4,
         PARK = 5
     }

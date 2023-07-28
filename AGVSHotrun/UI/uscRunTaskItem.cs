@@ -55,7 +55,7 @@ namespace AGVSHotrun.UI
             RunTaskDto.Action =
             cmbFromStations.ShowStaionByAction =
             cmbToStations.ShowStaionByAction = action;
-            cmbToStations.Enabled = cmbToSlot.Enabled = action == Models.ACTION_TYPE.CARRY;
+            cmbToStations.Enabled = cmbToSlot.Enabled = action == Models.ACTION_TYPE.TRANSFER;
 
         }
 

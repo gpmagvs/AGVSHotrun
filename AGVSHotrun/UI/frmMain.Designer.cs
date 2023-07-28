@@ -66,10 +66,15 @@ namespace AGVSHotrun
             clsHotRunScriptBindingSource = new BindingSource(components);
             tabPage2 = new TabPage();
             uscMapDisplay1 = new UI.uscMapDisplay();
+            tabPage1 = new TabPage();
+            rtxbLogShow = new RichTextBox();
             toolTip1 = new ToolTip(components);
             toolStrip1 = new ToolStrip();
             btnNewHotRun = new ToolStripLabel();
             toolStripDropDownButton1 = new ToolStripDropDownButton();
+            toolStripDropDownButton2 = new ToolStripDropDownButton();
+            btnWaitTaskDoneMode = new ToolStripMenuItem();
+            btnCancelChargeTaskMode = new ToolStripMenuItem();
             statusStrip1.SuspendLayout();
             tabControl1.SuspendLayout();
             tabPage3.SuspendLayout();
@@ -81,15 +86,16 @@ namespace AGVSHotrun
             ((System.ComponentModel.ISupportInitialize)dgvHotRunScripts).BeginInit();
             ((System.ComponentModel.ISupportInitialize)clsHotRunScriptBindingSource).BeginInit();
             tabPage2.SuspendLayout();
+            tabPage1.SuspendLayout();
             toolStrip1.SuspendLayout();
             SuspendLayout();
             // 
             // statusStrip1
             // 
             statusStrip1.Items.AddRange(new ToolStripItem[] { labSystemInformation });
-            statusStrip1.Location = new Point(0, 713);
+            statusStrip1.Location = new Point(0, 799);
             statusStrip1.Name = "statusStrip1";
-            statusStrip1.Size = new Size(1194, 22);
+            statusStrip1.Size = new Size(1382, 22);
             statusStrip1.TabIndex = 5;
             statusStrip1.Text = "statusStrip1";
             // 
@@ -104,12 +110,13 @@ namespace AGVSHotrun
             tabControl1.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             tabControl1.Controls.Add(tabPage3);
             tabControl1.Controls.Add(tabPage2);
+            tabControl1.Controls.Add(tabPage1);
             tabControl1.Font = new Font("Microsoft JhengHei UI", 11F, FontStyle.Bold, GraphicsUnit.Point);
             tabControl1.ItemSize = new Size(96, 30);
             tabControl1.Location = new Point(0, 28);
             tabControl1.Name = "tabControl1";
             tabControl1.SelectedIndex = 0;
-            tabControl1.Size = new Size(1194, 682);
+            tabControl1.Size = new Size(1382, 768);
             tabControl1.SizeMode = TabSizeMode.Fixed;
             tabControl1.TabIndex = 6;
             // 
@@ -119,7 +126,7 @@ namespace AGVSHotrun
             tabPage3.Location = new Point(4, 34);
             tabPage3.Name = "tabPage3";
             tabPage3.Padding = new Padding(3);
-            tabPage3.Size = new Size(1186, 644);
+            tabPage3.Size = new Size(1374, 730);
             tabPage3.TabIndex = 2;
             tabPage3.Text = "HOT RUN";
             tabPage3.UseVisualStyleBackColor = true;
@@ -131,7 +138,7 @@ namespace AGVSHotrun
             panel2.Dock = DockStyle.Fill;
             panel2.Location = new Point(3, 3);
             panel2.Name = "panel2";
-            panel2.Size = new Size(1180, 638);
+            panel2.Size = new Size(1368, 724);
             panel2.TabIndex = 0;
             // 
             // splitContainer1
@@ -155,19 +162,20 @@ namespace AGVSHotrun
             splitContainer1.Panel2.BackColor = Color.White;
             splitContainer1.Panel2.Controls.Add(uscMapDisplay2);
             splitContainer1.Panel2.Controls.Add(label3);
-            splitContainer1.Size = new Size(1180, 382);
-            splitContainer1.SplitterDistance = 656;
+            splitContainer1.Size = new Size(1368, 468);
+            splitContainer1.SplitterDistance = 760;
             splitContainer1.TabIndex = 8;
             // 
             // uscExecuteTasks1
             // 
             uscExecuteTasks1.AutoScroll = true;
+            uscExecuteTasks1.AutoSize = true;
             uscExecuteTasks1.dbHelper = agvsdbHelper1;
             uscExecuteTasks1.Dock = DockStyle.Fill;
             uscExecuteTasks1.Location = new Point(0, 187);
             uscExecuteTasks1.Margin = new Padding(5);
             uscExecuteTasks1.Name = "uscExecuteTasks1";
-            uscExecuteTasks1.Size = new Size(656, 195);
+            uscExecuteTasks1.Size = new Size(760, 281);
             uscExecuteTasks1.TabIndex = 6;
             // 
             // label2
@@ -188,7 +196,7 @@ namespace AGVSHotrun
             uscagvStatus1.Location = new Point(0, 19);
             uscagvStatus1.Margin = new Padding(4);
             uscagvStatus1.Name = "uscagvStatus1";
-            uscagvStatus1.Size = new Size(656, 149);
+            uscagvStatus1.Size = new Size(760, 149);
             uscagvStatus1.TabIndex = 7;
             // 
             // label1
@@ -213,7 +221,7 @@ namespace AGVSHotrun
             uscMapDisplay2.Margin = new Padding(4);
             uscMapDisplay2.Name = "uscMapDisplay2";
             uscMapDisplay2.OnMapPointAddToRunActionClick = null;
-            uscMapDisplay2.Size = new Size(520, 363);
+            uscMapDisplay2.Size = new Size(604, 449);
             uscMapDisplay2.TabIndex = 2;
             // 
             // label3
@@ -243,7 +251,7 @@ namespace AGVSHotrun
             dataGridViewCellStyle1.Alignment = DataGridViewContentAlignment.MiddleLeft;
             dgvHotRunScripts.RowsDefaultCellStyle = dataGridViewCellStyle1;
             dgvHotRunScripts.RowTemplate.Height = 25;
-            dgvHotRunScripts.Size = new Size(1180, 256);
+            dgvHotRunScripts.Size = new Size(1368, 256);
             dgvHotRunScripts.TabIndex = 1;
             dgvHotRunScripts.CellClick += dgvHotRunScripts_CellClick;
             // 
@@ -367,7 +375,7 @@ namespace AGVSHotrun
             tabPage2.Location = new Point(4, 34);
             tabPage2.Name = "tabPage2";
             tabPage2.Padding = new Padding(3);
-            tabPage2.Size = new Size(1186, 644);
+            tabPage2.Size = new Size(1374, 730);
             tabPage2.TabIndex = 1;
             tabPage2.Text = "地圖";
             tabPage2.UseVisualStyleBackColor = true;
@@ -383,16 +391,38 @@ namespace AGVSHotrun
             uscMapDisplay1.Margin = new Padding(4);
             uscMapDisplay1.Name = "uscMapDisplay1";
             uscMapDisplay1.OnMapPointAddToRunActionClick = null;
-            uscMapDisplay1.Size = new Size(1180, 638);
+            uscMapDisplay1.Size = new Size(1368, 724);
             uscMapDisplay1.TabIndex = 0;
+            // 
+            // tabPage1
+            // 
+            tabPage1.Controls.Add(rtxbLogShow);
+            tabPage1.Location = new Point(4, 34);
+            tabPage1.Name = "tabPage1";
+            tabPage1.Padding = new Padding(3);
+            tabPage1.Size = new Size(1374, 730);
+            tabPage1.TabIndex = 3;
+            tabPage1.Text = "tabPage1";
+            tabPage1.UseVisualStyleBackColor = true;
+            // 
+            // rtxbLogShow
+            // 
+            rtxbLogShow.BackColor = Color.Black;
+            rtxbLogShow.Dock = DockStyle.Fill;
+            rtxbLogShow.ForeColor = Color.White;
+            rtxbLogShow.Location = new Point(3, 3);
+            rtxbLogShow.Name = "rtxbLogShow";
+            rtxbLogShow.Size = new Size(1368, 724);
+            rtxbLogShow.TabIndex = 0;
+            rtxbLogShow.Text = "";
             // 
             // toolStrip1
             // 
-            toolStrip1.Items.AddRange(new ToolStripItem[] { btnNewHotRun, toolStripDropDownButton1 });
+            toolStrip1.Items.AddRange(new ToolStripItem[] { btnNewHotRun, toolStripDropDownButton1, toolStripDropDownButton2 });
             toolStrip1.Location = new Point(0, 0);
             toolStrip1.Name = "toolStrip1";
             toolStrip1.RenderMode = ToolStripRenderMode.System;
-            toolStrip1.Size = new Size(1194, 25);
+            toolStrip1.Size = new Size(1382, 25);
             toolStrip1.TabIndex = 7;
             toolStrip1.Text = "toolStrip1";
             // 
@@ -416,11 +446,32 @@ namespace AGVSHotrun
             toolStripDropDownButton1.Text = "Host設定";
             toolStripDropDownButton1.Click += toolStripDropDownButton1_Click;
             // 
+            // toolStripDropDownButton2
+            // 
+            toolStripDropDownButton2.DropDownItems.AddRange(new ToolStripItem[] { btnWaitTaskDoneMode, btnCancelChargeTaskMode });
+            toolStripDropDownButton2.Name = "toolStripDropDownButton2";
+            toolStripDropDownButton2.Size = new Size(68, 22);
+            toolStripDropDownButton2.Text = "派工選項";
+            // 
+            // btnWaitTaskDoneMode
+            // 
+            btnWaitTaskDoneMode.Name = "btnWaitTaskDoneMode";
+            btnWaitTaskDoneMode.Size = new Size(230, 22);
+            btnWaitTaskDoneMode.Text = "任務下達後等待";
+            btnWaitTaskDoneMode.Click += btnWaitTaskDoneMode_Click;
+            // 
+            // btnCancelChargeTaskMode
+            // 
+            btnCancelChargeTaskMode.Name = "btnCancelChargeTaskMode";
+            btnCancelChargeTaskMode.Size = new Size(230, 22);
+            btnCancelChargeTaskMode.Text = "測試過程中自動取消充電任務";
+            btnCancelChargeTaskMode.Click += btnCancelChargeTaskWhenRunning_Click;
+            // 
             // frmMain
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(1194, 735);
+            ClientSize = new Size(1382, 821);
             Controls.Add(toolStrip1);
             Controls.Add(tabControl1);
             Controls.Add(statusStrip1);
@@ -443,6 +494,7 @@ namespace AGVSHotrun
             ((System.ComponentModel.ISupportInitialize)dgvHotRunScripts).EndInit();
             ((System.ComponentModel.ISupportInitialize)clsHotRunScriptBindingSource).EndInit();
             tabPage2.ResumeLayout(false);
+            tabPage1.ResumeLayout(false);
             toolStrip1.ResumeLayout(false);
             toolStrip1.PerformLayout();
             ResumeLayout(false);
@@ -485,5 +537,10 @@ namespace AGVSHotrun
         private Label label1;
         private Label label3;
         private uscExecuteTasks uscExecuteTasks1;
+        private TabPage tabPage1;
+        private RichTextBox rtxbLogShow;
+        private ToolStripDropDownButton toolStripDropDownButton2;
+        private ToolStripMenuItem btnWaitTaskDoneMode;
+        private ToolStripMenuItem btnCancelChargeTaskMode;
     }
 }

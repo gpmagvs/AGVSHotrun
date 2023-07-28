@@ -57,15 +57,16 @@ namespace AGVSHotrun
             {
                 SysConfigs = JsonConvert.DeserializeObject<clsSysConfigs>(File.ReadAllText(CONFIG_FILE_NAME));
             }
-            else
-            {
-                File.WriteAllText(CONFIG_FILE_NAME, JsonConvert.SerializeObject(SysConfigs, Formatting.Indented));
-            }
+            SaveSystemConfig();
+        }
+        internal static void SaveSystemConfig()
+        {
+            File.WriteAllText(CONFIG_FILE_NAME, JsonConvert.SerializeObject(SysConfigs, Formatting.Indented));
         }
         internal static void SaveHostSetting(string AGVSHost, int AGVSPort)
         {
             SysConfigs.AGVSHost = $"http://{AGVSHost}:{AGVSPort}";
-            File.WriteAllText(CONFIG_FILE_NAME, JsonConvert.SerializeObject(SysConfigs, Formatting.Indented));
+            SaveSystemConfig();
         }
         internal static void LoadHotRunScriptsStored()
         {

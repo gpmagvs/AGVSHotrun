@@ -4,6 +4,7 @@ using AGVSystemCommonNet6;
 using AGVSystemCommonNet6.AGVDispatch.Messages;
 using AGVSystemCommonNet6.MAP;
 using Azure.Identity;
+using Microsoft.EntityFrameworkCore;
 using RosSharp.RosBridgeClient.MessageTypes.Std;
 using System;
 using System.Collections.Concurrent;
@@ -136,7 +137,6 @@ namespace AGVSHotrun.HotRun
                 return false;
             }
             IsRunning = true;
-            AbortTestCTS = new CancellationTokenSource();
             Task.Run(() => _ExecutingTasksAsync());
             return true;
         }
@@ -156,58 +156,32 @@ namespace AGVSHotrun.HotRun
         {
             try
             {
+                Logger.Info($"[{AGVName}] Hot Run Test Start !");
+
+                AGVSDBHelper dbhelper = new AGVSDBHelper();
+                int agvid = Debugger.IsAttached ? 1 : dbhelper.GetAGVID(AGVName);
+
+                if (Store.SysConfigs.CancelChargeTaskWhenHotRun)
+                    WatchChargeTaskAndCancelIt(agvid);
+                if (!Store.SysConfigs.WaitTaskDoneDispatchMode)
+                    HotrunFinishCheckWTD(agvid);
+
                 KeyValuePair<AGVInfo, MapPoint> agv = Store.AGVlocStore.First(ke => ke.Key.AGVName == AGVName);
                 StartTime = DateTime.Now;
                 EndTime = DateTime.MinValue;
-                AGVSDBHelper dbhelper = new AGVSDBHelper();
-                int agvid = Debugger.IsAttached ? 1 : dbhelper.GetAGVID(AGVName);
                 OnHotRunStart?.Invoke(this, this);
                 FailureReason = "";
                 FinishNum = 0;
                 clsRunTask interupt_move_task = null;
                 clsRunTask last_loop_final_task_action = null;
-
                 bool isQueueMonitorStart = false;
-                _ = Task.Run(async () =>
-                {
-                    var conn = DBHelper.DBConn;
-                    using (conn)
-                    {
-                        ExecutingTask? createdTaskDto = null;
-                        while (createdTaskDto == null)
-                        {
-                            await Task.Delay(1000);
-                            if (!IsRunning)
-                                break;
-                            try
-                            {
-                                var tsks = conn.ExecutingTasks.Where(t => t.AGVID == agvid);
-                                if (tsks.Count() == 0 && isQueueMonitorStart && FinishNum == RepeatNum)
-                                {
-                                    Success = true;
-                                    IsRunning = false;
-                                    OnLoopStateChange?.Invoke(this, this);
-                                    OnHotRunFinish?.Invoke(this, this);
-                                    break;
-                                }
-                            }
-                            catch (Exception ex)
-                            {
-                            }
-                        }
-                    }
-                });
-
-
-
-                //TEST Loop迴圈
                 for (int i = 0; i < RepeatNum; i++)
                 {
                     Queue<clsTaskState> tasknameQueue = new Queue<clsTaskState>();
-                    IsRunning = true;
                     for (int action_index = 0; action_index < RunTasksDesigning.Count; action_index++)
                     {
                         clsRunTask task_action = RunTasksDesigning[action_index];
+
                         bool taskCreated, task_finish;
                         string? TaskName = "";
                         //惟Carry、Load Unload 且設定為僅移動
@@ -220,11 +194,13 @@ namespace AGVSHotrun.HotRun
                                 task_name = _TaskName,
                                 task_action = task_action
                             });
-                            if (task_action.Action == ACTION_TYPE.CARRY)
+                            OnLoopStateChange?.Invoke(this, this);
+                            WaitTaskFinish(_TaskName);
+                            if (task_action.Action == ACTION_TYPE.TRANSFER)
                             {
-
                                 await task_action.PostToStationReq(AGVName, agvid);
                                 taskCreated = WaitTaskCreated(agvid, ACTION_TYPE.MOVE.ToString().ToLower(), out var _TaskNameNormal);
+                                WaitTaskFinish(_TaskNameNormal);
                                 tasknameQueue.Enqueue(new clsTaskState
                                 {
                                     task_name = _TaskNameNormal,
@@ -233,93 +209,34 @@ namespace AGVSHotrun.HotRun
                                 task_action.TaskName = _TaskNameNormal;
                             }
                             else
-
                                 task_action.TaskName = _TaskName;
                         }
                         else
                         {
                             await task_action.PostActionReq(AGVName, agvid);
-                            if (interupt_move_task != null)
-                            {
-                                AGVS_Dispath_Emulator.CancelTask(interupt_move_task.TaskName);
-                            }
-
+                            Logger.Info($"[{AGVName}] Wait Task Created...");
                             taskCreated = WaitTaskCreated(agvid, task_action.Action.ToString().ToLower(), out var RunningTaskName);
-                            task_action.TaskName = RunningTaskName;
+                            Logger.Info($"[{AGVName}] Task-{RunningTaskName} Created!");
+                            ProgressText = $"{action_index + 1}/{RunTasksDesigning.Count}";
 
+                            OnLoopStateChange?.Invoke(this, this);
+                            WaitTaskFinish(RunningTaskName);
+
+                            task_action.TaskName = RunningTaskName;
                             tasknameQueue.Enqueue(new clsTaskState
                             {
                                 task_name = RunningTaskName,
                                 task_action = task_action
                             });
-
-                            clsRunTask? next_action = action_index + 1 == RunTasksDesigning.Count ? null : RunTasksDesigning[action_index + 1];
-                            if (next_action != null)
-                            {
-                                bool issamesource = IsSameSource(tasknameQueue, next_action);
-                                if (issamesource && next_action.Action != ACTION_TYPE.MOVE)
-                                {
-                                    //
-                                    MapPoint chargePoint = Store.MapData.Points.ToList().First(pt => pt.Value.IsChargeAble()).Value;
-                                    interupt_move_task = new clsRunTask()
-                                    {
-                                        Action = ACTION_TYPE.MOVE,
-                                        FromStation = chargePoint.Name,
-                                    };
-                                    interupt_move_task.FromStation = interupt_move_task.GetSecondaryPt(interupt_move_task.FromStation);
-                                    await interupt_move_task.PostActionReq(AGVName, agvid);
-                                    var interupt_move_taskCreated = WaitTaskCreated(agvid, ACTION_TYPE.MOVE.ToString().ToLower(), out var _TaskName);
-                                    interupt_move_task.TaskName = _TaskName;
-                                    //等待結束
-                                    bool isRunningTaskFinish = await WaitTaskFinish(RunningTaskName);
-                                    //取消任務
-
-                                }
-                                else
-                                {
-                                    interupt_move_task = null;
-                                }
-                            }
-                            //tasknameQueue.Enqueue(new clsTaskState
-                            //{
-                            //    task_name = RunningTaskName,
-                            //    task_action = task_action
-                            //});
-                            //最後一個動作
-                            if (action_index == RunTasksDesigning.Count - 1)
-                            {
-
-                                if (i < RepeatNum - 1) //1J6G4YJO4C.4U H4
-                                {
-                                    if (task_action.Action != ACTION_TYPE.MOVE)
-                                    {
-                                        MapPoint chargePoint = Store.MapData.Points.ToList().First(pt => pt.Value.IsChargeAble()).Value;
-
-                                        interupt_move_task = new clsRunTask()
-                                        {
-                                            Action = ACTION_TYPE.MOVE,
-                                            FromStation = chargePoint.Name,
-                                        };
-                                        interupt_move_task.FromStation = interupt_move_task.GetSecondaryPt(interupt_move_task.FromStation);
-                                        await interupt_move_task.PostActionReq(AGVName, agvid);
-                                        var interupt_move_taskCreated = WaitTaskCreated(agvid, ACTION_TYPE.MOVE.ToString().ToLower(), out var _TaskName);
-                                        interupt_move_task.TaskName = _TaskName;
-                                        //等待結束
-                                        bool isRunningTaskFinish = await WaitTaskFinish(RunningTaskName);
-                                    }
-                                }
-                            }
-
                         }
                         isQueueMonitorStart = true;
-
-
                     }
-
                     FinishNum = i + 1;
+                    Logger.Info($"[{AGVName}] Hot Run Progress Updated:  {FinishNum}/{RepeatNum}");
                     OnLoopStateChange?.Invoke(this, this);
                 }
 
+                HotRunFinish();
             }
             catch (TaskCanceledException ex)
             {
@@ -356,6 +273,72 @@ namespace AGVSHotrun.HotRun
                 OnHotRunFinish?.Invoke(this, this);
             }
         }
+        private void HotrunFinishCheckWTD(int agvid)
+        {
+            Logger.Warn($"[{AGVName}] Start HotrunFinishCheckWTD.");
+
+            _ = Task.Run(async () =>
+            {
+                var conn = DBHelper.DBConn;
+                using (conn)
+                {
+                    ExecutingTask? createdTaskDto = null;
+                    while (createdTaskDto == null)
+                    {
+                        await Task.Delay(1000);
+                        if (!IsRunning)
+                            break;
+                        try
+                        {
+                            var tsks = conn.ExecutingTasks.Where(t => t.AGVID == agvid);
+                            if (tsks.Count() == 0 && FinishNum == RepeatNum)
+                            {
+                                HotRunFinish();
+                                break;
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                        }
+                    }
+                }
+            });
+        }
+
+        private void HotRunFinish()
+        {
+            Success = true;
+            IsRunning = false;
+            OnLoopStateChange?.Invoke(this, this);
+            OnHotRunFinish?.Invoke(this, this);
+        }
+
+        private void WatchChargeTaskAndCancelIt(int agvid)
+        {
+            Task.Run(async () =>
+            {
+                using (var conn = DBHelper.DBConn)
+                {
+                    Logger.Warn($"[{AGVName}] Start Watch Charge Task Executing State, Hot run program will cancel Charge Task when task created.");
+                    while (IsRunning)
+                    {
+                        await Task.Delay(10);
+                        List<ExecutingTask> chargetasks = conn.ExecutingTasks.Where(t => t.AGVID == agvid && t.ActionType == "Charge").ToList();
+                        if (chargetasks.Count() > 0)
+                        {
+                            for (int i = 0; i < chargetasks.Count(); i++)
+                            {
+                                await AGVS_Dispath_Emulator.CancelTask(chargetasks[i].Name);
+                            }
+                            Logger.Warn($"[{AGVName}] 充電任務已取消");
+                        }
+                    }
+                    Logger.Warn($"[{AGVName}]  Charge Task WTD FINISH");
+
+                }
+            });
+        }
+
         private bool IsSameSource(Queue<clsTaskState> tasknameQueue, clsRunTask next_action)
         {
             return tasknameQueue.Any(t => t.task_action.FromStation == next_action.FromStation |
@@ -373,28 +356,42 @@ namespace AGVSHotrun.HotRun
                 CancellationTokenSource cts = new CancellationTokenSource(TimeSpan.FromSeconds(20));
                 while (createdTaskDto == null)
                 {
+                    Thread.Sleep(1000);
                     if (AbortTestCTS.IsCancellationRequested)
+                    {
+                        Logger.Error($"[{AGVName}] AbortTestCTS.IsCancellationRequested");
                         throw new TaskCanceledException();
+                    }
 
                     if (cts.IsCancellationRequested)
                     {
+                        Logger.Error($"[{AGVName}] WaitTaskCreated Timeout (20 sec)");
                         return false;
                     }
                     try
                     {
-                        var tsks = conn.ExecutingTasks.Where(t => t.AGVID == agvid);
+                        Logger.Info($"[{AGVName}] Search Task Action Type equal {action_type} and AGVID equl {agvid}");
+
+                        IQueryable<ExecutingTask> tsks = conn.ExecutingTasks.Where(t => t.AGVID == agvid);
                         createdTaskDto = tsks.Where(t => t.ActionType.ToLower() == action_type).OrderBy(t => t.Receive_Time).LastOrDefault();
+                        Logger.Info($"[{AGVName}] Search Task Action Type equal {action_type} and AGVID equl {agvid}---Find {tsks.Count()} Data");
                     }
                     catch (Exception ex)
                     {
+                        Logger.Error($"[{AGVName}] WaitTaskCreated Exception -{ex.Message}, Trace: {ex.StackTrace}");
                     }
                 }
                 taskName = createdTaskDto.Name;
                 return true;
             }
         }
-        private async Task<bool> WaitTaskFinish(string taskName)
+        private bool WaitTaskFinish(string taskName)
         {
+            if (!Store.SysConfigs.WaitTaskDoneDispatchMode)
+                return true;
+
+            Logger.Info($"[{AGVName}] Wait Task-{taskName} Finish...");
+            AbortTestCTS = new CancellationTokenSource();
             var conn = DBHelper.DBConn;
             using (conn)
             {
@@ -402,24 +399,27 @@ namespace AGVSHotrun.HotRun
                 CancellationTokenSource cts = new CancellationTokenSource(TimeSpan.FromSeconds(600));
                 while (true)
                 {
+                    Thread.Sleep(10);
                     try
                     {
-
                         if (AbortTestCTS.IsCancellationRequested)
-                            throw new TaskCanceledException();
+                            return true;
 
                         if (cts.IsCancellationRequested)
                         {
+                            Logger.Error($"[{AGVName}] WaitTaskFinish Timeout (600 sec)");
                             return false;
                         }
                         IQueryable<TaskDto> TaskDto = conn.Tasks.Where(t => t.Name == taskName); //101 cancel, 100 finish
                         if (TaskDto.Count() > 0)
                         {
+                            Logger.Info($"[{AGVName}] Task-{taskName} Finish!");
                             return true;
                         }
                     }
-                    catch (TaskCanceledException)
+                    catch (TaskCanceledException ex)
                     {
+                        Logger.Error($"[{AGVName}] WaitTaskFinish Exception -{ex.Message}, Trace: {ex.StackTrace}");
                         return false;
                     }
                 }
@@ -532,7 +532,7 @@ namespace AGVSHotrun.HotRun
                     case ACTION_TYPE.UNLOAD:
                         result = await dispatcher_helper.Unload(AgvName, AgvID, from_station, from_slot, cstid);
                         break;
-                    case ACTION_TYPE.CARRY:
+                    case ACTION_TYPE.TRANSFER:
                         result = await dispatcher_helper.Carry(AgvName, AgvID, from_station, from_slot, to_station, to_slot, cstid);
                         break;
                     case ACTION_TYPE.CHARGE:

@@ -86,14 +86,14 @@ namespace AGVSHotrun
             cmbToSlotSelect.Items.Clear();
             cmbFromSlotSelect.Items.Clear();
 
-            pnlFromStationInfo.Enabled = _action_selected == ACTION_TYPE.CARRY;
+            pnlFromStationInfo.Enabled = _action_selected == ACTION_TYPE.TRANSFER;
             cmbToSlotSelect.Enabled = cmbFromSlotSelect.Enabled = _action_selected != ACTION_TYPE.MOVE && _action_selected != ACTION_TYPE.PARK && _action_selected != ACTION_TYPE.CHARGE;
 
             var station_points = Store.MapData.Points;
             IEnumerable<KeyValuePair<int, AGVSystemCommonNet6.MAP.MapPoint>> filteredPoints = null;
             if (_action_selected == ACTION_TYPE.MOVE)
                 filteredPoints = station_points.Where(pt => pt.Value.StationType == AGVSystemCommonNet6.AGVDispatch.Messages.STATION_TYPE.Normal);
-            else if (_action_selected == ACTION_TYPE.LOAD | _action_selected == ACTION_TYPE.UNLOAD | _action_selected == ACTION_TYPE.CARRY)
+            else if (_action_selected == ACTION_TYPE.LOAD | _action_selected == ACTION_TYPE.UNLOAD | _action_selected == ACTION_TYPE.TRANSFER)
                 filteredPoints = station_points.Where(pt => pt.Value.IsEquipment | pt.Value.IsSTK);
             else if (_action_selected == ACTION_TYPE.PARK)
                 filteredPoints = station_points.Where(pt => pt.Value.IsParking);

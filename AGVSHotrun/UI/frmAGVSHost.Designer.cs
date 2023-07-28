@@ -34,6 +34,7 @@
             numudAGVSPort = new NumericUpDown();
             btnSave = new Button();
             btnLeave = new Button();
+            button1 = new Button();
             ((System.ComponentModel.ISupportInitialize)numudAGVSPort).BeginInit();
             SuspendLayout();
             // 
@@ -93,6 +94,16 @@
             btnLeave.UseVisualStyleBackColor = true;
             btnLeave.Click += btnLeave_Click;
             // 
+            // button1
+            // 
+            button1.Location = new Point(12, 220);
+            button1.Name = "button1";
+            button1.Size = new Size(280, 52);
+            button1.TabIndex = 6;
+            button1.Text = "Connection Test";
+            button1.UseVisualStyleBackColor = true;
+            button1.Click += button1_Click;
+            // 
             // frmAGVSHost
             // 
             AcceptButton = btnSave;
@@ -100,7 +111,8 @@
             AutoScaleMode = AutoScaleMode.Font;
             BackColor = Color.White;
             CancelButton = btnLeave;
-            ClientSize = new Size(307, 229);
+            ClientSize = new Size(307, 284);
+            Controls.Add(button1);
             Controls.Add(btnLeave);
             Controls.Add(btnSave);
             Controls.Add(numudAGVSPort);
@@ -126,5 +138,6 @@
         private NumericUpDown numudAGVSPort;
         private Button btnSave;
         private Button btnLeave;
+        private Button button1;
     }
 }

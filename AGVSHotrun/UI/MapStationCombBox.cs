@@ -59,7 +59,7 @@ namespace AGVSHotrun.UI
             IEnumerable<KeyValuePair<int, AGVSystemCommonNet6.MAP.MapPoint>> filteredPoints = null;
             if (ShowStaionByAction == ACTION_TYPE.MOVE)
                 filteredPoints = station_points.Where(pt => pt.Value.StationType == AGVSystemCommonNet6.AGVDispatch.Messages.STATION_TYPE.Normal);
-            else if (ShowStaionByAction == ACTION_TYPE.LOAD | ShowStaionByAction == ACTION_TYPE.UNLOAD | ShowStaionByAction == ACTION_TYPE.CARRY)
+            else if (ShowStaionByAction == ACTION_TYPE.LOAD | ShowStaionByAction == ACTION_TYPE.UNLOAD | ShowStaionByAction == ACTION_TYPE.TRANSFER)
                 filteredPoints = station_points.Where(pt => pt.Value.IsEquipment | pt.Value.IsSTK);
             else if (ShowStaionByAction == ACTION_TYPE.PARK)
                 filteredPoints = station_points.Where(pt => pt.Value.IsParking);

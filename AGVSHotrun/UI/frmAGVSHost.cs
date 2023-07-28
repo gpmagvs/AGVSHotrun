@@ -34,5 +34,16 @@ namespace AGVSHotrun.UI
             txbAGVSIP.Text = AGVS_Dispath_Emulator.AGVSIP;
             numudAGVSPort.Value = AGVS_Dispath_Emulator.AGVSPORT;
         }
+
+        private async void button1_Click(object sender, EventArgs e)
+        {
+            var response = await AGVS_Dispath_Emulator.Login(new CancellationToken());
+            if (response.Success)
+            {
+                MessageBox.Show("OK", "", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+            else
+                MessageBox.Show($"Fail \r\n{response.ResponseMsg}", "", MessageBoxButtons.OK, MessageBoxIcon.Error);
+        }
     }
 }

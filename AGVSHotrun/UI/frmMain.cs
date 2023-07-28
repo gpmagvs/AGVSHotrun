@@ -76,6 +76,11 @@ namespace AGVSHotrun
         private BindingList<clsHotRunScript> hotRunScripts;
         private void Form1_Load(object sender, EventArgs e)
         {
+            Logger.onLogAdded += Logger_onLogAdded;
+            Logger.Info("SystemStart");
+
+            btnWaitTaskDoneMode.CheckState = Store.SysConfigs.WaitTaskDoneDispatchMode ? CheckState.Checked : CheckState.Unchecked;
+            btnCancelChargeTaskMode.CheckState = Store.SysConfigs.CancelChargeTaskWhenHotRun ? CheckState.Checked : CheckState.Unchecked;
             hotRunScripts = new BindingList<clsHotRunScript>(Store.RunScriptsList);
             dgvHotRunScripts.DataSource = hotRunScripts;
             hotRunScripts.ResetBindings();
@@ -103,6 +108,15 @@ namespace AGVSHotrun
                     }
                 }));
             });
+        }
+
+        private void Logger_onLogAdded(object? sender, Logger.LogEventArgs log_args)
+        {
+            string lineText = $"{DateTime.Now.ToString()} |{log_args.level}| {log_args.msg}";
+            Invoke(new Action(() =>
+            {
+                rtxbLogShow.AppendText(lineText + "\r\n");
+            }));
         }
 
         private async Task<bool> CheckSqlServerConnection()
@@ -207,6 +221,19 @@ namespace AGVSHotrun
         {
             frmAGVSHost fm = new frmAGVSHost();
             fm.ShowDialog();
+        }
+
+        private void btnWaitTaskDoneMode_Click(object sender, EventArgs e)
+        {
+            Store.SysConfigs.WaitTaskDoneDispatchMode = !Store.SysConfigs.WaitTaskDoneDispatchMode;
+            Store.SaveSystemConfig();
+            btnWaitTaskDoneMode.CheckState = Store.SysConfigs.WaitTaskDoneDispatchMode ? CheckState.Checked : CheckState.Unchecked;
+        }
+        private void btnCancelChargeTaskWhenRunning_Click(object sender, EventArgs e)
+        {
+            Store.SysConfigs.CancelChargeTaskWhenHotRun = !Store.SysConfigs.CancelChargeTaskWhenHotRun;
+            Store.SaveSystemConfig();
+            btnCancelChargeTaskMode.CheckState = Store.SysConfigs.CancelChargeTaskWhenHotRun ? CheckState.Checked : CheckState.Unchecked;
         }
     }
 }

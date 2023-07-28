@@ -28,6 +28,13 @@ namespace AGVSHotrun.Models
                 return 6600;
             }
         }
-
+        /// <summary>
+        /// 派送任務後是否需要等待任務結束
+        /// </summary>
+        public bool WaitTaskDoneDispatchMode { get; set; } = false;
+        /// <summary>
+        /// 腳本執行過程中如有充電任務是否要取消
+        /// </summary>
+        public bool CancelChargeTaskWhenHotRun { get; set; } = false;
     }
 }
