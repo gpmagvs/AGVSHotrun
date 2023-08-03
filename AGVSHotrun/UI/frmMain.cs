@@ -115,7 +115,10 @@ namespace AGVSHotrun
             string lineText = $"{DateTime.Now.ToString()} |{log_args.level}| {log_args.msg}";
             Invoke(new Action(() =>
             {
+                if (rtxbLogShow.Text.Length > 65535)
+                    rtxbLogShow.ResetText();
                 rtxbLogShow.AppendText(lineText + "\r\n");
+                rtxbLogShow.ScrollToCaret();
             }));
         }
 

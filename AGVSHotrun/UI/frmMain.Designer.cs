@@ -173,7 +173,7 @@ namespace AGVSHotrun
             uscExecuteTasks1.dbHelper = agvsdbHelper1;
             uscExecuteTasks1.Dock = DockStyle.Fill;
             uscExecuteTasks1.Location = new Point(0, 187);
-            uscExecuteTasks1.Margin = new Padding(5, 5, 5, 5);
+            uscExecuteTasks1.Margin = new Padding(5);
             uscExecuteTasks1.Name = "uscExecuteTasks1";
             uscExecuteTasks1.Size = new Size(760, 281);
             uscExecuteTasks1.TabIndex = 6;
@@ -194,7 +194,7 @@ namespace AGVSHotrun
             uscagvStatus1.dbHelper = agvsdbHelper2;
             uscagvStatus1.Dock = DockStyle.Top;
             uscagvStatus1.Location = new Point(0, 19);
-            uscagvStatus1.Margin = new Padding(4, 4, 4, 4);
+            uscagvStatus1.Margin = new Padding(4);
             uscagvStatus1.Name = "uscagvStatus1";
             uscagvStatus1.Size = new Size(760, 149);
             uscagvStatus1.TabIndex = 7;
@@ -218,7 +218,7 @@ namespace AGVSHotrun
             uscMapDisplay2.Dock = DockStyle.Fill;
             uscMapDisplay2.HighlightAGVName = "";
             uscMapDisplay2.Location = new Point(0, 19);
-            uscMapDisplay2.Margin = new Padding(4, 4, 4, 4);
+            uscMapDisplay2.Margin = new Padding(4);
             uscMapDisplay2.Name = "uscMapDisplay2";
             uscMapDisplay2.OnMapPointAddToRunActionClick = null;
             uscMapDisplay2.Size = new Size(604, 449);
@@ -388,7 +388,7 @@ namespace AGVSHotrun
             uscMapDisplay1.Dock = DockStyle.Fill;
             uscMapDisplay1.HighlightAGVName = "";
             uscMapDisplay1.Location = new Point(3, 3);
-            uscMapDisplay1.Margin = new Padding(4, 4, 4, 4);
+            uscMapDisplay1.Margin = new Padding(4);
             uscMapDisplay1.Name = "uscMapDisplay1";
             uscMapDisplay1.OnMapPointAddToRunActionClick = null;
             uscMapDisplay1.Size = new Size(1368, 724);

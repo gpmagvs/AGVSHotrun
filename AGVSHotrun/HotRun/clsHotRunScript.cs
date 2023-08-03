@@ -159,7 +159,7 @@ namespace AGVSHotrun.HotRun
                 Logger.Info($"[{AGVName}] Hot Run Test Start !");
 
                 AGVSDBHelper dbhelper = new AGVSDBHelper();
-                int agvid = Debugger.IsAttached ? 1 : dbhelper.GetAGVID(AGVName);
+                int agvid =  dbhelper.GetAGVID(AGVName);
 
                 if (Store.SysConfigs.CancelChargeTaskWhenHotRun)
                     WatchChargeTaskAndCancelIt(agvid);
@@ -353,6 +353,7 @@ namespace AGVSHotrun.HotRun
             using (conn)
             {
                 ExecutingTask? createdTaskDto = null;
+                AbortTestCTS = new CancellationTokenSource();
                 CancellationTokenSource cts = new CancellationTokenSource(TimeSpan.FromSeconds(20));
                 while (createdTaskDto == null)
                 {
