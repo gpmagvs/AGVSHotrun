@@ -170,6 +170,9 @@ namespace AGVSHotrun
 
         private void dgvHotRunScripts_CellClick(object sender, DataGridViewCellEventArgs e)
         {
+            if (e.ColumnIndex < 0 | e.RowIndex < 0)
+                return;
+
             var click_column = dgvHotRunScripts.CurrentCell.OwningColumn;
             clsHotRunScript script = dgvHotRunScripts.CurrentRow.DataBoundItem as clsHotRunScript;
             if (script == null)

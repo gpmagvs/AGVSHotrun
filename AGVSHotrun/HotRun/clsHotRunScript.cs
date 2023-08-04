@@ -159,7 +159,7 @@ namespace AGVSHotrun.HotRun
                 Logger.Info($"[{AGVName}] Hot Run Test Start !");
 
                 AGVSDBHelper dbhelper = new AGVSDBHelper();
-                int agvid =  dbhelper.GetAGVID(AGVName);
+                int agvid = dbhelper.GetAGVID(AGVName);
 
                 if (Store.SysConfigs.CancelChargeTaskWhenHotRun)
                     WatchChargeTaskAndCancelIt(agvid);
@@ -177,9 +177,13 @@ namespace AGVSHotrun.HotRun
                 bool isQueueMonitorStart = false;
                 for (int i = 0; i < RepeatNum; i++)
                 {
+                    CheckScriptAbortAndThrowExpection();
+
                     Queue<clsTaskState> tasknameQueue = new Queue<clsTaskState>();
                     for (int action_index = 0; action_index < RunTasksDesigning.Count; action_index++)
                     {
+                        CheckScriptAbortAndThrowExpection();
+
                         clsRunTask task_action = RunTasksDesigning[action_index];
 
                         bool taskCreated, task_finish;
@@ -273,6 +277,16 @@ namespace AGVSHotrun.HotRun
                 OnHotRunFinish?.Invoke(this, this);
             }
         }
+
+        private void CheckScriptAbortAndThrowExpection()
+        {
+            if (AbortTestCTS.IsCancellationRequested)
+            {
+                Logger.Error($"[{AGVName}] AbortTestCTS.IsCancellationRequested");
+                throw new TaskCanceledException();
+            }
+        }
+
         private void HotrunFinishCheckWTD(int agvid)
         {
             Logger.Warn($"[{AGVName}] Start HotrunFinishCheckWTD.");

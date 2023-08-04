@@ -68,7 +68,7 @@ namespace AGVSHotrun
         {
             if (DataBinding.Count == 0)
                 return;
-            if (MessageBox.Show("確定要取消所有任務?", "取消任務確認", MessageBoxButtons.OKCancel, MessageBoxIcon.Question) == DialogResult.OK)
+            if (MessageBox.Show("!!!!!!!注意!!!!! \r\n此操作將會取消派車系統所有任務\r\n確定要進行此操作?", "取消任務確認", MessageBoxButtons.OKCancel, MessageBoxIcon.Warning) == DialogResult.OK)
             {
                 Task.Run(async () =>
                 {
