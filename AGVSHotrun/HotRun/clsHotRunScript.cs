@@ -154,6 +154,7 @@ namespace AGVSHotrun.HotRun
 
         private async Task _ExecutingTasksAsync()
         {
+            AbortTestCTS = new CancellationTokenSource();
             try
             {
                 Logger.Info($"[{AGVName}] Hot Run Test Start !");

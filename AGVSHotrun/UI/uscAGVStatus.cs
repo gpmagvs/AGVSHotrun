@@ -46,17 +46,17 @@ namespace AGVSHotrun
             if (selectedRow >= 0)
                 dataGridView1.CurrentCell = dataGridView1[0, selectedRow];
 
-        
-                using (var conn = dbHelper.DBConn)
+
+            using (var conn = dbHelper.DBConn)
+            {
+                var agv_infos = dbHelper.DBConn.AGVInfos.ToList();
+                DataBinding.Clear();
+                foreach (var info in agv_infos)
                 {
-                    var agv_infos = dbHelper.DBConn.AGVInfos.ToList();
-                    DataBinding.Clear();
-                    foreach (var info in agv_infos)
-                    {
-                        DataBinding.Add(info);
-                    }
-                    DataBinding.ResetBindings();
+                    DataBinding.Add(info);
                 }
+                DataBinding.ResetBindings();
+            }
         }
     }
 }
