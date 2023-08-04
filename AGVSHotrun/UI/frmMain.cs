@@ -84,6 +84,8 @@ namespace AGVSHotrun
             hotRunScripts = new BindingList<clsHotRunScript>(Store.RunScriptsList);
             dgvHotRunScripts.DataSource = hotRunScripts;
             hotRunScripts.ResetBindings();
+
+            Logger.Info("資料庫連線中...");
             labSystemInformation.Text = "資料庫連線中...";
             Task.Run(async () =>
             {
@@ -94,12 +96,14 @@ namespace AGVSHotrun
                     Enabled = true;
                     if (sql_connected)
                     {
+                        Logger.Info("資料庫已連線");
                         labSystemInformation.Text = "資料庫已連線";
                         uscExecuteTasks1.StartRender();
                         uscagvStatus1.StartRender();
                     }
                     else
                     {
+                        Logger.Info("資料庫連線失敗");
                         labSystemInformation.Text = "資料庫連線失敗";
                         Task.Run(() =>
                         {
@@ -182,7 +186,10 @@ namespace AGVSHotrun
                 if (script.IsRunning | script.IsWaitLogin)
                 {
                     if (MessageBox.Show("腳本已經在執行中 ,確定要中斷?", "STOP", MessageBoxButtons.OKCancel, MessageBoxIcon.Warning) == DialogResult.OK)
+                    {
+                        Logger.Info($"User STOP Script _{script.ID}");
                         script.Abort();
+                    }
                     return;
                 }
 
@@ -199,8 +206,10 @@ namespace AGVSHotrun
                 }
                 Task.Run(() =>
                 {
+                    Logger.Info($"User Start Run Script _{script.ID}");
                     if (!script.Start(out string errMsg))
                     {
+                        Logger.Info($"Run Script _{script.ID} FAIL:{errMsg}");
                         if (errMsg == "")
                             return;
                         Invoke(new Action(() =>
@@ -219,7 +228,10 @@ namespace AGVSHotrun
             if (click_column == colScriptRemove)
             {
                 if (MessageBox.Show("確定要移除此腳本?", "Script Remove ", MessageBoxButtons.OKCancel, MessageBoxIcon.Warning) == DialogResult.OK)
+                {
+                    Logger.Info($"User Remove Script _{script.ID}");
                     Store.RemoveHotRunScript(script);
+                }
             }
         }
 
