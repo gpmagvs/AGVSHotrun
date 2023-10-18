@@ -26,7 +26,15 @@ namespace AGVSHotrun.HotRun
         public static event EventHandler<clsHotRunScript> OnHttpExcetionOccur;
         public static event EventHandler<clsHotRunScript> OnLoopStateChange;
         public string ID { get; set; }
-        public string AGVName { get; set; }
+        public string AGVName
+        {
+            get
+            {
+                if (RunTasksDesigning.Count == 0)
+                    return "";
+                return string.Join(",", RunTasksDesigning.Select(t => t.AGVName));
+            }
+        }
 
         public int RepeatNum { get; set; } = 1;
 
@@ -151,23 +159,28 @@ namespace AGVSHotrun.HotRun
             public string task_name;
             public clsRunTask task_action;
         }
-
+        /// <summary>
+        /// 非同步執行運行測試任務。
+        /// </summary>
+        /// <remarks>
+        /// 此方法執行以下動作：
+        /// 1. 初始化用於中止任務的取消令牌。
+        /// 2. 記錄熱運行測試的開始。
+        /// 3. 準備必要的變量並觸發相關事件。
+        /// 4. 遍歷每一個要在AGV上執行的設計任務。
+        /// 5. 根據設計的任務類型（例如：MOVE，TRANSFER）發送請求到AGV。
+        /// 6. 在執行下一個任務之前，等待任務的建立和完成。
+        /// </remarks>
+        /// <exception cref="TaskCanceledException">當任務被取消時拋出。</exception>
+        /// <exception cref="HttpRequestException">當與派車系統的通訊發生問題時拋出。</exception>
+        /// <exception cref="AuthenticationFailedException">當需要重新登入派車系統時拋出。</exception>
         private async Task _ExecutingTasksAsync()
         {
             AbortTestCTS = new CancellationTokenSource();
             try
             {
-                Logger.Info($"[{AGVName}] Hot Run Test Start !");
-
+                Logger.Info($"Hot Run Test Start !");
                 AGVSDBHelper dbhelper = new AGVSDBHelper();
-                int agvid = dbhelper.GetAGVID(AGVName);
-
-                if (Store.SysConfigs.CancelChargeTaskWhenHotRun)
-                    WatchChargeTaskAndCancelIt(agvid);
-                if (!Store.SysConfigs.WaitTaskDoneDispatchMode)
-                    HotrunFinishCheckWTD(agvid);
-
-                KeyValuePair<AGVInfo, MapPoint> agv = Store.AGVlocStore.First(ke => ke.Key.AGVName == AGVName);
                 StartTime = DateTime.Now;
                 EndTime = DateTime.MinValue;
                 OnHotRunStart?.Invoke(this, this);
@@ -184,28 +197,27 @@ namespace AGVSHotrun.HotRun
                     for (int action_index = 0; action_index < RunTasksDesigning.Count; action_index++)
                     {
                         CheckScriptAbortAndThrowExpection();
-
                         clsRunTask task_action = RunTasksDesigning[action_index];
-
                         bool taskCreated, task_finish;
                         string? TaskName = "";
                         //惟Carry、Load Unload 且設定為僅移動
+                        int _agvid = dbhelper.GetAGVID(task_action.AGVName);
                         if (task_action.MoveOnly && task_action.Action != ACTION_TYPE.MOVE)
                         {
-                            await task_action.PostFromStationReq(AGVName, agvid);
-                            taskCreated = WaitTaskCreated(agvid, ACTION_TYPE.MOVE.ToString().ToLower(), out var _TaskName);
+                            await task_action.PostFromStationReq(task_action.AGVName, _agvid);
+                            taskCreated = WaitTaskCreated(task_action.AGVName, _agvid, ACTION_TYPE.MOVE.ToString().ToLower(), out var _TaskName);
                             tasknameQueue.Enqueue(new clsTaskState
                             {
                                 task_name = _TaskName,
                                 task_action = task_action
                             });
                             OnLoopStateChange?.Invoke(this, this);
-                            WaitTaskFinish(_TaskName);
+                            WaitTaskFinish(task_action.AGVName, _TaskName);
                             if (task_action.Action == ACTION_TYPE.TRANSFER)
                             {
-                                await task_action.PostToStationReq(AGVName, agvid);
-                                taskCreated = WaitTaskCreated(agvid, ACTION_TYPE.MOVE.ToString().ToLower(), out var _TaskNameNormal);
-                                WaitTaskFinish(_TaskNameNormal);
+                                await task_action.PostToStationReq(task_action.AGVName, _agvid);
+                                taskCreated = WaitTaskCreated(task_action.AGVName, _agvid, ACTION_TYPE.MOVE.ToString().ToLower(), out var _TaskNameNormal);
+                                WaitTaskFinish(task_action.AGVName, _TaskNameNormal);
                                 tasknameQueue.Enqueue(new clsTaskState
                                 {
                                     task_name = _TaskNameNormal,
@@ -218,14 +230,14 @@ namespace AGVSHotrun.HotRun
                         }
                         else
                         {
-                            await task_action.PostActionReq(AGVName, agvid);
-                            Logger.Info($"[{AGVName}] Wait Task Created...");
-                            taskCreated = WaitTaskCreated(agvid, task_action.Action.ToString().ToLower(), out var RunningTaskName);
-                            Logger.Info($"[{AGVName}] Task-{RunningTaskName} Created!");
+                            await task_action.PostActionReq(task_action.AGVName, _agvid);
+                            Logger.Info($"[{task_action.AGVName}] Wait {task_action.Action} Task Created...");
+                            taskCreated = WaitTaskCreated(task_action.AGVName, _agvid, task_action.Action.ToString().ToLower(), out var RunningTaskName);
+                            Logger.Info($"[{task_action.AGVName}] Task-{RunningTaskName} Created!");
                             ProgressText = $"{action_index + 1}/{RunTasksDesigning.Count}";
 
                             OnLoopStateChange?.Invoke(this, this);
-                            WaitTaskFinish(RunningTaskName);
+                            WaitTaskFinish(task_action.AGVName, RunningTaskName);
 
                             task_action.TaskName = RunningTaskName;
                             tasknameQueue.Enqueue(new clsTaskState
@@ -273,12 +285,19 @@ namespace AGVSHotrun.HotRun
             {
                 IsRunning = false;
                 EndTime = DateTime.Now;
-                FailureReason = ex.Message;
+                FailureReason = ex.Message + $"\r\n{ex.StackTrace}";
                 Success = false;
                 OnHotRunFinish?.Invoke(this, this);
             }
         }
-
+        /// <summary>
+        /// 檢查是否有請求中止測試，如果有則拋出任務取消異常。
+        /// </summary>
+        /// <remarks>
+        /// 此方法會檢查`AbortTestCTS`的取消請求狀態。
+        /// 如果取消請求已被觸發，則將記錄相應的錯誤並拋出`TaskCanceledException`異常。
+        /// </remarks>
+        /// <exception cref="TaskCanceledException">當有取消請求時拋出此異常。</exception>
         private void CheckScriptAbortAndThrowExpection()
         {
             if (AbortTestCTS.IsCancellationRequested)
@@ -361,7 +380,7 @@ namespace AGVSHotrun.HotRun
                                           t.task_action.ToStation == next_action.FromStation |
                                           t.task_action.ToStation == next_action.ToStation);
         }
-        private bool WaitTaskCreated(int agvid, string action_type, out string taskName)
+        private bool WaitTaskCreated(string AgvName, int agvid, string action_type, out string taskName)
         {
             taskName = "";
             var conn = DBHelper.DBConn;
@@ -375,33 +394,33 @@ namespace AGVSHotrun.HotRun
                     Thread.Sleep(1000);
                     if (AbortTestCTS.IsCancellationRequested)
                     {
-                        Logger.Error($"[{AGVName}] AbortTestCTS.IsCancellationRequested");
+                        Logger.Error($"[{AgvName}] AbortTestCTS.IsCancellationRequested");
                         throw new TaskCanceledException();
                     }
 
                     if (cts.IsCancellationRequested)
                     {
-                        Logger.Error($"[{AGVName}] WaitTaskCreated Timeout (20 sec)");
+                        Logger.Error($"[{AgvName}] WaitTaskCreated Timeout (20 sec)");
                         return false;
                     }
                     try
                     {
-                        Logger.Info($"[{AGVName}] Search Task Action Type equal {action_type} and AGVID equl {agvid}");
+                        Logger.Info($"[{AgvName}] Search Task Action Type equal {action_type} and AGVID equl {agvid}");
 
                         IQueryable<ExecutingTask> tsks = conn.ExecutingTasks.Where(t => t.AGVID == agvid);
                         createdTaskDto = tsks.Where(t => t.ActionType.ToLower() == action_type).OrderBy(t => t.Receive_Time).LastOrDefault();
-                        Logger.Info($"[{AGVName}] Search Task Action Type equal {action_type} and AGVID equl {agvid}---Find {tsks.Count()} Data");
+                        Logger.Info($"[{AgvName}] Search Task Action Type equal {action_type} and AGVID equl {agvid}---Find {tsks.Count()} Data");
                     }
                     catch (Exception ex)
                     {
-                        Logger.Error($"[{AGVName}] WaitTaskCreated Exception -{ex.Message}, Trace: {ex.StackTrace}");
+                        Logger.Error($"[{AgvName}] WaitTaskCreated Exception -{ex.Message}, Trace: {ex.StackTrace}");
                     }
                 }
                 taskName = createdTaskDto.Name;
                 return true;
             }
         }
-        private bool WaitTaskFinish(string taskName)
+        private bool WaitTaskFinish(string agvName, string taskName)
         {
             if (!Store.SysConfigs.WaitTaskDoneDispatchMode)
                 return true;
@@ -423,19 +442,19 @@ namespace AGVSHotrun.HotRun
 
                         if (cts.IsCancellationRequested)
                         {
-                            Logger.Error($"[{AGVName}] WaitTaskFinish Timeout (600 sec)");
+                            Logger.Error($"[{agvName}] WaitTaskFinish Timeout (600 sec)");
                             return false;
                         }
                         IQueryable<TaskDto> TaskDto = conn.Tasks.Where(t => t.Name == taskName); //101 cancel, 100 finish
                         if (TaskDto.Count() > 0)
                         {
-                            Logger.Info($"[{AGVName}] Task-{taskName} Finish!");
+                            Logger.Info($"[{agvName}] Task-{taskName} Finish!");
                             return true;
                         }
                     }
                     catch (TaskCanceledException ex)
                     {
-                        Logger.Error($"[{AGVName}] WaitTaskFinish Exception -{ex.Message}, Trace: {ex.StackTrace}");
+                        Logger.Error($"[{agvName}] WaitTaskFinish Exception -{ex.Message}, Trace: {ex.StackTrace}");
                         return false;
                     }
                 }
@@ -457,6 +476,7 @@ namespace AGVSHotrun.HotRun
         public string ToSlot { get; set; } = "";
         public string CSTID { get; set; } = "";
         public bool MoveOnly { get; set; } = true;
+        public string AGVName { get; set; } = "AGV_1";
 
         public string GetSecondaryPt(string Station)
         {

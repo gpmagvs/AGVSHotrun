@@ -39,6 +39,7 @@ namespace AGVSHotrun.UI
         {
             InitializeComponent();
             this.RunTaskDto = runTask;
+            cmbAgvName.AGVSelected = runTask.AGVName;
             cmbFromStations.ShowStaionByAction =
             cmbToStations.ShowStaionByAction = runTask.Action;
             actionComboBox1.action_selected = runTask.Action;
@@ -48,6 +49,7 @@ namespace AGVSHotrun.UI
             cmbToSlot.Text = runTask.ToSlot;
             ckbMoveOnly.Checked = runTask.MoveOnly;
             txbCSTID.Text = runTask.CSTID;
+
         }
 
         private void actionComboBox1_OnActionTypeSelected(object sender, Models.ACTION_TYPE action)
@@ -62,19 +64,20 @@ namespace AGVSHotrun.UI
         private void cmbFromStations_OnStationSelect(object sender, AGVSystemCommonNet6.MAP.MapPoint point)
         {
             RunTaskDto.FromStation = point.Name;
-            if (RunTaskDto.Action != Models.ACTION_TYPE.MOVE && RunTaskDto.Action != Models.ACTION_TYPE.CHARGE)
+            //if (RunTaskDto.Action != Models.ACTION_TYPE.MOVE && RunTaskDto.Action != Models.ACTION_TYPE.CHARGE)
+            //{
+            cmbFromSlot.Items.Clear();
+            if (TryGetSlotByStationName(RunTaskDto.FromStation, out string[] slots))
             {
-                cmbFromSlot.Items.Clear();
-                if (TryGetSlotByStationName(RunTaskDto.FromStation, out string[] slots))
-                {
-                    cmbFromSlot.Items.AddRange(slots);
-                    cmbFromSlot.SelectedIndex = slots.ToList().IndexOf(RunTaskDto.FromSlot);
-                }
+                cmbFromSlot.Items.AddRange(slots);
+                var selindex = slots.ToList().IndexOf(RunTaskDto.FromSlot);
+                cmbFromSlot.SelectedIndex = selindex == -1 ? 0 : selindex;
             }
-            else
-            {
+            //}
+            //else
+            //{
 
-            }
+            //}
         }
         private bool TryGetSlotByStationName(string stationName, out string[] slots)
         {
@@ -142,6 +145,11 @@ namespace AGVSHotrun.UI
 
         }
 
+        private void agvCombox1_OnAGVSelected(object sender, string name)
+        {
+            RunTaskDto.AGVName = name;
+
+        }
         private void cmbFromSlot_SelectedIndexChanged(object sender, EventArgs e)
         {
             RunTaskDto.FromSlot = cmbFromSlot.SelectedItem.ToString();
@@ -156,5 +164,11 @@ namespace AGVSHotrun.UI
         {
 
         }
+
+        private void agvCombox1_Load(object sender, EventArgs e)
+        {
+
+        }
+
     }
 }

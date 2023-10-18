@@ -37,6 +37,8 @@ namespace AGVSHotrun
             DataGridViewCellStyle dataGridViewCellStyle1 = new DataGridViewCellStyle();
             statusStrip1 = new StatusStrip();
             labSystemInformation = new ToolStripStatusLabel();
+            toolStripStatusLabel1 = new ToolStripStatusLabel();
+            labMapNote = new ToolStripStatusLabel();
             tabControl1 = new TabControl();
             tabPage3 = new TabPage();
             panel2 = new Panel();
@@ -92,7 +94,7 @@ namespace AGVSHotrun
             // 
             // statusStrip1
             // 
-            statusStrip1.Items.AddRange(new ToolStripItem[] { labSystemInformation });
+            statusStrip1.Items.AddRange(new ToolStripItem[] { labSystemInformation, toolStripStatusLabel1, labMapNote });
             statusStrip1.Location = new Point(0, 799);
             statusStrip1.Name = "statusStrip1";
             statusStrip1.Size = new Size(1382, 22);
@@ -104,6 +106,18 @@ namespace AGVSHotrun
             labSystemInformation.Name = "labSystemInformation";
             labSystemInformation.Size = new Size(12, 17);
             labSystemInformation.Text = "_";
+            // 
+            // toolStripStatusLabel1
+            // 
+            toolStripStatusLabel1.Name = "toolStripStatusLabel1";
+            toolStripStatusLabel1.Size = new Size(10, 17);
+            toolStripStatusLabel1.Text = "|";
+            // 
+            // labMapNote
+            // 
+            labMapNote.Name = "labMapNote";
+            labMapNote.Size = new Size(109, 17);
+            labMapNote.Text = "Map Not Loaded.";
             // 
             // tabControl1
             // 
@@ -285,6 +299,7 @@ namespace AGVSHotrun
             aGVNameDataGridViewTextBoxColumn.HeaderText = "AGVName";
             aGVNameDataGridViewTextBoxColumn.Name = "aGVNameDataGridViewTextBoxColumn";
             aGVNameDataGridViewTextBoxColumn.ReadOnly = true;
+            aGVNameDataGridViewTextBoxColumn.Visible = false;
             // 
             // CurrentAction
             // 
@@ -515,6 +530,18 @@ namespace AGVSHotrun
         private DataGridView dgvHotRunScripts;
         private BindingSource clsHotRunScriptBindingSource;
         private UI.uscMapDisplay uscMapDisplay2;
+        private ToolStripDropDownButton toolStripDropDownButton1;
+        private SplitContainer splitContainer1;
+        private uscAGVStatus uscagvStatus1;
+        private Label label2;
+        private Label label1;
+        private Label label3;
+        private uscExecuteTasks uscExecuteTasks1;
+        private TabPage tabPage1;
+        private RichTextBox rtxbLogShow;
+        private ToolStripDropDownButton toolStripDropDownButton2;
+        private ToolStripMenuItem btnWaitTaskDoneMode;
+        private ToolStripMenuItem btnCancelChargeTaskMode;
         private DataGridViewButtonColumn colHotRunStart;
         private DataGridViewTextBoxColumn Description;
         private DataGridViewTextBoxColumn ID;
@@ -530,17 +557,7 @@ namespace AGVSHotrun
         private DataGridViewTextBoxColumn FailureReason;
         private DataGridViewButtonColumn colHotRunEdit;
         private DataGridViewButtonColumn colScriptRemove;
-        private ToolStripDropDownButton toolStripDropDownButton1;
-        private SplitContainer splitContainer1;
-        private uscAGVStatus uscagvStatus1;
-        private Label label2;
-        private Label label1;
-        private Label label3;
-        private uscExecuteTasks uscExecuteTasks1;
-        private TabPage tabPage1;
-        private RichTextBox rtxbLogShow;
-        private ToolStripDropDownButton toolStripDropDownButton2;
-        private ToolStripMenuItem btnWaitTaskDoneMode;
-        private ToolStripMenuItem btnCancelChargeTaskMode;
+        private ToolStripStatusLabel toolStripStatusLabel1;
+        private ToolStripStatusLabel labMapNote;
     }
 }

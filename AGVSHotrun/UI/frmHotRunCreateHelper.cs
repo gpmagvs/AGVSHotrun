@@ -48,7 +48,10 @@ namespace AGVSHotrun.UI
                 if (isEditOld)
                     Store.SaveHotRunScript(script);
                 else
+                {
+                    script.Description = script.Description == "" ? $"Created at {DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss")}" : script.Description;
                     Store.AddNewHotRunScript(script);
+                }
                 MessageBox.Show("Save Done", "", MessageBoxButtons.OK, MessageBoxIcon.Information);
 
                 if (isSaveAndExitFlag)
@@ -58,7 +61,6 @@ namespace AGVSHotrun.UI
 
         private void agvCombox1_OnAGVSelected(object sender, string AGVName)
         {
-            script.AGVName = AGVName;
             uscMapDisplay1.HighlightAGVName = AGVName;
         }
         private void UscRunTaskItem_OnRemoveButtonPush(object? sender, uscRunTaskItem RunTaskItemUI)

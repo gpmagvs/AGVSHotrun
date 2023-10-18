@@ -6,6 +6,7 @@ using AGVSystemCommonNet6.Configuration;
 using AGVSystemCommonNet6.MAP;
 using System.ComponentModel;
 using System.Diagnostics;
+using static Azure.Core.HttpHeader;
 
 namespace AGVSHotrun
 {
@@ -78,7 +79,25 @@ namespace AGVSHotrun
         {
             Logger.onLogAdded += Logger_onLogAdded;
             Logger.Info("SystemStart");
-
+            if (!File.Exists(Store.SysConfigs.MapFile))
+            {
+                Store.MapData = new Map
+                {
+                    Note = "無效的檔案路徑"
+                };
+                MessageBox.Show($"圖資檔案不存在-Path={Store.SysConfigs.MapFile}","圖資載入失敗",MessageBoxButtons.OK,MessageBoxIcon.Error);
+            }
+            else
+            {
+                Store.MapData = MapManager.LoadMapFromFile(Store.SysConfigs.MapFile, out string msg, false);
+                if (msg != "")
+                {
+                    MessageBox.Show(msg);
+                    Logger.Error(msg);
+                }
+            }
+            labMapNote.Text = "Map-" + Store.MapData.Note;
+            Logger.Info($"Map Loaded.{Store.MapData.Name}, Note:{Store.MapData.Note}");
             btnWaitTaskDoneMode.CheckState = Store.SysConfigs.WaitTaskDoneDispatchMode ? CheckState.Checked : CheckState.Unchecked;
             btnCancelChargeTaskMode.CheckState = Store.SysConfigs.CancelChargeTaskWhenHotRun ? CheckState.Checked : CheckState.Unchecked;
             hotRunScripts = new BindingList<clsHotRunScript>(Store.RunScriptsList);
@@ -194,15 +213,18 @@ namespace AGVSHotrun
                 }
 
                 //確認AGV狀態 > 如果是運轉中
-                if (!Debugger.IsAttached)
-                {
 
-                    var agv_states = aGVSDBHelper.GetAGVMainStatus(script.AGVName);
-                    if (agv_states.RunStatus != RUN_STATE.IDLE)
-                    {
-                        if (MessageBox.Show($"{script.AGVName} 目前狀態是 {agv_states.RunStatus} , 確定要執行腳本?", "STOP", MessageBoxButtons.OKCancel, MessageBoxIcon.Warning) == DialogResult.Cancel)
-                            return;
-                    }
+                if (script.RunTasksDesigning.Count == 0)
+                {
+                    MessageBox.Show($"測試腳本中未設定任務動作，請先進行腳本任務動作設定", "SCRIPT RUN FORBIDDEN!", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return;
+                }
+                var agvNamesInScript = script.RunTasksDesigning.Select(task => task.AGVName).ToList();
+                List<string> notIdleAGVNames = agvNamesInScript.FindAll(agvName => aGVSDBHelper.GetAGVMainStatus(agvName).RunStatus == RUN_STATE.RUN);
+                if (notIdleAGVNames.Count != 0)
+                {
+                    var names = string.Join(",", notIdleAGVNames);
+                    MessageBox.Show($"測試腳本中 {names} 狀態不為IDLE/CHARGE，請先確認各AGV狀態為IDLE/CHARGE方可執行腳本", "SCRIPT RUN FORBIDDEN!", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
                 Task.Run(() =>
                 {

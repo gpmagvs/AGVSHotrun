@@ -24,6 +24,11 @@ namespace AGVSHotrun
         internal static void AddNewHotRunScript(clsHotRunScript script)
         {
             script.ID = DateTime.Now.ToString("yyyy-MM-dd-HH-mm-ss");
+            if (RunScriptsList.Any(_script => _script.ID == script.ID))
+            {
+                MessageBox.Show($"新增Hot Run腳本失敗，已經存在ID為 {script.ID} 之腳本");
+                return;
+            }
             RunScriptsList.Add(script);
             File.WriteAllText(SysConfigs.HotRunScriptStoredFile, JsonConvert.SerializeObject(RunScriptsList, Formatting.Indented));
             OnScriptCreated?.Invoke("Store", EventArgs.Empty);
@@ -34,7 +39,6 @@ namespace AGVSHotrun
             if (existScript != null)
             {
                 var index = RunScriptsList.IndexOf(existScript);
-                RunScriptsList[index].AGVName = script.AGVName;
                 RunScriptsList[index].RepeatNum = script.RepeatNum;
                 RunScriptsList[index].RunTasksDesigning = script.RunTasksDesigning;
                 RunScriptsList[index].Description = script.Description;

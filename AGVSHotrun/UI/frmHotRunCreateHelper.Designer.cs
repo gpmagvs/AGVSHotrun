@@ -50,7 +50,7 @@
             // btnCreateNewHotRun
             // 
             btnCreateNewHotRun.Font = new Font("Microsoft JhengHei UI", 23F, FontStyle.Bold, GraphicsUnit.Point);
-            btnCreateNewHotRun.Location = new Point(3, 3);
+            btnCreateNewHotRun.Location = new Point(12, 12);
             btnCreateNewHotRun.Name = "btnCreateNewHotRun";
             btnCreateNewHotRun.Size = new Size(283, 58);
             btnCreateNewHotRun.TabIndex = 1;
@@ -62,17 +62,18 @@
             // 
             label1.AutoSize = true;
             label1.Font = new Font("Microsoft JhengHei UI", 15F, FontStyle.Regular, GraphicsUnit.Point);
-            label1.Location = new Point(7, 79);
+            label1.Location = new Point(8, 114);
             label1.Name = "label1";
             label1.Size = new Size(92, 25);
             label1.TabIndex = 4;
             label1.Text = "選擇車輛";
+            label1.Visible = false;
             // 
             // label2
             // 
             label2.AutoSize = true;
             label2.Font = new Font("Microsoft JhengHei UI", 15F, FontStyle.Regular, GraphicsUnit.Point);
-            label2.Location = new Point(7, 157);
+            label2.Location = new Point(8, 157);
             label2.Name = "label2";
             label2.Size = new Size(92, 25);
             label2.TabIndex = 5;
@@ -85,23 +86,24 @@
             uscRunTaskCreater1.BorderStyle = BorderStyle.FixedSingle;
             uscRunTaskCreater1.Location = new Point(8, 185);
             uscRunTaskCreater1.Name = "uscRunTaskCreater1";
-            uscRunTaskCreater1.Size = new Size(877, 497);
+            uscRunTaskCreater1.Size = new Size(1089, 497);
             uscRunTaskCreater1.TabIndex = 6;
             uscRunTaskCreater1.OnRunTaskItemCreated += uscRunTaskCreater1_OnRunTaskItemCreated;
             // 
             // agvCombox1
             // 
             agvCombox1.AGVSelected = null;
-            agvCombox1.Location = new Point(103, 79);
+            agvCombox1.Location = new Point(103, 114);
             agvCombox1.Name = "agvCombox1";
-            agvCombox1.Size = new Size(187, 29);
+            agvCombox1.Size = new Size(194, 29);
             agvCombox1.TabIndex = 7;
+            agvCombox1.Visible = false;
             agvCombox1.OnAGVSelected += agvCombox1_OnAGVSelected;
             // 
             // btnSaveAndExit
             // 
             btnSaveAndExit.Font = new Font("Microsoft JhengHei UI", 23F, FontStyle.Bold, GraphicsUnit.Point);
-            btnSaveAndExit.Location = new Point(292, 3);
+            btnSaveAndExit.Location = new Point(301, 12);
             btnSaveAndExit.Name = "btnSaveAndExit";
             btnSaveAndExit.Size = new Size(283, 58);
             btnSaveAndExit.TabIndex = 8;
@@ -111,7 +113,7 @@
             // 
             // splitContainer1
             // 
-            splitContainer1.BackColor = SystemColors.MenuHighlight;
+            splitContainer1.BackColor = Color.Red;
             splitContainer1.Dock = DockStyle.Fill;
             splitContainer1.Location = new Point(0, 0);
             splitContainer1.Name = "splitContainer1";
@@ -134,7 +136,8 @@
             // 
             splitContainer1.Panel2.Controls.Add(uscMapDisplay1);
             splitContainer1.Size = new Size(1441, 685);
-            splitContainer1.SplitterDistance = 888;
+            splitContainer1.SplitterDistance = 1100;
+            splitContainer1.SplitterWidth = 8;
             splitContainer1.TabIndex = 9;
             // 
             // rtxbDescription
@@ -158,12 +161,14 @@
             // 
             // numudTRepeatTime
             // 
-            numudTRepeatTime.Location = new Point(106, 120);
+            numudTRepeatTime.Font = new Font("Microsoft JhengHei UI", 9F, FontStyle.Bold, GraphicsUnit.Point);
+            numudTRepeatTime.Location = new Point(106, 79);
             numudTRepeatTime.Maximum = new decimal(new int[] { 1000, 0, 0, 0 });
             numudTRepeatTime.Minimum = new decimal(new int[] { 1, 0, 0, 0 });
             numudTRepeatTime.Name = "numudTRepeatTime";
             numudTRepeatTime.Size = new Size(184, 23);
             numudTRepeatTime.TabIndex = 10;
+            numudTRepeatTime.TextAlign = HorizontalAlignment.Center;
             numudTRepeatTime.Value = new decimal(new int[] { 1, 0, 0, 0 });
             numudTRepeatTime.ValueChanged += numudTRepeatTime_ValueChanged;
             // 
@@ -171,7 +176,7 @@
             // 
             label3.AutoSize = true;
             label3.Font = new Font("Microsoft JhengHei UI", 15F, FontStyle.Regular, GraphicsUnit.Point);
-            label3.Location = new Point(8, 118);
+            label3.Location = new Point(8, 77);
             label3.Name = "label3";
             label3.Size = new Size(92, 25);
             label3.TabIndex = 9;
@@ -187,7 +192,7 @@
             uscMapDisplay1.Location = new Point(0, 0);
             uscMapDisplay1.Name = "uscMapDisplay1";
             uscMapDisplay1.OnMapPointAddToRunActionClick = null;
-            uscMapDisplay1.Size = new Size(549, 685);
+            uscMapDisplay1.Size = new Size(333, 685);
             uscMapDisplay1.TabIndex = 1;
             // 
             // frmHotRunCreateHelper

@@ -44,6 +44,8 @@
             btnMoveDown = new Button();
             btnMoveUp = new Button();
             ckbMoveOnly = new CheckBox();
+            label5 = new Label();
+            cmbAgvName = new AGVCombox();
             panel2.SuspendLayout();
             SuspendLayout();
             // 
@@ -51,7 +53,7 @@
             // 
             label1.AutoSize = true;
             label1.Font = new Font("Microsoft JhengHei UI", 9F, FontStyle.Bold, GraphicsUnit.Point);
-            label1.Location = new Point(82, 8);
+            label1.Location = new Point(212, 8);
             label1.Name = "label1";
             label1.Size = new Size(31, 15);
             label1.TabIndex = 0;
@@ -59,7 +61,7 @@
             // 
             // actionComboBox1
             // 
-            actionComboBox1.Location = new Point(119, 3);
+            actionComboBox1.Location = new Point(249, 3);
             actionComboBox1.Name = "actionComboBox1";
             actionComboBox1.Size = new Size(86, 29);
             actionComboBox1.TabIndex = 1;
@@ -69,7 +71,7 @@
             // 
             label2.AutoSize = true;
             label2.Font = new Font("Microsoft JhengHei UI", 9F, FontStyle.Bold, GraphicsUnit.Point);
-            label2.Location = new Point(208, 8);
+            label2.Location = new Point(338, 8);
             label2.Name = "label2";
             label2.Size = new Size(40, 15);
             label2.TabIndex = 2;
@@ -77,7 +79,7 @@
             // 
             // cmbFromStations
             // 
-            cmbFromStations.Location = new Point(245, 2);
+            cmbFromStations.Location = new Point(375, 2);
             cmbFromStations.Name = "cmbFromStations";
             cmbFromStations.ShowStaionByAction = Models.ACTION_TYPE.MOVE;
             cmbFromStations.Size = new Size(173, 29);
@@ -86,7 +88,7 @@
             // 
             // cmbToStations
             // 
-            cmbToStations.Location = new Point(540, 3);
+            cmbToStations.Location = new Point(670, 3);
             cmbToStations.Name = "cmbToStations";
             cmbToStations.ShowStaionByAction = Models.ACTION_TYPE.MOVE;
             cmbToStations.Size = new Size(173, 29);
@@ -97,7 +99,7 @@
             // 
             label3.AutoSize = true;
             label3.Font = new Font("Microsoft JhengHei UI", 9F, FontStyle.Bold, GraphicsUnit.Point);
-            label3.Location = new Point(512, 8);
+            label3.Location = new Point(642, 8);
             label3.Name = "label3";
             label3.Size = new Size(22, 15);
             label3.TabIndex = 4;
@@ -106,7 +108,7 @@
             // cmbFromSlot
             // 
             cmbFromSlot.FormattingEnabled = true;
-            cmbFromSlot.Location = new Point(424, 6);
+            cmbFromSlot.Location = new Point(554, 6);
             cmbFromSlot.Name = "cmbFromSlot";
             cmbFromSlot.Size = new Size(67, 23);
             cmbFromSlot.TabIndex = 6;
@@ -115,7 +117,7 @@
             // cmbToSlot
             // 
             cmbToSlot.FormattingEnabled = true;
-            cmbToSlot.Location = new Point(719, 6);
+            cmbToSlot.Location = new Point(849, 6);
             cmbToSlot.Name = "cmbToSlot";
             cmbToSlot.Size = new Size(67, 23);
             cmbToSlot.TabIndex = 7;
@@ -125,7 +127,7 @@
             // 
             label4.AutoSize = true;
             label4.Font = new Font("Microsoft JhengHei UI", 9F, FontStyle.Bold, GraphicsUnit.Point);
-            label4.Location = new Point(792, 8);
+            label4.Location = new Point(922, 8);
             label4.Name = "label4";
             label4.Size = new Size(45, 15);
             label4.TabIndex = 8;
@@ -134,7 +136,7 @@
             // txbCSTID
             // 
             txbCSTID.BorderStyle = BorderStyle.FixedSingle;
-            txbCSTID.Location = new Point(842, 7);
+            txbCSTID.Location = new Point(972, 7);
             txbCSTID.Name = "txbCSTID";
             txbCSTID.Size = new Size(140, 23);
             txbCSTID.TabIndex = 9;
@@ -148,7 +150,7 @@
             btnRemove.FlatStyle = FlatStyle.Flat;
             btnRemove.Font = new Font("Microsoft JhengHei UI", 11F, FontStyle.Bold, GraphicsUnit.Point);
             btnRemove.ForeColor = Color.White;
-            btnRemove.Location = new Point(1077, 5);
+            btnRemove.Location = new Point(1200, 5);
             btnRemove.Name = "btnRemove";
             btnRemove.Size = new Size(100, 26);
             btnRemove.TabIndex = 10;
@@ -158,7 +160,7 @@
             // 
             // labActionIndex
             // 
-            labActionIndex.BackColor = SystemColors.ActiveCaption;
+            labActionIndex.BackColor = Color.Blue;
             labActionIndex.Dock = DockStyle.Left;
             labActionIndex.Font = new Font("Microsoft JhengHei UI", 11F, FontStyle.Bold, GraphicsUnit.Point);
             labActionIndex.ForeColor = Color.White;
@@ -212,13 +214,33 @@
             ckbMoveOnly.Checked = true;
             ckbMoveOnly.CheckState = CheckState.Checked;
             ckbMoveOnly.Font = new Font("Microsoft JhengHei UI", 11F, FontStyle.Regular, GraphicsUnit.Point);
-            ckbMoveOnly.Location = new Point(1000, 8);
+            ckbMoveOnly.Location = new Point(1123, 8);
             ckbMoveOnly.Name = "ckbMoveOnly";
             ckbMoveOnly.Size = new Size(73, 23);
             ckbMoveOnly.TabIndex = 14;
             ckbMoveOnly.Text = "僅移動";
             ckbMoveOnly.UseVisualStyleBackColor = true;
             ckbMoveOnly.CheckedChanged += ckbMoveOnly_CheckedChanged;
+            // 
+            // label5
+            // 
+            label5.AutoSize = true;
+            label5.Font = new Font("Microsoft JhengHei UI", 9F, FontStyle.Bold, GraphicsUnit.Point);
+            label5.Location = new Point(83, 8);
+            label5.Name = "label5";
+            label5.Size = new Size(31, 15);
+            label5.TabIndex = 15;
+            label5.Text = "車輛";
+            // 
+            // cmbAgvName
+            // 
+            cmbAgvName.AGVSelected = null;
+            cmbAgvName.Location = new Point(120, 3);
+            cmbAgvName.Name = "cmbAgvName";
+            cmbAgvName.Size = new Size(86, 29);
+            cmbAgvName.TabIndex = 16;
+            cmbAgvName.OnAGVSelected += agvCombox1_OnAGVSelected;
+            cmbAgvName.Load += agvCombox1_Load;
             // 
             // uscRunTaskItem
             // 
@@ -227,6 +249,8 @@
             AutoScaleMode = AutoScaleMode.Font;
             BackColor = Color.White;
             BorderStyle = BorderStyle.FixedSingle;
+            Controls.Add(cmbAgvName);
+            Controls.Add(label5);
             Controls.Add(ckbMoveOnly);
             Controls.Add(labActionIndex);
             Controls.Add(btnRemove);
@@ -243,7 +267,7 @@
             Controls.Add(panel2);
             MinimumSize = new Size(879, 35);
             Name = "uscRunTaskItem";
-            Size = new Size(1198, 39);
+            Size = new Size(1321, 39);
             panel2.ResumeLayout(false);
             ResumeLayout(false);
             PerformLayout();
@@ -267,5 +291,7 @@
         private Button btnMoveUp;
         private Button btnMoveDown;
         private CheckBox ckbMoveOnly;
+        private Label label5;
+        private AGVCombox cmbAgvName;
     }
 }
