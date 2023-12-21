@@ -106,9 +106,9 @@ namespace AGVSHotrun
 
             Logger.Info("資料庫連線中...");
             labSystemInformation.Text = "資料庫連線中...";
-            Task.Run(async () =>
+            var dbconn_task =Task.Run(async () =>
             {
-
+                Store.StartAGVLocSyncProcess();
                 bool sql_connected = await CheckSqlServerConnection();
                 Invoke(new Action(() =>
                 {
@@ -149,7 +149,8 @@ namespace AGVSHotrun
         {
             try
             {
-                aGVSDBHelper.DBConn.AGVInfos.First();
+                aGVSDBHelper.Connect();
+                aGVSDBHelper.DBConn.AGVInfos.Count();
                 return true;
             }
             catch (Exception)
@@ -214,7 +215,7 @@ namespace AGVSHotrun
 
                 //確認AGV狀態 > 如果是運轉中
 
-                if (script.RunTasksDesigning.Count == 0)
+                if (!script.IsRandomTransferTaskCreateMode && script.RunTasksDesigning.Count == 0)
                 {
                     MessageBox.Show($"測試腳本中未設定任務動作，請先進行腳本任務動作設定", "SCRIPT RUN FORBIDDEN!", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     return;

@@ -7,15 +7,15 @@ namespace AGVSHotrun.Models;
 public partial class ExecutingTask
 {
     [Key]
-    public string Name { get; set; } 
+    public string Name { get; set; }
 
     public int Status { get; set; }
 
     public DateTime Receive_Time { get; set; }
 
-    public int? FromStationId { get; set; }
+    public int FromStationId { get; set; }
 
-    public int? ToStationId { get; set; }
+    public int ToStationId { get; set; }
 
     public string? FromStation { get; set; }
 
@@ -54,4 +54,7 @@ public partial class ExecutingTask
     public int? ToStationPortNo { get; set; } = 1;
 
     public int? ExeVehiclePos { get; set; } = 0;
+
+    internal string FromStationDisplayName { get; set; } = "";
+    internal string ToStationDisplayName { get; set; } = "";
 }

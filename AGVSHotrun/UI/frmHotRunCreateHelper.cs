@@ -20,6 +20,9 @@ namespace AGVSHotrun.UI
         {
             InitializeComponent();
             uscRunTaskItem.OnRemoveButtonPush += UscRunTaskItem_OnRemoveButtonPush;
+            cmbCIMSimulationMode.SelectedIndex = 0;
+            cmbTaskCreateMode.SelectedIndex = 0;
+
         }
         public frmHotRunCreateHelper(clsHotRunScript _script)
         {
@@ -31,7 +34,10 @@ namespace AGVSHotrun.UI
             rtxbDescription.Text = script.Description;
             numudTRepeatTime.Value = script.RepeatNum;
             uscMapDisplay1.HighlightAGVName = agvCombox1.AGVSelected = this.script.AGVName;
+            cmbCIMSimulationMode.SelectedIndex = script.UseCIMSimulation ? 1 : 0;
+            cmbTaskCreateMode.SelectedIndex = script.IsRandomTransferTaskCreateMode ? 1 : 0;
             uscRunTaskCreater1.Add(this.script.RunTasksDesigning);
+            numud_beginTaskNumber.Value = script.MaxTaskQueueSize;
         }
         bool isSaveAndExitFlag = false;
         private void btnSaveAndExit_Click(object sender, EventArgs e)
@@ -94,6 +100,25 @@ namespace AGVSHotrun.UI
         private void numudTRepeatTime_ValueChanged(object sender, EventArgs e)
         {
             script.RepeatNum = (int)numudTRepeatTime.Value;
+        }
+
+        private void cmbCIMSimulationMode_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            script.UseCIMSimulation = cmbCIMSimulationMode.SelectedIndex == 1;
+        }
+
+        private void cmbTaskCreateMode_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            bool isRandomModeSelected = cmbTaskCreateMode.SelectedIndex == 1;
+
+            script.IsRandomTransferTaskCreateMode = isRandomModeSelected;
+            uscRunTaskCreater1.Enabled = !isRandomModeSelected;
+            pnlOptionOfRandomMode.Visible = isRandomModeSelected;
+        }
+
+        private void numud_beginTaskNumber_ValueChanged(object sender, EventArgs e)
+        {
+            script.MaxTaskQueueSize = (int)numud_beginTaskNumber.Value;
         }
     }
 }

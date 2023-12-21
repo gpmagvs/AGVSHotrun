@@ -31,27 +31,26 @@
             components = new System.ComponentModel.Container();
             DataGridViewCellStyle dataGridViewCellStyle1 = new DataGridViewCellStyle();
             dataGridView1 = new DataGridView();
+            executingTaskBindingSource = new BindingSource(components);
+            timer1 = new System.Windows.Forms.Timer(components);
+            btnCancelAllTasks = new Button();
             colCancelTaskBtn = new DataGridViewButtonColumn();
             nameDataGridViewTextBoxColumn = new DataGridViewTextBoxColumn();
             actionTypeDataGridViewTextBoxColumn = new DataGridViewTextBoxColumn();
             statusDataGridViewTextBoxColumn = new DataGridViewTextBoxColumn();
             receiveTimeDataGridViewTextBoxColumn = new DataGridViewTextBoxColumn();
-            fromStationNameDataGridViewTextBoxColumn = new DataGridViewTextBoxColumn();
-            fromStationDataGridViewTextBoxColumn = new DataGridViewTextBoxColumn();
-            toStationNameDataGridViewTextBoxColumn = new DataGridViewTextBoxColumn();
-            toStationDataGridViewTextBoxColumn = new DataGridViewTextBoxColumn();
-            aGVIDDataGridViewTextBoxColumn = new DataGridViewTextBoxColumn();
-            cSTIDDataGridViewTextBoxColumn = new DataGridViewTextBoxColumn();
-            priorityDataGridViewTextBoxColumn = new DataGridViewTextBoxColumn();
-            exeVehicleIDDataGridViewTextBoxColumn = new DataGridViewTextBoxColumn();
             startTimeDataGridViewTextBoxColumn = new DataGridViewTextBoxColumn();
-            acquireTimeDataGridViewTextBoxColumn = new DataGridViewTextBoxColumn();
-            depositTimeDataGridViewTextBoxColumn = new DataGridViewTextBoxColumn();
+            FromStationId = new DataGridViewTextBoxColumn();
+            fromStationNameDataGridViewTextBoxColumn = new DataGridViewTextBoxColumn();
+            FromStationDisplayName = new DataGridViewTextBoxColumn();
+            ToStationId = new DataGridViewTextBoxColumn();
+            toStationNameDataGridViewTextBoxColumn = new DataGridViewTextBoxColumn();
+            ToStationDisplayName = new DataGridViewTextBoxColumn();
+            aGVIDDataGridViewTextBoxColumn = new DataGridViewTextBoxColumn();
+            exeVehicleIDDataGridViewTextBoxColumn = new DataGridViewTextBoxColumn();
+            cSTIDDataGridViewTextBoxColumn = new DataGridViewTextBoxColumn();
             assignUserNameDataGridViewTextBoxColumn = new DataGridViewTextBoxColumn();
-            cSTTypeDataGridViewTextBoxColumn = new DataGridViewTextBoxColumn();
-            executingTaskBindingSource = new BindingSource(components);
-            timer1 = new System.Windows.Forms.Timer(components);
-            btnCancelAllTasks = new Button();
+            priorityDataGridViewTextBoxColumn = new DataGridViewTextBoxColumn();
             ((System.ComponentModel.ISupportInitialize)dataGridView1).BeginInit();
             ((System.ComponentModel.ISupportInitialize)executingTaskBindingSource).BeginInit();
             SuspendLayout();
@@ -63,7 +62,7 @@
             dataGridView1.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             dataGridView1.AutoGenerateColumns = false;
             dataGridView1.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            dataGridView1.Columns.AddRange(new DataGridViewColumn[] { colCancelTaskBtn, nameDataGridViewTextBoxColumn, actionTypeDataGridViewTextBoxColumn, statusDataGridViewTextBoxColumn, receiveTimeDataGridViewTextBoxColumn, fromStationNameDataGridViewTextBoxColumn, fromStationDataGridViewTextBoxColumn, toStationNameDataGridViewTextBoxColumn, toStationDataGridViewTextBoxColumn, aGVIDDataGridViewTextBoxColumn, cSTIDDataGridViewTextBoxColumn, priorityDataGridViewTextBoxColumn, exeVehicleIDDataGridViewTextBoxColumn, startTimeDataGridViewTextBoxColumn, acquireTimeDataGridViewTextBoxColumn, depositTimeDataGridViewTextBoxColumn, assignUserNameDataGridViewTextBoxColumn, cSTTypeDataGridViewTextBoxColumn });
+            dataGridView1.Columns.AddRange(new DataGridViewColumn[] { colCancelTaskBtn, nameDataGridViewTextBoxColumn, actionTypeDataGridViewTextBoxColumn, statusDataGridViewTextBoxColumn, receiveTimeDataGridViewTextBoxColumn, startTimeDataGridViewTextBoxColumn, FromStationId, fromStationNameDataGridViewTextBoxColumn, FromStationDisplayName, ToStationId, toStationNameDataGridViewTextBoxColumn, ToStationDisplayName, aGVIDDataGridViewTextBoxColumn, exeVehicleIDDataGridViewTextBoxColumn, cSTIDDataGridViewTextBoxColumn, assignUserNameDataGridViewTextBoxColumn, priorityDataGridViewTextBoxColumn });
             dataGridView1.DataSource = executingTaskBindingSource;
             dataGridViewCellStyle1.Alignment = DataGridViewContentAlignment.MiddleLeft;
             dataGridViewCellStyle1.BackColor = SystemColors.Window;
@@ -81,6 +80,25 @@
             dataGridView1.Size = new Size(1263, 345);
             dataGridView1.TabIndex = 0;
             dataGridView1.CellClick += dataGridView1_CellClick;
+            // 
+            // executingTaskBindingSource
+            // 
+            executingTaskBindingSource.DataSource = typeof(Models.ExecutingTask);
+            // 
+            // timer1
+            // 
+            timer1.Interval = 1000;
+            timer1.Tick += UI_Render_TIMER_Tick;
+            // 
+            // btnCancelAllTasks
+            // 
+            btnCancelAllTasks.Location = new Point(3, 3);
+            btnCancelAllTasks.Name = "btnCancelAllTasks";
+            btnCancelAllTasks.Size = new Size(91, 37);
+            btnCancelAllTasks.TabIndex = 1;
+            btnCancelAllTasks.Text = "取消所有任務";
+            btnCancelAllTasks.UseVisualStyleBackColor = true;
+            btnCancelAllTasks.Click += btnCancelAllTasks_Click;
             // 
             // colCancelTaskBtn
             // 
@@ -118,33 +136,54 @@
             receiveTimeDataGridViewTextBoxColumn.Name = "receiveTimeDataGridViewTextBoxColumn";
             receiveTimeDataGridViewTextBoxColumn.ReadOnly = true;
             // 
+            // startTimeDataGridViewTextBoxColumn
+            // 
+            startTimeDataGridViewTextBoxColumn.DataPropertyName = "StartTime";
+            startTimeDataGridViewTextBoxColumn.HeaderText = "StartTime";
+            startTimeDataGridViewTextBoxColumn.Name = "startTimeDataGridViewTextBoxColumn";
+            startTimeDataGridViewTextBoxColumn.ReadOnly = true;
+            // 
+            // FromStationId
+            // 
+            FromStationId.DataPropertyName = "FromStationId";
+            FromStationId.HeaderText = "起點ID";
+            FromStationId.Name = "FromStationId";
+            FromStationId.ReadOnly = true;
+            // 
             // fromStationNameDataGridViewTextBoxColumn
             // 
             fromStationNameDataGridViewTextBoxColumn.DataPropertyName = "FromStationName";
-            fromStationNameDataGridViewTextBoxColumn.HeaderText = "FromStationName";
+            fromStationNameDataGridViewTextBoxColumn.HeaderText = "起點名稱";
             fromStationNameDataGridViewTextBoxColumn.Name = "fromStationNameDataGridViewTextBoxColumn";
             fromStationNameDataGridViewTextBoxColumn.ReadOnly = true;
             // 
-            // fromStationDataGridViewTextBoxColumn
+            // FromStationDisplayName
             // 
-            fromStationDataGridViewTextBoxColumn.DataPropertyName = "FromStation";
-            fromStationDataGridViewTextBoxColumn.HeaderText = "FromStation";
-            fromStationDataGridViewTextBoxColumn.Name = "fromStationDataGridViewTextBoxColumn";
-            fromStationDataGridViewTextBoxColumn.ReadOnly = true;
+            FromStationDisplayName.DataPropertyName = "FromStationDisplayName";
+            FromStationDisplayName.HeaderText = "起點顯示";
+            FromStationDisplayName.Name = "FromStationDisplayName";
+            FromStationDisplayName.ReadOnly = true;
+            // 
+            // ToStationId
+            // 
+            ToStationId.DataPropertyName = "ToStationId";
+            ToStationId.HeaderText = "終點ID";
+            ToStationId.Name = "ToStationId";
+            ToStationId.ReadOnly = true;
             // 
             // toStationNameDataGridViewTextBoxColumn
             // 
             toStationNameDataGridViewTextBoxColumn.DataPropertyName = "ToStationName";
-            toStationNameDataGridViewTextBoxColumn.HeaderText = "ToStationName";
+            toStationNameDataGridViewTextBoxColumn.HeaderText = "終點名稱";
             toStationNameDataGridViewTextBoxColumn.Name = "toStationNameDataGridViewTextBoxColumn";
             toStationNameDataGridViewTextBoxColumn.ReadOnly = true;
             // 
-            // toStationDataGridViewTextBoxColumn
+            // ToStationDisplayName
             // 
-            toStationDataGridViewTextBoxColumn.DataPropertyName = "ToStation";
-            toStationDataGridViewTextBoxColumn.HeaderText = "ToStation";
-            toStationDataGridViewTextBoxColumn.Name = "toStationDataGridViewTextBoxColumn";
-            toStationDataGridViewTextBoxColumn.ReadOnly = true;
+            ToStationDisplayName.DataPropertyName = "ToStationDisplayName";
+            ToStationDisplayName.HeaderText = "終點顯示";
+            ToStationDisplayName.Name = "ToStationDisplayName";
+            ToStationDisplayName.ReadOnly = true;
             // 
             // aGVIDDataGridViewTextBoxColumn
             // 
@@ -153,6 +192,13 @@
             aGVIDDataGridViewTextBoxColumn.Name = "aGVIDDataGridViewTextBoxColumn";
             aGVIDDataGridViewTextBoxColumn.ReadOnly = true;
             // 
+            // exeVehicleIDDataGridViewTextBoxColumn
+            // 
+            exeVehicleIDDataGridViewTextBoxColumn.DataPropertyName = "ExeVehicleID";
+            exeVehicleIDDataGridViewTextBoxColumn.HeaderText = "執行車輛ID";
+            exeVehicleIDDataGridViewTextBoxColumn.Name = "exeVehicleIDDataGridViewTextBoxColumn";
+            exeVehicleIDDataGridViewTextBoxColumn.ReadOnly = true;
+            // 
             // cSTIDDataGridViewTextBoxColumn
             // 
             cSTIDDataGridViewTextBoxColumn.DataPropertyName = "CSTID";
@@ -160,73 +206,19 @@
             cSTIDDataGridViewTextBoxColumn.Name = "cSTIDDataGridViewTextBoxColumn";
             cSTIDDataGridViewTextBoxColumn.ReadOnly = true;
             // 
+            // assignUserNameDataGridViewTextBoxColumn
+            // 
+            assignUserNameDataGridViewTextBoxColumn.DataPropertyName = "AssignUserName";
+            assignUserNameDataGridViewTextBoxColumn.HeaderText = "派工者";
+            assignUserNameDataGridViewTextBoxColumn.Name = "assignUserNameDataGridViewTextBoxColumn";
+            assignUserNameDataGridViewTextBoxColumn.ReadOnly = true;
+            // 
             // priorityDataGridViewTextBoxColumn
             // 
             priorityDataGridViewTextBoxColumn.DataPropertyName = "Priority";
             priorityDataGridViewTextBoxColumn.HeaderText = "Priority";
             priorityDataGridViewTextBoxColumn.Name = "priorityDataGridViewTextBoxColumn";
             priorityDataGridViewTextBoxColumn.ReadOnly = true;
-            // 
-            // exeVehicleIDDataGridViewTextBoxColumn
-            // 
-            exeVehicleIDDataGridViewTextBoxColumn.DataPropertyName = "ExeVehicleID";
-            exeVehicleIDDataGridViewTextBoxColumn.HeaderText = "ExeVehicleID";
-            exeVehicleIDDataGridViewTextBoxColumn.Name = "exeVehicleIDDataGridViewTextBoxColumn";
-            exeVehicleIDDataGridViewTextBoxColumn.ReadOnly = true;
-            // 
-            // startTimeDataGridViewTextBoxColumn
-            // 
-            startTimeDataGridViewTextBoxColumn.DataPropertyName = "StartTime";
-            startTimeDataGridViewTextBoxColumn.HeaderText = "StartTime";
-            startTimeDataGridViewTextBoxColumn.Name = "startTimeDataGridViewTextBoxColumn";
-            startTimeDataGridViewTextBoxColumn.ReadOnly = true;
-            // 
-            // acquireTimeDataGridViewTextBoxColumn
-            // 
-            acquireTimeDataGridViewTextBoxColumn.DataPropertyName = "AcquireTime";
-            acquireTimeDataGridViewTextBoxColumn.HeaderText = "AcquireTime";
-            acquireTimeDataGridViewTextBoxColumn.Name = "acquireTimeDataGridViewTextBoxColumn";
-            acquireTimeDataGridViewTextBoxColumn.ReadOnly = true;
-            // 
-            // depositTimeDataGridViewTextBoxColumn
-            // 
-            depositTimeDataGridViewTextBoxColumn.DataPropertyName = "DepositTime";
-            depositTimeDataGridViewTextBoxColumn.HeaderText = "DepositTime";
-            depositTimeDataGridViewTextBoxColumn.Name = "depositTimeDataGridViewTextBoxColumn";
-            depositTimeDataGridViewTextBoxColumn.ReadOnly = true;
-            // 
-            // assignUserNameDataGridViewTextBoxColumn
-            // 
-            assignUserNameDataGridViewTextBoxColumn.DataPropertyName = "AssignUserName";
-            assignUserNameDataGridViewTextBoxColumn.HeaderText = "AssignUserName";
-            assignUserNameDataGridViewTextBoxColumn.Name = "assignUserNameDataGridViewTextBoxColumn";
-            assignUserNameDataGridViewTextBoxColumn.ReadOnly = true;
-            // 
-            // cSTTypeDataGridViewTextBoxColumn
-            // 
-            cSTTypeDataGridViewTextBoxColumn.DataPropertyName = "CSTType";
-            cSTTypeDataGridViewTextBoxColumn.HeaderText = "CSTType";
-            cSTTypeDataGridViewTextBoxColumn.Name = "cSTTypeDataGridViewTextBoxColumn";
-            cSTTypeDataGridViewTextBoxColumn.ReadOnly = true;
-            // 
-            // executingTaskBindingSource
-            // 
-            executingTaskBindingSource.DataSource = typeof(Models.ExecutingTask);
-            // 
-            // timer1
-            // 
-            timer1.Interval = 1000;
-            timer1.Tick += UI_Render_TIMER_Tick;
-            // 
-            // btnCancelAllTasks
-            // 
-            btnCancelAllTasks.Location = new Point(3, 3);
-            btnCancelAllTasks.Name = "btnCancelAllTasks";
-            btnCancelAllTasks.Size = new Size(91, 37);
-            btnCancelAllTasks.TabIndex = 1;
-            btnCancelAllTasks.Text = "取消所有任務";
-            btnCancelAllTasks.UseVisualStyleBackColor = true;
-            btnCancelAllTasks.Click += btnCancelAllTasks_Click;
             // 
             // uscExecuteTasks
             // 
@@ -254,18 +246,17 @@
         private DataGridViewTextBoxColumn actionTypeDataGridViewTextBoxColumn;
         private DataGridViewTextBoxColumn statusDataGridViewTextBoxColumn;
         private DataGridViewTextBoxColumn receiveTimeDataGridViewTextBoxColumn;
-        private DataGridViewTextBoxColumn fromStationNameDataGridViewTextBoxColumn;
-        private DataGridViewTextBoxColumn fromStationDataGridViewTextBoxColumn;
-        private DataGridViewTextBoxColumn toStationNameDataGridViewTextBoxColumn;
-        private DataGridViewTextBoxColumn toStationDataGridViewTextBoxColumn;
-        private DataGridViewTextBoxColumn aGVIDDataGridViewTextBoxColumn;
-        private DataGridViewTextBoxColumn cSTIDDataGridViewTextBoxColumn;
-        private DataGridViewTextBoxColumn priorityDataGridViewTextBoxColumn;
-        private DataGridViewTextBoxColumn exeVehicleIDDataGridViewTextBoxColumn;
         private DataGridViewTextBoxColumn startTimeDataGridViewTextBoxColumn;
-        private DataGridViewTextBoxColumn acquireTimeDataGridViewTextBoxColumn;
-        private DataGridViewTextBoxColumn depositTimeDataGridViewTextBoxColumn;
+        private DataGridViewTextBoxColumn FromStationId;
+        private DataGridViewTextBoxColumn fromStationNameDataGridViewTextBoxColumn;
+        private DataGridViewTextBoxColumn FromStationDisplayName;
+        private DataGridViewTextBoxColumn ToStationId;
+        private DataGridViewTextBoxColumn toStationNameDataGridViewTextBoxColumn;
+        private DataGridViewTextBoxColumn ToStationDisplayName;
+        private DataGridViewTextBoxColumn aGVIDDataGridViewTextBoxColumn;
+        private DataGridViewTextBoxColumn exeVehicleIDDataGridViewTextBoxColumn;
+        private DataGridViewTextBoxColumn cSTIDDataGridViewTextBoxColumn;
         private DataGridViewTextBoxColumn assignUserNameDataGridViewTextBoxColumn;
-        private DataGridViewTextBoxColumn cSTTypeDataGridViewTextBoxColumn;
+        private DataGridViewTextBoxColumn priorityDataGridViewTextBoxColumn;
     }
 }

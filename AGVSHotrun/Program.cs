@@ -14,12 +14,14 @@ namespace AGVSHotrun
         static void Main()
         {
             Store.LoadSystemConfig();
+
             Store.LoadHotRunScriptsStored();
-            Store.StartAGVLocSyncProcess();
             PowershellInit();
             // To customize application configuration such as set high DPI settings or default font,
             // see https://aka.ms/applicationconfiguration.
             ApplicationConfiguration.Initialize();
+            AGVSDBHelper.DBConnection = Store.SysConfigs.DBConnection;
+            EnvironmentVariables.AddUserVariable("GPM_HOT_RUN", Environment.CurrentDirectory);
             Application.Run(new frmMain());
         }
         static void PowershellInit()

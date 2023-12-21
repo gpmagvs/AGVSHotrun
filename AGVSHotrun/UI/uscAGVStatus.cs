@@ -1,5 +1,6 @@
 ﻿using AGVSHotrun.Models;
 using AGVSHotrun.UI;
+using AGVSystemCommonNet6.Vehicle_Control.VCSDatabase;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -24,6 +25,7 @@ namespace AGVSHotrun
 
         private void uscAGVStatus_Load(object sender, EventArgs e)
         {
+            dbHelper.Connect();
             dataGridView1.DataSource = DataBinding;
         }
 
@@ -46,17 +48,15 @@ namespace AGVSHotrun
             if (selectedRow >= 0)
                 dataGridView1.CurrentCell = dataGridView1[0, selectedRow];
 
-
-            using (var conn = dbHelper.DBConn)
+            if (dbHelper.DBConn == null)
+                dbHelper.Connect();
+            var agv_infos = dbHelper.DBConn.AGVInfos.ToList();
+            DataBinding.Clear();
+            foreach (var info in agv_infos)
             {
-                var agv_infos = dbHelper.DBConn.AGVInfos.ToList();
-                DataBinding.Clear();
-                foreach (var info in agv_infos)
-                {
-                    DataBinding.Add(info);
-                }
-                DataBinding.ResetBindings();
+                DataBinding.Add(info);
             }
+            DataBinding.ResetBindings();
         }
     }
 }

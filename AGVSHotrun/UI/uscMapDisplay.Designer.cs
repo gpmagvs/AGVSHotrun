@@ -38,6 +38,10 @@
             btnAddULDRunTaskAction = new ToolStripMenuItem();
             btnAddLDRunTaskAction = new ToolStripMenuItem();
             btnParkStripitem = new ToolStripMenuItem();
+            radbtn_Show_IDName = new RadioButton();
+            radbtn_Show_GraphDislay = new RadioButton();
+            radbtn_Show_Index = new RadioButton();
+            radbtn_Show_Tag = new RadioButton();
             ((System.ComponentModel.ISupportInitialize)picMap).BeginInit();
             NormalPointContextMenuStrip.SuspendLayout();
             LDULDStationMenuStrip.SuspendLayout();
@@ -48,9 +52,9 @@
             picMap.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             picMap.BackColor = Color.White;
             picMap.BorderStyle = BorderStyle.FixedSingle;
-            picMap.Location = new Point(16, 54);
+            picMap.Location = new Point(134, 31);
             picMap.Name = "picMap";
-            picMap.Size = new Size(1022, 592);
+            picMap.Size = new Size(904, 600);
             picMap.TabIndex = 0;
             picMap.TabStop = false;
             picMap.Click += picMap_Click;
@@ -63,7 +67,7 @@
             // 
             // hScrollBar1
             // 
-            hScrollBar1.Location = new Point(16, 18);
+            hScrollBar1.Location = new Point(134, 7);
             hScrollBar1.Name = "hScrollBar1";
             hScrollBar1.Size = new Size(411, 21);
             hScrollBar1.TabIndex = 1;
@@ -75,7 +79,7 @@
             labCursorInfo.AutoSize = true;
             labCursorInfo.Font = new Font("Microsoft JhengHei UI", 12F, FontStyle.Regular, GraphicsUnit.Point);
             labCursorInfo.ForeColor = Color.White;
-            labCursorInfo.Location = new Point(439, 19);
+            labCursorInfo.Location = new Point(548, 8);
             labCursorInfo.Name = "labCursorInfo";
             labCursorInfo.Size = new Size(54, 20);
             labCursorInfo.TabIndex = 2;
@@ -98,28 +102,80 @@
             // 
             LDULDStationMenuStrip.Items.AddRange(new ToolStripItem[] { btnAddULDRunTaskAction, btnAddLDRunTaskAction, btnParkStripitem });
             LDULDStationMenuStrip.Name = "NormalPointContextMenuStrip";
-            LDULDStationMenuStrip.Size = new Size(181, 92);
+            LDULDStationMenuStrip.Size = new Size(99, 70);
             // 
             // btnAddULDRunTaskAction
             // 
             btnAddULDRunTaskAction.Name = "btnAddULDRunTaskAction";
-            btnAddULDRunTaskAction.Size = new Size(180, 22);
+            btnAddULDRunTaskAction.Size = new Size(98, 22);
             btnAddULDRunTaskAction.Text = "取貨";
             btnAddULDRunTaskAction.Click += btnAddULDRunTaskAction_Click;
             // 
             // btnAddLDRunTaskAction
             // 
             btnAddLDRunTaskAction.Name = "btnAddLDRunTaskAction";
-            btnAddLDRunTaskAction.Size = new Size(180, 22);
+            btnAddLDRunTaskAction.Size = new Size(98, 22);
             btnAddLDRunTaskAction.Text = "放貨";
             btnAddLDRunTaskAction.Click += btnAddLDRunTaskAction_Click;
             // 
             // btnParkStripitem
             // 
             btnParkStripitem.Name = "btnParkStripitem";
-            btnParkStripitem.Size = new Size(180, 22);
+            btnParkStripitem.Size = new Size(98, 22);
             btnParkStripitem.Text = "停車";
             btnParkStripitem.Click += btnParkStripitem_Click;
+            // 
+            // radbtn_Show_IDName
+            // 
+            radbtn_Show_IDName.AutoSize = true;
+            radbtn_Show_IDName.ForeColor = Color.White;
+            radbtn_Show_IDName.Location = new Point(13, 41);
+            radbtn_Show_IDName.Name = "radbtn_Show_IDName";
+            radbtn_Show_IDName.Size = new Size(61, 19);
+            radbtn_Show_IDName.TabIndex = 3;
+            radbtn_Show_IDName.TabStop = true;
+            radbtn_Show_IDName.Text = "ID名稱";
+            radbtn_Show_IDName.UseVisualStyleBackColor = true;
+            radbtn_Show_IDName.CheckedChanged += radbtn_Show_IDName_CheckedChanged;
+            // 
+            // radbtn_Show_GraphDislay
+            // 
+            radbtn_Show_GraphDislay.AutoSize = true;
+            radbtn_Show_GraphDislay.Checked = true;
+            radbtn_Show_GraphDislay.ForeColor = Color.White;
+            radbtn_Show_GraphDislay.Location = new Point(13, 66);
+            radbtn_Show_GraphDislay.Name = "radbtn_Show_GraphDislay";
+            radbtn_Show_GraphDislay.Size = new Size(98, 19);
+            radbtn_Show_GraphDislay.TabIndex = 4;
+            radbtn_Show_GraphDislay.TabStop = true;
+            radbtn_Show_GraphDislay.Text = "名稱(Display)";
+            radbtn_Show_GraphDislay.UseVisualStyleBackColor = true;
+            radbtn_Show_GraphDislay.CheckedChanged += radbtn_Show_IDName_CheckedChanged;
+            // 
+            // radbtn_Show_Index
+            // 
+            radbtn_Show_Index.AutoSize = true;
+            radbtn_Show_Index.ForeColor = Color.White;
+            radbtn_Show_Index.Location = new Point(13, 116);
+            radbtn_Show_Index.Name = "radbtn_Show_Index";
+            radbtn_Show_Index.Size = new Size(56, 19);
+            radbtn_Show_Index.TabIndex = 5;
+            radbtn_Show_Index.TabStop = true;
+            radbtn_Show_Index.Text = "Index";
+            radbtn_Show_Index.UseVisualStyleBackColor = true;
+            radbtn_Show_Index.CheckedChanged += radbtn_Show_IDName_CheckedChanged;
+            // 
+            // radbtn_Show_Tag
+            // 
+            radbtn_Show_Tag.AutoSize = true;
+            radbtn_Show_Tag.ForeColor = Color.White;
+            radbtn_Show_Tag.Location = new Point(13, 91);
+            radbtn_Show_Tag.Name = "radbtn_Show_Tag";
+            radbtn_Show_Tag.Size = new Size(47, 19);
+            radbtn_Show_Tag.TabIndex = 6;
+            radbtn_Show_Tag.TabStop = true;
+            radbtn_Show_Tag.Text = "Tag";
+            radbtn_Show_Tag.UseVisualStyleBackColor = true;
             // 
             // uscMapDisplay
             // 
@@ -127,6 +183,10 @@
             AutoScaleMode = AutoScaleMode.Font;
             BackColor = SystemColors.ControlDarkDark;
             BorderStyle = BorderStyle.FixedSingle;
+            Controls.Add(radbtn_Show_Tag);
+            Controls.Add(radbtn_Show_Index);
+            Controls.Add(radbtn_Show_GraphDislay);
+            Controls.Add(radbtn_Show_IDName);
             Controls.Add(labCursorInfo);
             Controls.Add(hScrollBar1);
             Controls.Add(picMap);
@@ -150,5 +210,9 @@
         private ToolStripMenuItem btnAddULDRunTaskAction;
         private ToolStripMenuItem btnAddLDRunTaskAction;
         private ToolStripMenuItem btnParkStripitem;
+        private RadioButton radbtn_Show_IDName;
+        private RadioButton radbtn_Show_GraphDislay;
+        private RadioButton radbtn_Show_Index;
+        private RadioButton radbtn_Show_Tag;
     }
 }

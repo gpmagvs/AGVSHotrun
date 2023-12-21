@@ -41,6 +41,9 @@ namespace AGVSHotrun
                 var index = RunScriptsList.IndexOf(existScript);
                 RunScriptsList[index].RepeatNum = script.RepeatNum;
                 RunScriptsList[index].RunTasksDesigning = script.RunTasksDesigning;
+                RunScriptsList[index].IsRandomTransferTaskCreateMode = script.IsRandomTransferTaskCreateMode;
+                RunScriptsList[index].UseCIMSimulation= script.UseCIMSimulation;
+                RunScriptsList[index].MaxTaskQueueSize= script.MaxTaskQueueSize;
                 RunScriptsList[index].Description = script.Description;
             }
             File.WriteAllText(SysConfigs.HotRunScriptStoredFile, JsonConvert.SerializeObject(RunScriptsList, Formatting.Indented));
@@ -91,6 +94,7 @@ namespace AGVSHotrun
             Task.Run(() =>
             {
                 AGVSDBHelper dbhelper = new AGVSDBHelper();
+                dbhelper.Connect();
                 while (true)
                 {
                     Thread.Sleep(1000);

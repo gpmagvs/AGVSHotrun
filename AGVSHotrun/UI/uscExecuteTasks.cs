@@ -51,16 +51,22 @@ namespace AGVSHotrun
         public void UI_Render_TIMER_Tick(object sender, EventArgs e)
         {
             DataBinding.Clear();
-
-            using (var conn = dbHelper.DBConn)
+            if (dbHelper.DBConn == null)
+                dbHelper.Connect();
+            List<ExecutingTask> datas = dbHelper.DBConn.ExecutingTasks.ToList();
+            foreach (var data in datas)
             {
-                var datas = dbHelper.DBConn.ExecutingTasks.ToList();
-                foreach (var data in datas)
+                try
                 {
-                    DataBinding.Add(data);
+                    data.FromStationDisplayName = Store.MapData.Points[data.FromStationId].Graph.Display;
+                    data.ToStationDisplayName = Store.MapData.Points[data.ToStationId].Graph.Display;
                 }
-                DataBinding.ResetBindings();
+                catch (Exception)
+                {
+                }
+                DataBinding.Add(data);
             }
+            DataBinding.ResetBindings();
 
         }
 

@@ -2,9 +2,11 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.Design;
+using System.Diagnostics;
 using System.Linq;
 using System.Net;
 using System.Reflection.Metadata;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 using static System.Collections.Specialized.BitVector32;
@@ -76,6 +78,19 @@ namespace AGVSHotrun.VirtualAGVSystem
         /// <returns></returns>
         public async static Task<ExcuteResult> CancelTask(string taskName)
         {
+            if (Debugger.IsAttached)
+            {
+                AGVSDBHelper db = new AGVSDBHelper();
+                db.Connect();
+                var task=db.DBConn.ExecutingTasks.FirstOrDefault(tk => tk.Name == taskName);
+                if (task != null)
+                {
+                    db.DBConn.ExecutingTasks.Remove(task);
+                    db.DBConn.SaveChanges();
+                }
+                db.Disconnect();
+                return new ExcuteResult();
+            }
             await Login(new CancellationToken());
             var psFile = CreateCancelTaskCmdPsFile(taskName);
             var output = POWERSHELL_HELPER.Run(psFile);

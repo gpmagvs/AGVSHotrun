@@ -35,7 +35,7 @@
             // 
             comboBox1.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             comboBox1.FormattingEnabled = true;
-            comboBox1.Items.AddRange(new object[] { "AGV_1", "AGV_2", "AGV_3", "AGV_4", "不指定" });
+            comboBox1.Items.AddRange(new object[] { "AGV_1", "AGV_2", "AGV_3", "AGV_4", "自動派車" });
             comboBox1.Location = new Point(3, 3);
             comboBox1.Name = "comboBox1";
             comboBox1.Size = new Size(121, 23);

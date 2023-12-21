@@ -71,6 +71,7 @@ namespace AGVSHotrun
 
         private void uscTaskDispatcher_Load(object sender, EventArgs e)
         {
+            dbhelper.Connect();
             cmbActionSelect.Items.AddRange(Enum.GetValues(typeof(ACTION_TYPE)).Cast<object>().ToArray());
         }
         private void UpdateToStationCombox()
@@ -110,15 +111,8 @@ namespace AGVSHotrun
         private void cmbAGVSelect_DropDown(object sender, EventArgs e)
         {
             cmbAGVSelect.Items.Clear();
-
-
-            using (var conn = dbhelper.DBConn)
-            {
-                var agv_names = conn.AGVInfos.ToList().Select(agv => agv.AGVName).ToArray();
-                cmbAGVSelect.Items.AddRange(agv_names);
-            }
-
-
+            var agv_names = dbhelper.DBConn.AGVInfos.ToList().Select(agv => agv.AGVName).ToArray();
+            cmbAGVSelect.Items.AddRange(agv_names);
         }
         private void cmbToStationSelect_SelectedIndexChanged(object sender, EventArgs e)
         {

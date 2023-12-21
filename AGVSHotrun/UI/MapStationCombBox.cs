@@ -51,12 +51,11 @@ namespace AGVSHotrun.UI
                 }
             }
         }
-
+        IEnumerable<KeyValuePair<int, AGVSystemCommonNet6.MAP.MapPoint>> filteredPoints = null;
         private void UpdateDropDownItems()
         {
             comboBox1.Items.Clear();
             var station_points = Store.MapData.Points;
-            IEnumerable<KeyValuePair<int, AGVSystemCommonNet6.MAP.MapPoint>> filteredPoints = null;
             if (ShowStaionByAction == ACTION_TYPE.MOVE)
                 filteredPoints = station_points.Where(pt => pt.Value.StationType == AGVSystemCommonNet6.AGVDispatch.Messages.STATION_TYPE.Normal);
             else if (ShowStaionByAction == ACTION_TYPE.LOAD | ShowStaionByAction == ACTION_TYPE.UNLOAD | ShowStaionByAction == ACTION_TYPE.TRANSFER)
@@ -67,7 +66,7 @@ namespace AGVSHotrun.UI
                 filteredPoints = station_points.Where(pt => pt.Value.IsCharge);
             if (filteredPoints != null)
             {
-                var points_ = filteredPoints.OrderBy(pt => pt.Value.TagNumber).Select(pt => pt.Value.Name + $":[Tag:{pt.Value.TagNumber}]").ToArray();
+                var points_ = filteredPoints.OrderBy(pt => pt.Value.TagNumber).Select(pt => pt.Value.Graph.Display + $":[Tag:{pt.Value.TagNumber}]").ToArray();
                 comboBox1.Items.AddRange(points_);
             }
         }
@@ -79,8 +78,8 @@ namespace AGVSHotrun.UI
         private void comboBox1_SelectedIndexChanged(object sender, EventArgs e)
         {
             string display = comboBox1.SelectedItem.ToString();
-            string station_name = display.Split(':')[0];
-            var station = Store.MapData.Points.Values.FirstOrDefault(pt => pt.Name == station_name);
+            string display_name = display.Split(':')[0];
+            var station = Store.MapData.Points.Values.FirstOrDefault(pt => pt.Graph.Display == display_name);
             OnStationSelect?.Invoke(this, station);
         }
 

@@ -103,7 +103,7 @@ namespace AGVSHotrun.UI
                     textLoca.X = textLoca.X + 5;
                     textLoca.Y = textLoca.Y - 22;
 
-                    string station_name_dispaly = station_point.Name;
+                    string station_name_dispaly = NameShowSwitch(station_point);
                     bool agv_located = false;
                     KeyValuePair<AGVInfo, MapPoint> has_agv = Store.AGVlocStore.FirstOrDefault(a => a.Value.Name == station_point.Name);
 
@@ -130,6 +130,21 @@ namespace AGVSHotrun.UI
 
 
         }
+
+        private string NameShowSwitch(MapPoint station_point)
+        {
+            if (radbtn_Show_GraphDislay.Checked)
+                return station_point.Graph.Display;
+            else if (radbtn_Show_IDName.Checked)
+                return station_point.Name;
+            else if (radbtn_Show_Index.Checked)
+                return MapData.Points.FirstOrDefault(pt => pt.Value.Name == station_point.Name).Key + "";
+            else if (radbtn_Show_Tag.Checked)
+                return station_point.TagNumber + "";
+            else
+                return station_point.Graph.Display;
+        }
+
         private Brush GetPointBrush(MapPoint point)
         {
             if (point.IsEquipment)
@@ -220,6 +235,8 @@ namespace AGVSHotrun.UI
 
         private void btnAddNormalMoveAction_Click(object sender, EventArgs e)
         {
+            if (OnMapPointAddToRunActionClick == null)
+                return;
             OnMapPointAddToRunActionClick(new clsPointAddToRunActionDto
             {
                 action = ACTION_TYPE.MOVE,
@@ -229,7 +246,8 @@ namespace AGVSHotrun.UI
 
         private void btnAddULDRunTaskAction_Click(object sender, EventArgs e)
         {
-
+            if (OnMapPointAddToRunActionClick == null)
+                return;
             OnMapPointAddToRunActionClick(new clsPointAddToRunActionDto
             {
                 action = ACTION_TYPE.UNLOAD,
@@ -239,6 +257,8 @@ namespace AGVSHotrun.UI
 
         private void btnAddLDRunTaskAction_Click(object sender, EventArgs e)
         {
+            if (OnMapPointAddToRunActionClick == null)
+                return;
             OnMapPointAddToRunActionClick(new clsPointAddToRunActionDto
             {
                 action = ACTION_TYPE.LOAD,
@@ -248,11 +268,18 @@ namespace AGVSHotrun.UI
 
         private void btnParkStripitem_Click(object sender, EventArgs e)
         {
+            if (OnMapPointAddToRunActionClick == null)
+                return;
             OnMapPointAddToRunActionClick(new clsPointAddToRunActionDto
             {
                 action = ACTION_TYPE.PARK,
                 map_point = SelectedMapPoint,
             });
+        }
+
+        private void radbtn_Show_IDName_CheckedChanged(object sender, EventArgs e)
+        {
+            picMap.Invalidate();
         }
     }
 }

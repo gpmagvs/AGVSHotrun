@@ -1,9 +1,13 @@
-﻿using AGVSHotrun.Models;
+﻿using AGVSHotrun.HotRun.Models;
+using AGVSHotrun.Models;
 using AGVSHotrun.VirtualAGVSystem;
 using AGVSystemCommonNet6;
 using AGVSystemCommonNet6.AGVDispatch.Messages;
-using AGVSystemCommonNet6.MAP;
+using AGVSystemCommonNet6.HttpTools;
+using AGVSystemCommonNet6.Vehicle_Control.VCSDatabase;
+using Azure;
 using Azure.Identity;
+using GPMCasstteConvertCIM.WebServer.Models;
 using Microsoft.EntityFrameworkCore;
 using RosSharp.RosBridgeClient.MessageTypes.Std;
 using System;
@@ -14,6 +18,7 @@ using System.Linq;
 using System.Text;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
+using static AGVSHotrun.HotRun.HotRunExceptions;
 using ACTION_TYPE = AGVSHotrun.Models.ACTION_TYPE;
 
 namespace AGVSHotrun.HotRun
@@ -25,6 +30,7 @@ namespace AGVSHotrun.HotRun
         public static event EventHandler<clsHotRunScript> OnLoginExpireExcetionOccur;
         public static event EventHandler<clsHotRunScript> OnHttpExcetionOccur;
         public static event EventHandler<clsHotRunScript> OnLoopStateChange;
+        private HttpHelper cimHttp = new HttpHelper(Store.SysConfigs.CIMHost);
         public string ID { get; set; }
         public string AGVName
         {
@@ -36,6 +42,16 @@ namespace AGVSHotrun.HotRun
             }
         }
 
+        /// <summary>
+        /// 使用CIM模擬Port的Load/Unload狀態
+        /// </summary>
+        public bool UseCIMSimulation { get; set; } = false;
+        public bool IsRandomTransferTaskCreateMode { get; set; } = false;
+
+        /// <summary>
+        /// 起始任務數量
+        /// </summary>
+        public int MaxTaskQueueSize { get; set; } = 2;
         public int RepeatNum { get; set; } = 1;
 
         public int FinishNum { get; set; } = 0;
@@ -108,6 +124,8 @@ namespace AGVSHotrun.HotRun
             RunTasksDesigning.Add(task);
         }
 
+        private List<AGVSystemCommonNet6.MAP.MapPoint> hasTaskPoints = new List<AGVSystemCommonNet6.MAP.MapPoint>();
+
         internal void RemoveRunTask(clsRunTask runTaskDto)
         {
             RunTasksDesigning.Remove(runTaskDto);
@@ -126,9 +144,11 @@ namespace AGVSHotrun.HotRun
         public bool Start(out string message)
         {
             IsWaitLogin = true;
+            DBHelper.Connect();
+            hasTaskPoints.Clear();
             AbortLoginCTS = new CancellationTokenSource();
             OnLoopStateChange?.Invoke(this, this);
-            var loginresult = Login().Result;
+            var loginresult = Debugger.IsAttached ? new(true, false) : Login().Result;
             if (!loginresult.success)
             {
                 IsWaitLogin = false;
@@ -138,7 +158,8 @@ namespace AGVSHotrun.HotRun
             IsWaitLogin = false;
             OnLoopStateChange?.Invoke(this, this);
             message = "";
-            if (RunTasksDesigning.Any(tk => tk.ToStation == null))
+
+            if (!IsRandomTransferTaskCreateMode && RunTasksDesigning.Any(tk => tk.ToStation == null))
             {
                 var indexes = RunTasksDesigning.FindAll(tk => tk.ToStation == null).Select(tk => RunTasksDesigning.IndexOf(tk) + 1);
                 message = $"動作 {string.Join(",", indexes)}  [目標站點_To Station] 設定有誤";
@@ -181,79 +202,105 @@ namespace AGVSHotrun.HotRun
             {
                 Logger.Info($"Hot Run Test Start !");
                 AGVSDBHelper dbhelper = new AGVSDBHelper();
+                dbhelper.Connect();
                 StartTime = DateTime.Now;
                 EndTime = DateTime.MinValue;
                 OnHotRunStart?.Invoke(this, this);
-                FailureReason = "";
-                FinishNum = 0;
-                clsRunTask interupt_move_task = null;
-                clsRunTask last_loop_final_task_action = null;
-                bool isQueueMonitorStart = false;
-                for (int i = 0; i < RepeatNum; i++)
-                {
-                    CheckScriptAbortAndThrowExpection();
 
-                    Queue<clsTaskState> tasknameQueue = new Queue<clsTaskState>();
-                    for (int action_index = 0; action_index < RunTasksDesigning.Count; action_index++)
+                if (IsRandomTransferTaskCreateMode)
+                {
+                    await RandomTransferTaskRun();
+                }
+                else
+                {
+
+                    FailureReason = "";
+                    FinishNum = 0;
+                    clsRunTask interupt_move_task = null;
+                    clsRunTask last_loop_final_task_action = null;
+                    bool isQueueMonitorStart = false;
+                    for (int i = 0; i < RepeatNum; i++)
                     {
                         CheckScriptAbortAndThrowExpection();
-                        clsRunTask task_action = RunTasksDesigning[action_index];
-                        bool taskCreated, task_finish;
-                        string? TaskName = "";
-                        //惟Carry、Load Unload 且設定為僅移動
-                        int _agvid = dbhelper.GetAGVID(task_action.AGVName);
-                        if (task_action.MoveOnly && task_action.Action != ACTION_TYPE.MOVE)
+
+                        Queue<clsTaskState> tasknameQueue = new Queue<clsTaskState>();
+                        for (int action_index = 0; action_index < RunTasksDesigning.Count; action_index++)
                         {
-                            await task_action.PostFromStationReq(task_action.AGVName, _agvid);
-                            taskCreated = WaitTaskCreated(task_action.AGVName, _agvid, ACTION_TYPE.MOVE.ToString().ToLower(), out var _TaskName);
-                            tasknameQueue.Enqueue(new clsTaskState
+                            CheckScriptAbortAndThrowExpection();
+                            clsRunTask task_action = RunTasksDesigning[action_index];
+                            bool taskCreated, task_finish;
+                            string? TaskName = "";
+
+                            int _agvid = task_action.AGVName == "自動派車" ? -1 : dbhelper.GetAGVID(task_action.AGVName);
+                            if (task_action.MoveOnly && task_action.Action != ACTION_TYPE.MOVE)
                             {
-                                task_name = _TaskName,
-                                task_action = task_action
-                            });
-                            OnLoopStateChange?.Invoke(this, this);
-                            WaitTaskFinish(task_action.AGVName, _TaskName);
-                            if (task_action.Action == ACTION_TYPE.TRANSFER)
-                            {
-                                await task_action.PostToStationReq(task_action.AGVName, _agvid);
-                                taskCreated = WaitTaskCreated(task_action.AGVName, _agvid, ACTION_TYPE.MOVE.ToString().ToLower(), out var _TaskNameNormal);
-                                WaitTaskFinish(task_action.AGVName, _TaskNameNormal);
+                                await task_action.PostFromStationReq(task_action.AGVName, _agvid);
+                                taskCreated = WaitTaskCreated(task_action.AGVName, _agvid, ACTION_TYPE.MOVE.ToString().ToLower(), out var _TaskName);
                                 tasknameQueue.Enqueue(new clsTaskState
                                 {
-                                    task_name = _TaskNameNormal,
+                                    task_name = _TaskName,
                                     task_action = task_action
                                 });
-                                task_action.TaskName = _TaskNameNormal;
+                                OnLoopStateChange?.Invoke(this, this);
+                                WaitTaskFinish(task_action.AGVName, _TaskName);
+                                if (task_action.Action == ACTION_TYPE.TRANSFER)
+                                {
+                                    await task_action.PostToStationReq(task_action.AGVName, _agvid);
+                                    taskCreated = WaitTaskCreated(task_action.AGVName, _agvid, ACTION_TYPE.MOVE.ToString().ToLower(), out var _TaskNameNormal);
+                                    WaitTaskFinish(task_action.AGVName, _TaskNameNormal);
+                                    tasknameQueue.Enqueue(new clsTaskState
+                                    {
+                                        task_name = _TaskNameNormal,
+                                        task_action = task_action
+                                    });
+                                    task_action.TaskName = _TaskNameNormal;
+                                }
+                                else
+                                    task_action.TaskName = _TaskName;
                             }
                             else
-                                task_action.TaskName = _TaskName;
-                        }
-                        else
-                        {
-                            await task_action.PostActionReq(task_action.AGVName, _agvid);
-                            Logger.Info($"[{task_action.AGVName}] Wait {task_action.Action} Task Created...");
-                            taskCreated = WaitTaskCreated(task_action.AGVName, _agvid, task_action.Action.ToString().ToLower(), out var RunningTaskName);
-                            Logger.Info($"[{task_action.AGVName}] Task-{RunningTaskName} Created!");
-                            ProgressText = $"{action_index + 1}/{RunTasksDesigning.Count}";
-
-                            OnLoopStateChange?.Invoke(this, this);
-                            WaitTaskFinish(task_action.AGVName, RunningTaskName);
-
-                            task_action.TaskName = RunningTaskName;
-                            tasknameQueue.Enqueue(new clsTaskState
                             {
-                                task_name = RunningTaskName,
-                                task_action = task_action
-                            });
+                                await task_action.PostActionReq(task_action.AGVName, _agvid);
+                                Logger.Info($"[{task_action.AGVName}] Wait {task_action.Action} Task Created...");
+                                taskCreated = WaitTaskCreated(task_action.AGVName, _agvid, task_action.Action.ToString().ToLower(), out var RunningTaskName);
+                                Logger.Info($"[{task_action.AGVName}] Task-{RunningTaskName} Created!");
+                                ProgressText = $"{action_index + 1}/{RunTasksDesigning.Count}";
+
+                                OnLoopStateChange?.Invoke(this, this);
+                                WaitTaskFinish(task_action.AGVName, RunningTaskName);
+
+                                task_action.TaskName = RunningTaskName;
+                                tasknameQueue.Enqueue(new clsTaskState
+                                {
+                                    task_name = RunningTaskName,
+                                    task_action = task_action
+                                });
+                            }
+                            isQueueMonitorStart = true;
                         }
-                        isQueueMonitorStart = true;
+                        FinishNum = i + 1;
+                        Logger.Info($"[{AGVName}] Hot Run Progress Updated:  {FinishNum}/{RepeatNum}");
+                        OnLoopStateChange?.Invoke(this, this);
                     }
-                    FinishNum = i + 1;
-                    Logger.Info($"[{AGVName}] Hot Run Progress Updated:  {FinishNum}/{RepeatNum}");
-                    OnLoopStateChange?.Invoke(this, this);
                 }
 
                 HotRunFinish();
+            }
+            catch (CIMSwitchHotRunModeFailFailException ex)
+            {
+                IsRunning = false;
+                EndTime = DateTime.Now;
+                FailureReason = "無法切換CIM為HOT RUN模式";
+                Success = false;
+                OnHotRunFinish?.Invoke(this, this);
+            }
+            catch (CIMSwitchPortLDULDStatusFailFailException ex)
+            {
+                IsRunning = false;
+                EndTime = DateTime.Now;
+                FailureReason = "無法切換CIM Port Load/Unload模擬狀態";
+                Success = false;
+                OnHotRunFinish?.Invoke(this, this);
             }
             catch (TaskCanceledException ex)
             {
@@ -289,7 +336,210 @@ namespace AGVSHotrun.HotRun
                 Success = false;
                 OnHotRunFinish?.Invoke(this, this);
             }
+            DBHelper.Disconnect();
+            if (UseCIMSimulation)
+            {
+                bool success = await CallCIMAPIToActiveHotRunMode(false);
+            }
+
         }
+
+        private async Task RandomTransferTaskRun()
+        {
+            IsRunning = true;
+            if (UseCIMSimulation)
+            {
+                bool success = await CallCIMAPIToActiveHotRunMode(true);
+                if (!success)
+                {
+                    throw new CIMSwitchHotRunModeFailFailException();
+                }
+            }
+            await CreateTaskAndPostToAGVS(MaxTaskQueueSize);
+
+            MonitorExecutingTask();
+            while (true)
+            {
+                await Task.Delay(1000);
+                if (UseCIMSimulation)
+                {
+                    bool isCimHotRunning = await CallCIMAPIGetIsHotRunning();
+                    if (!isCimHotRunning)
+                        break;
+                }
+                if (AbortTestCTS.IsCancellationRequested)
+                    break;
+            }
+            CancelRemainTransferTasksAsync();
+        }
+
+        private async Task CancelRemainTransferTasksAsync()
+        {
+            List<ExecutingTask> hotRunDispatchTasks = previous_currentExecutingTransferTasks.Where(task => task.AssignUserName.ToLower() != "op").ToList();
+            foreach (var _task in hotRunDispatchTasks)
+            {
+                await AGVS_Dispath_Emulator.CancelTask(_task.Name);
+            }
+        }
+
+        private async Task CreateTaskAndPostToAGVS(int TaskNum)
+        {
+            for (int i = 0; i < TaskNum; i++)
+            {
+                clsRunTask beginTask = CreateTransferTask();
+
+                if (UseCIMSimulation)
+                {
+                    bool success = await CallCIMAPIToSwitchLDULDSimulationStatusOfEqPorts(beginTask);
+                    if (!success)
+                        throw new CIMSwitchPortLDULDStatusFailFailException();
+                    await Task.Delay(500);
+                }
+                try
+                {
+                    if (Debugger.IsAttached)
+                    {
+                        var ret = DBHelper.ADD_TASK(new ExecutingTask
+                        {
+                            Name = $"*TEST_{DateTime.Now.ToString("yyyyMMddHHmmssfff")}",
+                            AGVID = 1,
+                            ActionType = "Transfer",
+                            Status = 1,
+                            ToStationId = beginTask.ToStationID,
+                            FromStationId = beginTask.FromStationID,
+                            ToStationName = beginTask.ToStation,
+                            ToStation = beginTask.ToStation,
+                            FromStationName = beginTask.FromStation,
+                            FromStation = beginTask.FromStation,
+                            Receive_Time = DateTime.Now,
+                            RepeatTime = 1,
+                        });
+                        await Task.Delay(200);
+                    }
+                    else
+                    {
+                        bool post_success = await beginTask.PostActionReq("自動選車", -1);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    throw;
+                }
+            }
+        }
+        List<ExecutingTask> previous_currentExecutingTransferTasks = new List<ExecutingTask>();
+        private void MonitorExecutingTask()
+        {
+            Task.Run(async () =>
+            {
+                previous_currentExecutingTransferTasks.Clear();
+                while (IsRunning)
+                {
+                    await Task.Delay(1);
+                    try
+                    {
+                        List<ExecutingTask> currentExecutingTransferTasks = DBHelper.DBConn.ExecutingTasks.Where(tk => tk.ActionType == "Transfer").ToList();
+                        if (previous_currentExecutingTransferTasks.Count > currentExecutingTransferTasks.Count)
+                        {
+                            var completedTasks = previous_currentExecutingTransferTasks.Where(tk => !currentExecutingTransferTasks.Select(tk => tk.Name).Contains(tk.Name)).ToList();
+                            RemovePointsFromHasTaskList(completedTasks);
+                        }
+                        if (currentExecutingTransferTasks.Count != MaxTaskQueueSize)//
+                        {
+                            await CreateTaskAndPostToAGVS(MaxTaskQueueSize - currentExecutingTransferTasks.Count);
+                        }
+                        previous_currentExecutingTransferTasks = currentExecutingTransferTasks;
+
+                    }
+                    catch(CIMSwitchPortLDULDStatusFailFailException ex)
+                    {
+                        break;
+                    }
+                    catch (Exception ex)
+                    {
+                        throw ex;
+                    }
+                }
+            });
+        }
+
+        private void RemovePointsFromHasTaskList(List<ExecutingTask> completedTasks)
+        {
+            bool _TryRemovePtFromhasTaskList(int pointID)
+            {
+                if (Store.MapData.Points.TryGetValue(pointID, out AGVSystemCommonNet6.MAP.MapPoint? mapPoint))
+                {
+                    var pt = hasTaskPoints.FirstOrDefault(pt => pt.TagNumber == mapPoint.TagNumber);
+                    if (pt != null)
+                        return hasTaskPoints.Remove(pt);
+                    else
+                        return false;
+                }
+                else
+                    return false;
+            }
+            foreach (var _executed_task in completedTasks)
+            {
+                _TryRemovePtFromhasTaskList(_executed_task.FromStationId);
+                _TryRemovePtFromhasTaskList(_executed_task.ToStationId);
+            }
+        }
+        private async Task<bool> CallCIMAPIGetIsHotRunning()
+        {
+            try
+            {
+                var response = await cimHttp.GetAsync<bool>("/api/hotrunning");
+                return response;
+            }
+            catch (Exception ex)
+            {
+                return false;
+            }
+        }
+        private async Task<bool> CallCIMAPIToActiveHotRunMode(bool active)
+        {
+            try
+            {
+                var response = await cimHttp.PostAsync<clsCIMAPIResponse, clsHotRunControl>("/api/sethotrun", new clsHotRunControl
+                {
+                    enableHotRun = active
+                });
+                return response.code == 0;
+            }
+            catch (Exception ex)
+            {
+                return false;
+            }
+        }
+
+        private async Task<bool> CallCIMAPIToSwitchLDULDSimulationStatusOfEqPorts(clsRunTask beginTask)
+        {
+            try
+            {
+                List<clsEQLDULDSimulationControl> portsControls = new List<clsEQLDULDSimulationControl>
+                {
+                     new clsEQLDULDSimulationControl{
+                          IOMode = IO_MODE.FromCIMSimulation,
+                          Status = LDULD_STATUS.UNLOADABLE,
+                          PortName = beginTask.FromStation,
+                           TagNumber = beginTask.FromTag
+                      },
+                     new clsEQLDULDSimulationControl{
+                        IOMode = IO_MODE.FromCIMSimulation,
+                          Status = LDULD_STATUS.LOADABLE,
+                          PortName = beginTask.ToStation,
+                           TagNumber = beginTask.ToTag
+                     }
+                };
+                var response = await cimHttp.PostAsync<clsCIMAPIResponse, List<clsEQLDULDSimulationControl>>("/api/set_ports_lduld_status", portsControls);
+                return response.code == 0;
+            }
+            catch (Exception ex)
+            {
+                return false;
+            }
+        }
+
         /// <summary>
         /// 檢查是否有請求中止測試，如果有則拋出任務取消異常。
         /// </summary>
@@ -307,37 +557,6 @@ namespace AGVSHotrun.HotRun
             }
         }
 
-        private void HotrunFinishCheckWTD(int agvid)
-        {
-            Logger.Warn($"[{AGVName}] Start HotrunFinishCheckWTD.");
-
-            _ = Task.Run(async () =>
-            {
-                var conn = DBHelper.DBConn;
-                using (conn)
-                {
-                    ExecutingTask? createdTaskDto = null;
-                    while (createdTaskDto == null)
-                    {
-                        await Task.Delay(1000);
-                        if (!IsRunning)
-                            break;
-                        try
-                        {
-                            var tsks = conn.ExecutingTasks.Where(t => t.AGVID == agvid);
-                            if (tsks.Count() == 0 && FinishNum == RepeatNum)
-                            {
-                                HotRunFinish();
-                                break;
-                            }
-                        }
-                        catch (Exception ex)
-                        {
-                        }
-                    }
-                }
-            });
-        }
 
         private void HotRunFinish()
         {
@@ -347,78 +566,43 @@ namespace AGVSHotrun.HotRun
             OnHotRunFinish?.Invoke(this, this);
         }
 
-        private void WatchChargeTaskAndCancelIt(int agvid)
-        {
-            Task.Run(async () =>
-            {
-                using (var conn = DBHelper.DBConn)
-                {
-                    Logger.Warn($"[{AGVName}] Start Watch Charge Task Executing State, Hot run program will cancel Charge Task when task created.");
-                    while (IsRunning)
-                    {
-                        await Task.Delay(10);
-                        List<ExecutingTask> chargetasks = conn.ExecutingTasks.Where(t => t.AGVID == agvid && t.ActionType == "Charge").ToList();
-                        if (chargetasks.Count() > 0)
-                        {
-                            for (int i = 0; i < chargetasks.Count(); i++)
-                            {
-                                await AGVS_Dispath_Emulator.CancelTask(chargetasks[i].Name);
-                            }
-                            Logger.Warn($"[{AGVName}] 充電任務已取消");
-                        }
-                    }
-                    Logger.Warn($"[{AGVName}]  Charge Task WTD FINISH");
 
-                }
-            });
-        }
-
-        private bool IsSameSource(Queue<clsTaskState> tasknameQueue, clsRunTask next_action)
-        {
-            return tasknameQueue.Any(t => t.task_action.FromStation == next_action.FromStation |
-                                          t.task_action.FromStation == next_action.ToStation |
-                                          t.task_action.ToStation == next_action.FromStation |
-                                          t.task_action.ToStation == next_action.ToStation);
-        }
         private bool WaitTaskCreated(string AgvName, int agvid, string action_type, out string taskName)
         {
             taskName = "";
             var conn = DBHelper.DBConn;
-            using (conn)
+            ExecutingTask? createdTaskDto = null;
+            AbortTestCTS = new CancellationTokenSource();
+            CancellationTokenSource cts = new CancellationTokenSource(TimeSpan.FromSeconds(20));
+            while (createdTaskDto == null)
             {
-                ExecutingTask? createdTaskDto = null;
-                AbortTestCTS = new CancellationTokenSource();
-                CancellationTokenSource cts = new CancellationTokenSource(TimeSpan.FromSeconds(20));
-                while (createdTaskDto == null)
+                Thread.Sleep(1000);
+                if (AbortTestCTS.IsCancellationRequested)
                 {
-                    Thread.Sleep(1000);
-                    if (AbortTestCTS.IsCancellationRequested)
-                    {
-                        Logger.Error($"[{AgvName}] AbortTestCTS.IsCancellationRequested");
-                        throw new TaskCanceledException();
-                    }
-
-                    if (cts.IsCancellationRequested)
-                    {
-                        Logger.Error($"[{AgvName}] WaitTaskCreated Timeout (20 sec)");
-                        return false;
-                    }
-                    try
-                    {
-                        Logger.Info($"[{AgvName}] Search Task Action Type equal {action_type} and AGVID equl {agvid}");
-
-                        IQueryable<ExecutingTask> tsks = conn.ExecutingTasks.Where(t => t.AGVID == agvid);
-                        createdTaskDto = tsks.Where(t => t.ActionType.ToLower() == action_type).OrderBy(t => t.Receive_Time).LastOrDefault();
-                        Logger.Info($"[{AgvName}] Search Task Action Type equal {action_type} and AGVID equl {agvid}---Find {tsks.Count()} Data");
-                    }
-                    catch (Exception ex)
-                    {
-                        Logger.Error($"[{AgvName}] WaitTaskCreated Exception -{ex.Message}, Trace: {ex.StackTrace}");
-                    }
+                    Logger.Error($"[{AgvName}] AbortTestCTS.IsCancellationRequested");
+                    throw new TaskCanceledException();
                 }
-                taskName = createdTaskDto.Name;
-                return true;
+
+                if (cts.IsCancellationRequested)
+                {
+                    Logger.Error($"[{AgvName}] WaitTaskCreated Timeout (20 sec)");
+                    return false;
+                }
+                try
+                {
+                    Logger.Info($"[{AgvName}] Search Task Action Type equal {action_type} and AGVID equl {agvid}");
+
+                    IQueryable<ExecutingTask> tsks = DBHelper.DBConn.ExecutingTasks.Where(t => t.AGVID == agvid);
+                    createdTaskDto = tsks.Where(t => t.ActionType.ToLower() == action_type).OrderBy(t => t.Receive_Time).LastOrDefault();
+                    Logger.Info($"[{AgvName}] Search Task Action Type equal {action_type} and AGVID equl {agvid}---Find {tsks.Count()} Data");
+                }
+                catch (Exception ex)
+                {
+                    Logger.Error($"[{AgvName}] WaitTaskCreated Exception -{ex.Message}, Trace: {ex.StackTrace}");
+                }
             }
+            taskName = createdTaskDto.Name;
+            return true;
         }
         private bool WaitTaskFinish(string agvName, string taskName)
         {
@@ -428,169 +612,83 @@ namespace AGVSHotrun.HotRun
             Logger.Info($"[{AGVName}] Wait Task-{taskName} Finish...");
             AbortTestCTS = new CancellationTokenSource();
             var conn = DBHelper.DBConn;
-            using (conn)
-            {
-                TaskDto? finishTaskDto = null;
-                CancellationTokenSource cts = new CancellationTokenSource(TimeSpan.FromSeconds(600));
-                while (true)
-                {
-                    Thread.Sleep(10);
-                    try
-                    {
-                        if (AbortTestCTS.IsCancellationRequested)
-                            return true;
 
-                        if (cts.IsCancellationRequested)
-                        {
-                            Logger.Error($"[{agvName}] WaitTaskFinish Timeout (600 sec)");
-                            return false;
-                        }
-                        IQueryable<TaskDto> TaskDto = conn.Tasks.Where(t => t.Name == taskName); //101 cancel, 100 finish
-                        if (TaskDto.Count() > 0)
-                        {
-                            Logger.Info($"[{agvName}] Task-{taskName} Finish!");
-                            return true;
-                        }
-                    }
-                    catch (TaskCanceledException ex)
+            TaskDto? finishTaskDto = null;
+            CancellationTokenSource cts = new CancellationTokenSource(TimeSpan.FromSeconds(600));
+            while (true)
+            {
+                Thread.Sleep(10);
+                try
+                {
+                    if (AbortTestCTS.IsCancellationRequested)
+                        return true;
+
+                    if (cts.IsCancellationRequested)
                     {
-                        Logger.Error($"[{agvName}] WaitTaskFinish Exception -{ex.Message}, Trace: {ex.StackTrace}");
+                        Logger.Error($"[{agvName}] WaitTaskFinish Timeout (600 sec)");
                         return false;
                     }
+                    IQueryable<TaskDto> TaskDto = DBHelper.DBConn.Tasks.Where(t => t.Name == taskName); //101 cancel, 100 finish
+                    if (TaskDto.Count() > 0)
+                    {
+                        Logger.Info($"[{agvName}] Task-{taskName} Finish!");
+                        return true;
+                    }
                 }
-            }
-        }
-
-    }
-
-
-    public class clsRunTask
-    {
-        public string TaskName { get; set; }
-        public ACTION_TYPE Action { get; set; }
-        public DateTime StartTime { get; set; }
-        public DateTime EndTime { get; set; }
-        public string FromStation { get; set; } = "";
-        public string FromSlot { get; set; } = "";
-        public string ToStation { get; set; } = "";
-        public string ToSlot { get; set; } = "";
-        public string CSTID { get; set; } = "";
-        public bool MoveOnly { get; set; } = true;
-        public string AGVName { get; set; } = "AGV_1";
-
-        public string GetSecondaryPt(string Station)
-        {
-            var map_points = Store.MapData.Points.ToList();
-            MapPoint toStationPt = map_points.First(pt => pt.Value.Name == Station).Value;
-            MapPoint hotRunToStationPt = Store.MapData.Points[toStationPt.Target.First().Key];
-            return hotRunToStationPt.Name;
-        }
-
-        public string GetActualFromStationName()
-        {
-            var map_points = Store.MapData.Points.ToList();
-            string _toStation = FromStation;
-            if (MoveOnly && Action != ACTION_TYPE.MOVE && Action != ACTION_TYPE.PARK) //從圖資抓到二次定位點前的Point名稱
-            {
-                MapPoint toStationPt = map_points.First(pt => pt.Value.Name == FromStation).Value;
-                MapPoint hotRunToStationPt = Store.MapData.Points[toStationPt.Target.First().Key];
-                _toStation = hotRunToStationPt.Name;
-            }
-            return _toStation;
-        }
-        public string GetActualToStationName()
-        {
-            var map_points = Store.MapData.Points.ToList();
-            string _toStation = ToStation;
-
-            if (MoveOnly && Action != ACTION_TYPE.MOVE && Action != ACTION_TYPE.PARK) //從圖資抓到二次定位點前的Point名稱
-            {
-                MapPoint toStationPt = map_points.First(pt => pt.Value.Name == ToStation).Value;
-                MapPoint hotRunToStationPt = Store.MapData.Points[toStationPt.Target.First().Key];
-                _toStation = hotRunToStationPt.Name;
-            }
-            return _toStation;
-        }
-
-
-        internal async Task<bool> PostActionReq(string AgvName, int AgvID)
-        {
-            try
-            {
-                return await PostTaskHttpRequest(AgvName, AgvID, FromStation, FromSlot, ToStation, ToSlot, CSTID);
-            }
-            catch (Exception ex)
-            {
-                throw ex;
-            }
-        }
-
-        internal async Task<bool> PostFromStationReq(string AgvName, int AgvID)
-        {
-            try
-            {
-                return await PostTaskHttpRequest(AgvName, AgvID, GetActualFromStationName(), ToSlot, CSTID);
-            }
-            catch (Exception ex)
-            {
-                throw ex;
-            }
-        }
-
-        internal async Task<bool> PostToStationReq(string AgvName, int AgvID)
-        {
-            try
-            {
-                return await PostTaskHttpRequest(AgvName, AgvID, GetActualToStationName(), ToSlot, CSTID);
-            }
-            catch (Exception ex)
-            {
-                throw ex;
-            }
-        }
-
-        private async Task<bool> PostTaskHttpRequest(string AgvName, int AgvID, string from_station, string from_slot, string to_station = "", string to_slot = "", string cstid = "")
-        {
-            AGVS_Dispath_Emulator dispatcher_helper = new AGVS_Dispath_Emulator();
-            AGVS_Dispath_Emulator.ExcuteResult? result = null;
-            if (MoveOnly)
-                result = await dispatcher_helper.Move(AgvName, AgvID, from_station);
-            else
-            {
-                switch (Action)
+                catch (TaskCanceledException ex)
                 {
-                    case ACTION_TYPE.MOVE:
-                        result = await dispatcher_helper.Move(AgvName, AgvID, from_station);
-                        break;
-                    case ACTION_TYPE.LOAD:
-                        result = await dispatcher_helper.Load(AgvName, AgvID, from_station, from_slot, cstid);
-                        break;
-                    case ACTION_TYPE.UNLOAD:
-                        result = await dispatcher_helper.Unload(AgvName, AgvID, from_station, from_slot, cstid);
-                        break;
-                    case ACTION_TYPE.TRANSFER:
-                        result = await dispatcher_helper.Carry(AgvName, AgvID, from_station, from_slot, to_station, to_slot, cstid);
-                        break;
-                    case ACTION_TYPE.CHARGE:
-                        result = await dispatcher_helper.Charge(AgvName, AgvID, from_station, from_slot, cstid);
-                        break;
-                    case ACTION_TYPE.PARK:
-                        result = await dispatcher_helper.Park(AgvName, AgvID, from_station, from_slot);
-                        break;
-                    default:
-                        break;
+                    Logger.Error($"[{agvName}] WaitTaskFinish Exception -{ex.Message}, Trace: {ex.StackTrace}");
+                    return false;
                 }
             }
-            if (result.ResponseMsg.Contains("系統已閒置過久,請重新登入再進行手動派工"))
-            {
-                throw new AuthenticationFailedException(result.ResponseMsg);
-            }
-            if (result.ResponseMsg.Contains("無法連接至遠端伺服器"))
-            {
-                throw new HttpRequestException(result.ResponseMsg);
-            }
-            return result.Success;
         }
 
+        private clsRunTask CreateTransferTask()
+        {
+            var task = new clsRunTask();
+            List<AGVSystemCommonNet6.MAP.MapPoint> eqStationPoints = Store.MapData.Points.Values.Where(pt => pt.IsEquipment && !hasTaskPoints.Contains(pt)).ToList();
+            if (eqStationPoints.Count < 2)
+            {
+                return null;
+            }
+            int[] randomIndexes = GetRandomIndexs(0, eqStationPoints.Count);
+
+            try
+            {
+                var sourceStation = eqStationPoints[randomIndexes[0]];
+                var destineStation = eqStationPoints[randomIndexes[1]];
+
+                hasTaskPoints.Add(sourceStation);
+                hasTaskPoints.Add(destineStation);
+
+                task.AGVName = "自動選車";
+                task.FromStation = sourceStation.Name;
+                task.ToStation = destineStation.Name;
+                task.Action = ACTION_TYPE.TRANSFER;
+                task.MoveOnly = false;
+                Logger.Info($"Created Transfer Task:\r\n{task.ToJson()}");
+
+            }
+            catch (Exception ex)
+            {
+                return null;
+            }
+
+            return task;
+        }
+
+        private int[] GetRandomIndexs(int from, int to)
+        {
+            Random rand = new Random();
+            HashSet<int> numbers = new HashSet<int>();
+
+            // Keep generating numbers until we have 2 unique values
+            while (numbers.Count < 2)
+            {
+                int num = rand.Next(from, to); // Generates a number between 0 and 20
+                numbers.Add(num);
+            }
+            return numbers.ToArray();
+        }
     }
 }
