@@ -198,7 +198,9 @@ namespace AGVSHotrun
                 return;
 
             var click_column = dgvHotRunScripts.CurrentCell.OwningColumn;
+
             clsHotRunScript script = dgvHotRunScripts.CurrentRow.DataBoundItem as clsHotRunScript;
+
             if (script == null)
                 return;
             if (click_column == colHotRunStart)
@@ -229,6 +231,16 @@ namespace AGVSHotrun
                 }
                 Task.Run(() =>
                 {
+
+                    if (Store.SysConfigs.Field != FIELD_NAME.UMTC_3F_AOI && script.IsRandomTransferTaskCreateMode)
+                    {
+                        var result = MessageBox.Show("此腳本為隨機生成搬運任務,請確認 : \n- 派車系統已開啟測試模式。\n- 車載程式已開啟空取空放功能。\n\n是否繼續 ? ", "", MessageBoxButtons.OKCancel, MessageBoxIcon.Warning);
+                        if (result == DialogResult.Cancel)
+                        {
+                            return;
+                        }
+                    }
+
                     Logger.Info($"User Start Run Script _{script.ID}");
                     if (!script.Start(out string errMsg))
                     {

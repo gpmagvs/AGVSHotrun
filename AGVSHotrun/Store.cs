@@ -11,6 +11,12 @@ using System.Threading.Tasks;
 
 namespace AGVSHotrun
 {
+    public enum FIELD_NAME
+    {
+        UMTC_3F_AOI,
+        UMTC_3F_YELLOW,
+        UMTC_3F_MEC,
+    }
     public static class Store
     {
         const string CONFIG_FILE_NAME = "SystemConfigs.json";
@@ -42,8 +48,8 @@ namespace AGVSHotrun
                 RunScriptsList[index].RepeatNum = script.RepeatNum;
                 RunScriptsList[index].RunTasksDesigning = script.RunTasksDesigning;
                 RunScriptsList[index].IsRandomTransferTaskCreateMode = script.IsRandomTransferTaskCreateMode;
-                RunScriptsList[index].UseCIMSimulation= script.UseCIMSimulation;
-                RunScriptsList[index].MaxTaskQueueSize= script.MaxTaskQueueSize;
+                RunScriptsList[index].UseCIMSimulation = script.UseCIMSimulation;
+                RunScriptsList[index].MaxTaskQueueSize = script.MaxTaskQueueSize;
                 RunScriptsList[index].Description = script.Description;
             }
             File.WriteAllText(SysConfigs.HotRunScriptStoredFile, JsonConvert.SerializeObject(RunScriptsList, Formatting.Indented));

@@ -39,14 +39,14 @@
             pnlOptionOfRandomMode = new Panel();
             numud_beginTaskNumber = new NumericUpDown();
             label7 = new Label();
+            labCIMSimText = new Label();
+            cmbCIMSimulationMode = new ComboBox();
             cmbTaskCreateMode = new ComboBox();
             label6 = new Label();
-            cmbCIMSimulationMode = new ComboBox();
-            label5 = new Label();
             rtxbDescription = new RichTextBox();
             label4 = new Label();
             numudTRepeatTime = new NumericUpDown();
-            label3 = new Label();
+            labRepeatText = new Label();
             uscMapDisplay1 = new uscMapDisplay();
             ((System.ComponentModel.ISupportInitialize)splitContainer1).BeginInit();
             splitContainer1.Panel1.SuspendLayout();
@@ -138,12 +138,10 @@
             splitContainer1.Panel1.Controls.Add(pnlOptionOfRandomMode);
             splitContainer1.Panel1.Controls.Add(cmbTaskCreateMode);
             splitContainer1.Panel1.Controls.Add(label6);
-            splitContainer1.Panel1.Controls.Add(cmbCIMSimulationMode);
-            splitContainer1.Panel1.Controls.Add(label5);
             splitContainer1.Panel1.Controls.Add(rtxbDescription);
             splitContainer1.Panel1.Controls.Add(label4);
             splitContainer1.Panel1.Controls.Add(numudTRepeatTime);
-            splitContainer1.Panel1.Controls.Add(label3);
+            splitContainer1.Panel1.Controls.Add(labRepeatText);
             splitContainer1.Panel1.Controls.Add(btnCreateNewHotRun);
             splitContainer1.Panel1.Controls.Add(btnSaveAndExit);
             splitContainer1.Panel1.Controls.Add(label1);
@@ -172,16 +170,18 @@
             // 
             pnlOptionOfRandomMode.Controls.Add(numud_beginTaskNumber);
             pnlOptionOfRandomMode.Controls.Add(label7);
-            pnlOptionOfRandomMode.Location = new Point(12, 189);
+            pnlOptionOfRandomMode.Controls.Add(labCIMSimText);
+            pnlOptionOfRandomMode.Controls.Add(cmbCIMSimulationMode);
+            pnlOptionOfRandomMode.Location = new Point(14, 146);
             pnlOptionOfRandomMode.Name = "pnlOptionOfRandomMode";
-            pnlOptionOfRandomMode.Size = new Size(364, 44);
+            pnlOptionOfRandomMode.Size = new Size(372, 75);
             pnlOptionOfRandomMode.TabIndex = 17;
             pnlOptionOfRandomMode.Visible = false;
             // 
             // numud_beginTaskNumber
             // 
             numud_beginTaskNumber.Font = new Font("Microsoft JhengHei UI", 9F, FontStyle.Bold, GraphicsUnit.Point);
-            numud_beginTaskNumber.Location = new Point(180, 3);
+            numud_beginTaskNumber.Location = new Point(179, 10);
             numud_beginTaskNumber.Maximum = new decimal(new int[] { 1000, 0, 0, 0 });
             numud_beginTaskNumber.Minimum = new decimal(new int[] { 1, 0, 0, 0 });
             numud_beginTaskNumber.Name = "numud_beginTaskNumber";
@@ -195,17 +195,37 @@
             // 
             label7.AutoSize = true;
             label7.Font = new Font("Microsoft JhengHei UI", 15F, FontStyle.Bold, GraphicsUnit.Point);
-            label7.Location = new Point(-1, 1);
+            label7.Location = new Point(-2, 8);
             label7.Name = "label7";
             label7.Size = new Size(112, 25);
             label7.TabIndex = 11;
             label7.Text = "上線車輛數";
             // 
+            // labCIMSimText
+            // 
+            labCIMSimText.AutoSize = true;
+            labCIMSimText.Font = new Font("Microsoft JhengHei UI", 15F, FontStyle.Bold, GraphicsUnit.Point);
+            labCIMSimText.Location = new Point(-2, 42);
+            labCIMSimText.Name = "labCIMSimText";
+            labCIMSimText.Size = new Size(171, 25);
+            labCIMSimText.TabIndex = 13;
+            labCIMSimText.Text = "CIM模擬設備狀態";
+            // 
+            // cmbCIMSimulationMode
+            // 
+            cmbCIMSimulationMode.FormattingEnabled = true;
+            cmbCIMSimulationMode.Items.AddRange(new object[] { "關閉", "啟用" });
+            cmbCIMSimulationMode.Location = new Point(179, 44);
+            cmbCIMSimulationMode.Name = "cmbCIMSimulationMode";
+            cmbCIMSimulationMode.Size = new Size(184, 23);
+            cmbCIMSimulationMode.TabIndex = 14;
+            cmbCIMSimulationMode.SelectedIndexChanged += cmbCIMSimulationMode_SelectedIndexChanged;
+            // 
             // cmbTaskCreateMode
             // 
             cmbTaskCreateMode.FormattingEnabled = true;
             cmbTaskCreateMode.Items.AddRange(new object[] { "自訂", "隨機生成搬運任務" });
-            cmbTaskCreateMode.Location = new Point(192, 155);
+            cmbTaskCreateMode.Location = new Point(192, 81);
             cmbTaskCreateMode.Name = "cmbTaskCreateMode";
             cmbTaskCreateMode.Size = new Size(184, 23);
             cmbTaskCreateMode.TabIndex = 16;
@@ -215,31 +235,11 @@
             // 
             label6.AutoSize = true;
             label6.Font = new Font("Microsoft JhengHei UI", 15F, FontStyle.Bold, GraphicsUnit.Point);
-            label6.Location = new Point(11, 153);
+            label6.Location = new Point(11, 79);
             label6.Name = "label6";
             label6.Size = new Size(132, 25);
             label6.TabIndex = 15;
             label6.Text = "任務生成模式";
-            // 
-            // cmbCIMSimulationMode
-            // 
-            cmbCIMSimulationMode.FormattingEnabled = true;
-            cmbCIMSimulationMode.Items.AddRange(new object[] { "關閉", "啟用" });
-            cmbCIMSimulationMode.Location = new Point(192, 117);
-            cmbCIMSimulationMode.Name = "cmbCIMSimulationMode";
-            cmbCIMSimulationMode.Size = new Size(184, 23);
-            cmbCIMSimulationMode.TabIndex = 14;
-            cmbCIMSimulationMode.SelectedIndexChanged += cmbCIMSimulationMode_SelectedIndexChanged;
-            // 
-            // label5
-            // 
-            label5.AutoSize = true;
-            label5.Font = new Font("Microsoft JhengHei UI", 15F, FontStyle.Bold, GraphicsUnit.Point);
-            label5.Location = new Point(11, 115);
-            label5.Name = "label5";
-            label5.Size = new Size(171, 25);
-            label5.TabIndex = 13;
-            label5.Text = "CIM模擬設備狀態";
             // 
             // rtxbDescription
             // 
@@ -263,7 +263,7 @@
             // numudTRepeatTime
             // 
             numudTRepeatTime.Font = new Font("Microsoft JhengHei UI", 9F, FontStyle.Bold, GraphicsUnit.Point);
-            numudTRepeatTime.Location = new Point(192, 79);
+            numudTRepeatTime.Location = new Point(193, 117);
             numudTRepeatTime.Maximum = new decimal(new int[] { 1000, 0, 0, 0 });
             numudTRepeatTime.Minimum = new decimal(new int[] { 1, 0, 0, 0 });
             numudTRepeatTime.Name = "numudTRepeatTime";
@@ -273,15 +273,15 @@
             numudTRepeatTime.Value = new decimal(new int[] { 1, 0, 0, 0 });
             numudTRepeatTime.ValueChanged += numudTRepeatTime_ValueChanged;
             // 
-            // label3
+            // labRepeatText
             // 
-            label3.AutoSize = true;
-            label3.Font = new Font("Microsoft JhengHei UI", 15F, FontStyle.Bold, GraphicsUnit.Point);
-            label3.Location = new Point(11, 77);
-            label3.Name = "label3";
-            label3.Size = new Size(92, 25);
-            label3.TabIndex = 9;
-            label3.Text = "重複次數";
+            labRepeatText.AutoSize = true;
+            labRepeatText.Font = new Font("Microsoft JhengHei UI", 15F, FontStyle.Bold, GraphicsUnit.Point);
+            labRepeatText.Location = new Point(12, 115);
+            labRepeatText.Name = "labRepeatText";
+            labRepeatText.Size = new Size(92, 25);
+            labRepeatText.TabIndex = 9;
+            labRepeatText.Text = "重複次數";
             // 
             // uscMapDisplay1
             // 
@@ -332,10 +332,10 @@
         private uscMapDisplay uscMapDisplay1;
         private Label label4;
         private NumericUpDown numudTRepeatTime;
-        private Label label3;
+        private Label labRepeatText;
         private RichTextBox rtxbDescription;
         private ComboBox cmbCIMSimulationMode;
-        private Label label5;
+        private Label labCIMSimText;
         private Label label6;
         private ComboBox cmbTaskCreateMode;
         private Panel pnlOptionOfRandomMode;

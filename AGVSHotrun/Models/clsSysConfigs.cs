@@ -8,6 +8,7 @@ namespace AGVSHotrun.Models
 {
     public class clsSysConfigs
     {
+        public FIELD_NAME Field { get; set; } = FIELD_NAME.UMTC_3F_YELLOW;
         public string MapFile { get; set; } = "C:\\CST\\ini\\Map_UMTC_AOI.json";
         public string AGVSHost { get; set; } = "http://127.0.0.1:6600";
         public string CIMHost { get; set; } = "http://localhost:5432/";

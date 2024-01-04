@@ -141,7 +141,7 @@ namespace AGVSHotrun.HotRun
             IsRunning = false;
             OnLoopStateChange?.Invoke(this, this);
         }
-        public bool Start(out string message)
+        public virtual bool Start(out string message)
         {
             IsWaitLogin = true;
             DBHelper.Connect();
@@ -663,9 +663,16 @@ namespace AGVSHotrun.HotRun
                 hasTaskPoints.Add(sourceStation);
                 hasTaskPoints.Add(destineStation);
 
+                TryGetSlotByStationName(sourceStation.Name, out string[] fromSlots);
+                TryGetSlotByStationName(destineStation.Name, out string[] destineSlots);
+
                 task.AGVName = "自動選車";
                 task.FromStation = sourceStation.Name;
                 task.ToStation = destineStation.Name;
+
+                task.FromSlot = sourceStation.IsSTK ? fromSlots[0] : "";
+                task.ToSlot = sourceStation.IsSTK ? destineSlots[0] : "";
+
                 task.Action = ACTION_TYPE.TRANSFER;
                 task.MoveOnly = false;
                 Logger.Info($"Created Transfer Task:\r\n{task.ToJson()}");
@@ -678,6 +685,27 @@ namespace AGVSHotrun.HotRun
 
             return task;
         }
+
+
+        private bool TryGetSlotByStationName(string stationName, out string[] slots)
+        {
+            slots = new string[1] { "1" };
+            try
+            {
+                //RACK_1_3,4,5
+                //RACK$1$3,4,5
+                stationName = stationName.Replace("_", "$");
+                var splited = stationName.Split('$');
+                slots = splited.Last().Split('|');
+                return slots.Length == 3;
+
+            }
+            catch (Exception ex)
+            {
+                return false;
+            }
+        }
+
         Random rand = new Random();
         private int[] GetRandomIndexs(int from, int to)
         {

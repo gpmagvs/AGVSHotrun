@@ -80,6 +80,7 @@ namespace AGVSHotrun.UI
 
         private void frmHotRunCreateHelper_Load(object sender, EventArgs e)
         {
+            cmbCIMSimulationMode.Visible = labCIMSimText.Visible = Store.SysConfigs.Field == FIELD_NAME.UMTC_3F_AOI;
             uscMapDisplay1.OnMapPointAddToRunActionClick += MapPointActionAddHandle;
         }
 
@@ -110,6 +111,9 @@ namespace AGVSHotrun.UI
         private void cmbTaskCreateMode_SelectedIndexChanged(object sender, EventArgs e)
         {
             bool isRandomModeSelected = cmbTaskCreateMode.SelectedIndex == 1;
+
+
+            numudTRepeatTime.Visible = labRepeatText.Visible = !isRandomModeSelected;
 
             script.IsRandomTransferTaskCreateMode = isRandomModeSelected;
             uscRunTaskCreater1.Enabled = !isRandomModeSelected;
