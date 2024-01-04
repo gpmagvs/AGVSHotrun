@@ -451,7 +451,7 @@ namespace AGVSHotrun.HotRun
                         previous_currentExecutingTransferTasks = currentExecutingTransferTasks;
 
                     }
-                    catch(CIMSwitchPortLDULDStatusFailFailException ex)
+                    catch (CIMSwitchPortLDULDStatusFailFailException ex)
                     {
                         break;
                     }
@@ -646,7 +646,9 @@ namespace AGVSHotrun.HotRun
         private clsRunTask CreateTransferTask()
         {
             var task = new clsRunTask();
-            List<AGVSystemCommonNet6.MAP.MapPoint> eqStationPoints = Store.MapData.Points.Values.Where(pt => pt.IsEquipment && !hasTaskPoints.Contains(pt)).ToList();
+            List<AGVSystemCommonNet6.MAP.MapPoint> eqStationPoints = Store.MapData.Points
+                                                                    .Where(kp => !Store.SysConfigs.DisableStationIDList.Contains(kp.Key) && kp.Value.IsEquipment && !hasTaskPoints.Contains(kp.Value))
+                                                                    .Select(p => p.Value).ToList();
             if (eqStationPoints.Count < 2)
             {
                 return null;
@@ -676,17 +678,20 @@ namespace AGVSHotrun.HotRun
 
             return task;
         }
-
+        Random rand = new Random();
         private int[] GetRandomIndexs(int from, int to)
         {
-            Random rand = new Random();
-            HashSet<int> numbers = new HashSet<int>();
-
+            List<int> numbers = new List<int>();
             // Keep generating numbers until we have 2 unique values
             while (numbers.Count < 2)
             {
+                Thread.Sleep(1000);
                 int num = rand.Next(from, to); // Generates a number between 0 and 20
-                numbers.Add(num);
+                if (!numbers.Contains(num))
+                {
+                    Logger.Info($"Random int Created :{num}");
+                    numbers.Add(num);
+                }
             }
             return numbers.ToArray();
         }

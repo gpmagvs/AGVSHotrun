@@ -35,6 +35,7 @@
             agvCombox1 = new AGVCombox();
             btnSaveAndExit = new Button();
             splitContainer1 = new SplitContainer();
+            panel1 = new Panel();
             pnlOptionOfRandomMode = new Panel();
             numud_beginTaskNumber = new NumericUpDown();
             label7 = new Label();
@@ -51,6 +52,7 @@
             splitContainer1.Panel1.SuspendLayout();
             splitContainer1.Panel2.SuspendLayout();
             splitContainer1.SuspendLayout();
+            panel1.SuspendLayout();
             pnlOptionOfRandomMode.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)numud_beginTaskNumber).BeginInit();
             ((System.ComponentModel.ISupportInitialize)numudTRepeatTime).BeginInit();
@@ -81,8 +83,10 @@
             // label2
             // 
             label2.AutoSize = true;
+            label2.Dock = DockStyle.Top;
             label2.Font = new Font("Microsoft JhengHei UI", 15F, FontStyle.Bold, GraphicsUnit.Point);
-            label2.Location = new Point(12, 233);
+            label2.Location = new Point(3, 0);
+            label2.Margin = new Padding(0);
             label2.Name = "label2";
             label2.Size = new Size(92, 25);
             label2.TabIndex = 5;
@@ -90,12 +94,12 @@
             // 
             // uscRunTaskCreater1
             // 
-            uscRunTaskCreater1.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             uscRunTaskCreater1.BackColor = SystemColors.ControlLight;
             uscRunTaskCreater1.BorderStyle = BorderStyle.FixedSingle;
-            uscRunTaskCreater1.Location = new Point(12, 261);
+            uscRunTaskCreater1.Dock = DockStyle.Fill;
+            uscRunTaskCreater1.Location = new Point(3, 25);
             uscRunTaskCreater1.Name = "uscRunTaskCreater1";
-            uscRunTaskCreater1.Size = new Size(1085, 421);
+            uscRunTaskCreater1.Size = new Size(1073, 327);
             uscRunTaskCreater1.TabIndex = 6;
             uscRunTaskCreater1.OnRunTaskItemCreated += uscRunTaskCreater1_OnRunTaskItemCreated;
             // 
@@ -130,6 +134,7 @@
             // splitContainer1.Panel1
             // 
             splitContainer1.Panel1.BackColor = Color.White;
+            splitContainer1.Panel1.Controls.Add(panel1);
             splitContainer1.Panel1.Controls.Add(pnlOptionOfRandomMode);
             splitContainer1.Panel1.Controls.Add(cmbTaskCreateMode);
             splitContainer1.Panel1.Controls.Add(label6);
@@ -143,16 +148,25 @@
             splitContainer1.Panel1.Controls.Add(btnSaveAndExit);
             splitContainer1.Panel1.Controls.Add(label1);
             splitContainer1.Panel1.Controls.Add(agvCombox1);
-            splitContainer1.Panel1.Controls.Add(label2);
-            splitContainer1.Panel1.Controls.Add(uscRunTaskCreater1);
             // 
             // splitContainer1.Panel2
             // 
             splitContainer1.Panel2.Controls.Add(uscMapDisplay1);
-            splitContainer1.Size = new Size(1441, 685);
+            splitContainer1.Size = new Size(1441, 603);
             splitContainer1.SplitterDistance = 1100;
             splitContainer1.SplitterWidth = 8;
             splitContainer1.TabIndex = 9;
+            // 
+            // panel1
+            // 
+            panel1.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            panel1.Controls.Add(uscRunTaskCreater1);
+            panel1.Controls.Add(label2);
+            panel1.Location = new Point(11, 239);
+            panel1.Name = "panel1";
+            panel1.Padding = new Padding(3, 0, 0, 0);
+            panel1.Size = new Size(1076, 352);
+            panel1.TabIndex = 18;
             // 
             // pnlOptionOfRandomMode
             // 
@@ -160,7 +174,7 @@
             pnlOptionOfRandomMode.Controls.Add(label7);
             pnlOptionOfRandomMode.Location = new Point(12, 189);
             pnlOptionOfRandomMode.Name = "pnlOptionOfRandomMode";
-            pnlOptionOfRandomMode.Size = new Size(502, 44);
+            pnlOptionOfRandomMode.Size = new Size(364, 44);
             pnlOptionOfRandomMode.TabIndex = 17;
             pnlOptionOfRandomMode.Visible = false;
             // 
@@ -180,12 +194,12 @@
             // label7
             // 
             label7.AutoSize = true;
-            label7.Font = new Font("Microsoft JhengHei UI", 15F, FontStyle.Regular, GraphicsUnit.Point);
+            label7.Font = new Font("Microsoft JhengHei UI", 15F, FontStyle.Bold, GraphicsUnit.Point);
             label7.Location = new Point(-1, 1);
             label7.Name = "label7";
-            label7.Size = new Size(92, 25);
+            label7.Size = new Size(112, 25);
             label7.TabIndex = 11;
-            label7.Text = "重複次數";
+            label7.Text = "上線車輛數";
             // 
             // cmbTaskCreateMode
             // 
@@ -200,7 +214,7 @@
             // label6
             // 
             label6.AutoSize = true;
-            label6.Font = new Font("Microsoft JhengHei UI", 15F, FontStyle.Regular, GraphicsUnit.Point);
+            label6.Font = new Font("Microsoft JhengHei UI", 15F, FontStyle.Bold, GraphicsUnit.Point);
             label6.Location = new Point(11, 153);
             label6.Name = "label6";
             label6.Size = new Size(132, 25);
@@ -220,16 +234,16 @@
             // label5
             // 
             label5.AutoSize = true;
-            label5.Font = new Font("Microsoft JhengHei UI", 15F, FontStyle.Regular, GraphicsUnit.Point);
+            label5.Font = new Font("Microsoft JhengHei UI", 15F, FontStyle.Bold, GraphicsUnit.Point);
             label5.Location = new Point(11, 115);
             label5.Name = "label5";
-            label5.Size = new Size(170, 25);
+            label5.Size = new Size(171, 25);
             label5.TabIndex = 13;
             label5.Text = "CIM模擬設備狀態";
             // 
             // rtxbDescription
             // 
-            rtxbDescription.Location = new Point(519, 82);
+            rtxbDescription.Location = new Point(547, 79);
             rtxbDescription.Name = "rtxbDescription";
             rtxbDescription.Size = new Size(425, 61);
             rtxbDescription.TabIndex = 12;
@@ -239,12 +253,12 @@
             // label4
             // 
             label4.AutoSize = true;
-            label4.Font = new Font("Microsoft JhengHei UI", 15F, FontStyle.Regular, GraphicsUnit.Point);
-            label4.Location = new Point(382, 79);
+            label4.Font = new Font("Microsoft JhengHei UI", 15F, FontStyle.Bold, GraphicsUnit.Point);
+            label4.Location = new Point(409, 79);
             label4.Name = "label4";
             label4.Size = new Size(132, 25);
             label4.TabIndex = 11;
-            label4.Text = "測試腳本說明";
+            label4.Text = "測試腳本描述";
             // 
             // numudTRepeatTime
             // 
@@ -262,7 +276,7 @@
             // label3
             // 
             label3.AutoSize = true;
-            label3.Font = new Font("Microsoft JhengHei UI", 15F, FontStyle.Regular, GraphicsUnit.Point);
+            label3.Font = new Font("Microsoft JhengHei UI", 15F, FontStyle.Bold, GraphicsUnit.Point);
             label3.Location = new Point(11, 77);
             label3.Name = "label3";
             label3.Size = new Size(92, 25);
@@ -279,7 +293,7 @@
             uscMapDisplay1.Location = new Point(0, 0);
             uscMapDisplay1.Name = "uscMapDisplay1";
             uscMapDisplay1.OnMapPointAddToRunActionClick = null;
-            uscMapDisplay1.Size = new Size(333, 685);
+            uscMapDisplay1.Size = new Size(333, 603);
             uscMapDisplay1.TabIndex = 1;
             // 
             // frmHotRunCreateHelper
@@ -287,7 +301,7 @@
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             BackColor = SystemColors.ControlLight;
-            ClientSize = new Size(1441, 685);
+            ClientSize = new Size(1441, 603);
             Controls.Add(splitContainer1);
             Name = "frmHotRunCreateHelper";
             Text = "HOT RUN 測試腳本編輯器";
@@ -298,6 +312,8 @@
             splitContainer1.Panel2.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)splitContainer1).EndInit();
             splitContainer1.ResumeLayout(false);
+            panel1.ResumeLayout(false);
+            panel1.PerformLayout();
             pnlOptionOfRandomMode.ResumeLayout(false);
             pnlOptionOfRandomMode.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)numud_beginTaskNumber).EndInit();
@@ -325,5 +341,6 @@
         private Panel pnlOptionOfRandomMode;
         private NumericUpDown numud_beginTaskNumber;
         private Label label7;
+        private Panel panel1;
     }
 }

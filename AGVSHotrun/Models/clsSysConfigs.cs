@@ -37,5 +37,7 @@ namespace AGVSHotrun.Models
         /// 腳本執行過程中如有充電任務是否要取消
         /// </summary>
         public bool CancelChargeTaskWhenHotRun { get; set; } = false;
+
+        public int[] DisableStationIDList { get; set; } = new int[0];
     }
 }

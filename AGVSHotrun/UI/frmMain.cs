@@ -85,11 +85,11 @@ namespace AGVSHotrun
                 {
                     Note = "無效的檔案路徑"
                 };
-                MessageBox.Show($"圖資檔案不存在-Path={Store.SysConfigs.MapFile}","圖資載入失敗",MessageBoxButtons.OK,MessageBoxIcon.Error);
+                MessageBox.Show($"圖資檔案不存在-Path={Store.SysConfigs.MapFile}", "圖資載入失敗", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
             else
             {
-                Store.MapData = MapManager.LoadMapFromFile(Store.SysConfigs.MapFile, out string msg, false);
+                Store.MapData = MapManager.LoadMapFromFile(Store.SysConfigs.MapFile, out string msg, false, false);
                 if (msg != "")
                 {
                     MessageBox.Show(msg);
@@ -106,7 +106,7 @@ namespace AGVSHotrun
 
             Logger.Info("資料庫連線中...");
             labSystemInformation.Text = "資料庫連線中...";
-            var dbconn_task =Task.Run(async () =>
+            var dbconn_task = Task.Run(async () =>
             {
                 Store.StartAGVLocSyncProcess();
                 bool sql_connected = await CheckSqlServerConnection();
