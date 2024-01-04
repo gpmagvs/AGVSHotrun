@@ -64,7 +64,7 @@ namespace AGVSHotrun.HotRun
                 return IsWaitLogin ? "Wait Login..." : IsRunning ? "中止" : "開始";
             }
         }
-
+        public List<int> ExceptStationIndexList { get; set; } = new List<int>();
         [JsonIgnore]
         public int TotalActionNum
         {
@@ -647,6 +647,7 @@ namespace AGVSHotrun.HotRun
         {
             var task = new clsRunTask();
             List<AGVSystemCommonNet6.MAP.MapPoint> eqStationPoints = Store.MapData.Points
+                                                                    .Where(kp => !ExceptStationIndexList.Contains(kp.Key))
                                                                     .Where(kp => !Store.SysConfigs.DisableStationIDList.Contains(kp.Key) && kp.Value.IsEquipment && !hasTaskPoints.Contains(kp.Value))
                                                                     .Select(p => p.Value).ToList();
             if (eqStationPoints.Count < 2)
@@ -713,7 +714,7 @@ namespace AGVSHotrun.HotRun
             // Keep generating numbers until we have 2 unique values
             while (numbers.Count < 2)
             {
-                Thread.Sleep(1000);
+                Thread.Sleep(400);
                 int num = rand.Next(from, to); // Generates a number between 0 and 20
                 if (!numbers.Contains(num))
                 {

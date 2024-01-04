@@ -38,6 +38,7 @@
             btnAddULDRunTaskAction = new ToolStripMenuItem();
             btnAddLDRunTaskAction = new ToolStripMenuItem();
             btnParkStripitem = new ToolStripMenuItem();
+            btnAddToExceptList = new ToolStripMenuItem();
             radbtn_Show_IDName = new RadioButton();
             radbtn_Show_GraphDislay = new RadioButton();
             radbtn_Show_Index = new RadioButton();
@@ -100,30 +101,37 @@
             // 
             // LDULDStationMenuStrip
             // 
-            LDULDStationMenuStrip.Items.AddRange(new ToolStripItem[] { btnAddULDRunTaskAction, btnAddLDRunTaskAction, btnParkStripitem });
+            LDULDStationMenuStrip.Items.AddRange(new ToolStripItem[] { btnAddULDRunTaskAction, btnAddLDRunTaskAction, btnParkStripitem, btnAddToExceptList });
             LDULDStationMenuStrip.Name = "NormalPointContextMenuStrip";
-            LDULDStationMenuStrip.Size = new Size(99, 70);
+            LDULDStationMenuStrip.Size = new Size(207, 92);
             // 
             // btnAddULDRunTaskAction
             // 
             btnAddULDRunTaskAction.Name = "btnAddULDRunTaskAction";
-            btnAddULDRunTaskAction.Size = new Size(98, 22);
+            btnAddULDRunTaskAction.Size = new Size(206, 22);
             btnAddULDRunTaskAction.Text = "取貨";
             btnAddULDRunTaskAction.Click += btnAddULDRunTaskAction_Click;
             // 
             // btnAddLDRunTaskAction
             // 
             btnAddLDRunTaskAction.Name = "btnAddLDRunTaskAction";
-            btnAddLDRunTaskAction.Size = new Size(98, 22);
+            btnAddLDRunTaskAction.Size = new Size(206, 22);
             btnAddLDRunTaskAction.Text = "放貨";
             btnAddLDRunTaskAction.Click += btnAddLDRunTaskAction_Click;
             // 
             // btnParkStripitem
             // 
             btnParkStripitem.Name = "btnParkStripitem";
-            btnParkStripitem.Size = new Size(98, 22);
+            btnParkStripitem.Size = new Size(206, 22);
             btnParkStripitem.Text = "停車";
             btnParkStripitem.Click += btnParkStripitem_Click;
+            // 
+            // btnAddToExceptList
+            // 
+            btnAddToExceptList.Name = "btnAddToExceptList";
+            btnAddToExceptList.Size = new Size(206, 22);
+            btnAddToExceptList.Text = "新增至搬運任務例外清單";
+            btnAddToExceptList.Click += BtnAddToExceptList_Click;
             // 
             // radbtn_Show_IDName
             // 
@@ -214,5 +222,6 @@
         private RadioButton radbtn_Show_GraphDislay;
         private RadioButton radbtn_Show_Index;
         private RadioButton radbtn_Show_Tag;
+        private ToolStripMenuItem btnAddToExceptList;
     }
 }

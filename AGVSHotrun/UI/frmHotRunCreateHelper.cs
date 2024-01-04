@@ -1,4 +1,5 @@
 ﻿using AGVSHotrun.HotRun;
+using AGVSystemCommonNet6.MAP;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -20,16 +21,21 @@ namespace AGVSHotrun.UI
         {
             InitializeComponent();
             uscRunTaskItem.OnRemoveButtonPush += UscRunTaskItem_OnRemoveButtonPush;
+            uscStationSelectCheckboxList1.OnSelectedStationIndexChanged += UscStationSelectCheckboxList1_OnSelectedStationIndexChanged1;
             cmbCIMSimulationMode.SelectedIndex = 0;
             cmbTaskCreateMode.SelectedIndex = 0;
 
         }
+
+
         public frmHotRunCreateHelper(clsHotRunScript _script)
         {
             InitializeComponent();
             btnCreateNewHotRun.Text = "儲存";
             isEditOld = true;
             uscRunTaskItem.OnRemoveButtonPush += UscRunTaskItem_OnRemoveButtonPush;
+            uscStationSelectCheckboxList1.OnSelectedStationIndexChanged += UscStationSelectCheckboxList1_OnSelectedStationIndexChanged1;
+
             script = JsonConvert.DeserializeObject<clsHotRunScript>(JsonConvert.SerializeObject(_script)); //深層複製
             rtxbDescription.Text = script.Description;
             numudTRepeatTime.Value = script.RepeatNum;
@@ -38,6 +44,11 @@ namespace AGVSHotrun.UI
             cmbTaskCreateMode.SelectedIndex = script.IsRandomTransferTaskCreateMode ? 1 : 0;
             uscRunTaskCreater1.Add(this.script.RunTasksDesigning);
             numud_beginTaskNumber.Value = script.MaxTaskQueueSize;
+            pnlRandomOptions.Visible = script.IsRandomTransferTaskCreateMode;
+            panel1.Visible = !script.IsRandomTransferTaskCreateMode;
+            uscStationSelectCheckboxList1.UpdateSelectedItems(script.ExceptStationIndexList);
+
+
         }
         bool isSaveAndExitFlag = false;
         private void btnSaveAndExit_Click(object sender, EventArgs e)
@@ -82,6 +93,19 @@ namespace AGVSHotrun.UI
         {
             cmbCIMSimulationMode.Visible = labCIMSimText.Visible = Store.SysConfigs.Field == FIELD_NAME.UMTC_3F_AOI;
             uscMapDisplay1.OnMapPointAddToRunActionClick += MapPointActionAddHandle;
+            uscMapDisplay1.OnMapPoinAddtoExceptListClick += MapPointAddToExceptListHandle;
+        }
+
+        private void MapPointAddToExceptListHandle(MapPoint point)
+        {
+            var keypair = Store.MapData.Points.FirstOrDefault(p => p.Value.TagNumber == point.TagNumber);
+            if (keypair.Value != null)
+            {
+                var index = keypair.Key;
+                script.ExceptStationIndexList.Add(index);
+                script.ExceptStationIndexList = script.ExceptStationIndexList.Distinct().ToList();
+                uscStationSelectCheckboxList1.UpdateSelectedItems(script.ExceptStationIndexList);
+            }
         }
 
         private void MapPointActionAddHandle(uscMapDisplay.clsPointAddToRunActionDto dto)
@@ -112,17 +136,36 @@ namespace AGVSHotrun.UI
         {
             bool isRandomModeSelected = cmbTaskCreateMode.SelectedIndex == 1;
 
-
+            pnlRandomOptions.Visible = isRandomModeSelected;
             numudTRepeatTime.Visible = labRepeatText.Visible = !isRandomModeSelected;
 
             script.IsRandomTransferTaskCreateMode = isRandomModeSelected;
-            uscRunTaskCreater1.Enabled = !isRandomModeSelected;
+            panel1.Visible = !isRandomModeSelected;
             pnlOptionOfRandomMode.Visible = isRandomModeSelected;
+
+            tableLayoutPanel1.RowStyles.Clear();
+
+            if (isRandomModeSelected)
+            {
+                tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.AutoSize, 100));
+                tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
+            }
+            else
+            {
+                tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
+                tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.AutoSize, 100));
+            }
         }
 
         private void numud_beginTaskNumber_ValueChanged(object sender, EventArgs e)
         {
             script.MaxTaskQueueSize = (int)numud_beginTaskNumber.Value;
         }
+
+        private void UscStationSelectCheckboxList1_OnSelectedStationIndexChanged1(object? sender, List<int> indexList)
+        {
+            script.ExceptStationIndexList = indexList;
+        }
+
     }
 }

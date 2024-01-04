@@ -39,6 +39,7 @@ namespace AGVSHotrun.UI
         }
 
         public Action<clsPointAddToRunActionDto> OnMapPointAddToRunActionClick { get; set; }
+        public Action<MapPoint> OnMapPoinAddtoExceptListClick { get; set; }
 
         bool isdrag = false;
         int offset_x = 0;
@@ -280,6 +281,14 @@ namespace AGVSHotrun.UI
         private void radbtn_Show_IDName_CheckedChanged(object sender, EventArgs e)
         {
             picMap.Invalidate();
+        }
+
+        private void BtnAddToExceptList_Click(object sender, EventArgs e)
+        {
+            if (SelectedMapPoint != null && OnMapPoinAddtoExceptListClick != null)
+            {
+                OnMapPoinAddtoExceptListClick(SelectedMapPoint);
+            }
         }
     }
 }

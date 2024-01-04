@@ -51,6 +51,7 @@ namespace AGVSHotrun
                 RunScriptsList[index].UseCIMSimulation = script.UseCIMSimulation;
                 RunScriptsList[index].MaxTaskQueueSize = script.MaxTaskQueueSize;
                 RunScriptsList[index].Description = script.Description;
+                RunScriptsList[index].ExceptStationIndexList = script.ExceptStationIndexList;
             }
             File.WriteAllText(SysConfigs.HotRunScriptStoredFile, JsonConvert.SerializeObject(RunScriptsList, Formatting.Indented));
             OnScriptCreated?.Invoke("Store", EventArgs.Empty);

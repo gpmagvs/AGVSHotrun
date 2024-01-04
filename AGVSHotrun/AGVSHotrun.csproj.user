@@ -37,6 +37,9 @@
     <Compile Update="UI\uscRunTaskItem.cs">
       <SubType>UserControl</SubType>
     </Compile>
+    <Compile Update="UI\uscStationSelectCheckboxList.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
     <Compile Update="UI\uscTaskDispatcher.cs">
       <SubType>UserControl</SubType>
     </Compile>
