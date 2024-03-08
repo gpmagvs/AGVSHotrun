@@ -24,11 +24,7 @@ namespace AGVSHotrun
         public AGVSDBHelper dbHelper { get; set; } = new AGVSDBHelper();
         public BindingList<ExecutingTask> DataBinding { get; set; } = new BindingList<ExecutingTask>();
 
-        public void StartRender()
-        {
-            dataGridView1.DataSource = DataBinding;
-            timer1.Start();
-        }
+
         int selectedRow = -1;
         int selectedColumn = -1;
 
@@ -48,27 +44,6 @@ namespace AGVSHotrun
 
         }
 
-        public void UI_Render_TIMER_Tick(object sender, EventArgs e)
-        {
-            DataBinding.Clear();
-            if (dbHelper.DBConn == null)
-                dbHelper.Connect();
-            List<ExecutingTask> datas = dbHelper.DBConn.ExecutingTasks.ToList();
-            foreach (var data in datas)
-            {
-                try
-                {
-                    data.FromStationDisplayName = Store.MapData.Points[data.FromStationId].Graph.Display;
-                    data.ToStationDisplayName = Store.MapData.Points[data.ToStationId].Graph.Display;
-                }
-                catch (Exception)
-                {
-                }
-                DataBinding.Add(data);
-            }
-            DataBinding.ResetBindings();
-
-        }
 
         private void btnCancelAllTasks_Click(object sender, EventArgs e)
         {
@@ -85,6 +60,32 @@ namespace AGVSHotrun
                     }
                 });
             }
+        }
+
+        internal void Render(List<ExecutingTask> e)
+        {
+            Invoke(new Action(() =>
+            {
+                DataBinding.Clear();
+                foreach (var data in e)
+                {
+                    try
+                    {
+                        data.FromStationDisplayName = Store.MapData.Points[data.FromStationId].Graph.Display;
+                        data.ToStationDisplayName = Store.MapData.Points[data.ToStationId].Graph.Display;
+                    }
+                    catch (Exception)
+                    {
+                    }
+                    DataBinding.Add(data);
+                }
+                DataBinding.ResetBindings();
+            }));
+        }
+
+        private void UscExecuteTasks_Load(object sender, EventArgs e)
+        {
+            dataGridView1.DataSource = DataBinding;
         }
     }
 }

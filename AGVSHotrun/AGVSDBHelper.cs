@@ -13,15 +13,31 @@ namespace AGVSHotrun
     public class AGVSDBHelper
     {
         internal static string DBConnection = "Server=127.0.0.1;Database=WebAGVSystem;User Id=sa;Password=12345678;Encrypt=False";
-
         public WebAGVSystemDbcontext DBConn;
-        public bool Connect()
+
+        public bool Connect(bool auto_create_database = false)
         {
             try
             {
                 var optionbuilder = new DbContextOptionsBuilder<WebAGVSystemDbcontext>();
                 optionbuilder.UseSqlServer(DBConnection);
                 DBConn = new WebAGVSystemDbcontext(optionbuilder.Options);
+                if (auto_create_database)
+                {
+
+                    DBConn.Database.EnsureCreated();
+                    try
+                    {
+                        var agv_id = new int[] { 1, 2, 3, 4 };
+                        DBConn.AGVInfos.AddRange(agv_id.Select(id => new AGVInfo { AGVID = id, AGVName = $"AGV_{id}" }));
+                        DBConn.SaveChanges();
+                    }
+                    catch (Exception)
+                    {
+
+                    }
+                }
+
                 return true;
             }
             catch (Exception ex)

@@ -47,7 +47,6 @@
             processResultDataGridViewTextBoxColumn = new DataGridViewTextBoxColumn();
             aGVInfoBindingSource1 = new BindingSource(components);
             aGVInfoBindingSource = new BindingSource(components);
-            timer1 = new System.Windows.Forms.Timer(components);
             ((System.ComponentModel.ISupportInitialize)dataGridView1).BeginInit();
             ((System.ComponentModel.ISupportInitialize)aGVInfoBindingSource1).BeginInit();
             ((System.ComponentModel.ISupportInitialize)aGVInfoBindingSource).BeginInit();
@@ -183,11 +182,6 @@
             // 
             aGVInfoBindingSource.DataSource = typeof(Models.AGVInfo);
             // 
-            // timer1
-            // 
-            timer1.Interval = 1000;
-            timer1.Tick += UI_Render_TIMER_Tick;
-            // 
             // uscAGVStatus
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
@@ -206,7 +200,6 @@
 
         private DataGridView dataGridView1;
         private BindingSource aGVInfoBindingSource;
-        private System.Windows.Forms.Timer timer1;
         private DataGridViewTextBoxColumn aGVIDDataGridViewTextBoxColumn;
         private DataGridViewTextBoxColumn aGVNameDataGridViewTextBoxColumn;
         private DataGridViewTextBoxColumn aGVMainStatusDataGridViewTextBoxColumn;

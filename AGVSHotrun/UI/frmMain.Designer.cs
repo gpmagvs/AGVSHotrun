@@ -47,8 +47,11 @@ namespace AGVSHotrun
             label2 = new Label();
             uscagvStatus1 = new uscAGVStatus();
             label1 = new Label();
+            tabControl2 = new TabControl();
+            tabPage4 = new TabPage();
             uscMapDisplay2 = new UI.uscMapDisplay();
-            label3 = new Label();
+            tabpage_HotRunInfo = new TabPage();
+            uscRandomHotRunningInformation1 = new UI.uscRandomHotRunningInformation();
             dgvHotRunScripts = new DataGridView();
             colHotRunStart = new DataGridViewButtonColumn();
             Description = new DataGridViewTextBoxColumn();
@@ -77,6 +80,7 @@ namespace AGVSHotrun
             toolStripDropDownButton2 = new ToolStripDropDownButton();
             btnWaitTaskDoneMode = new ToolStripMenuItem();
             btnCancelChargeTaskMode = new ToolStripMenuItem();
+            labFieldName = new Label();
             statusStrip1.SuspendLayout();
             tabControl1.SuspendLayout();
             tabPage3.SuspendLayout();
@@ -85,6 +89,9 @@ namespace AGVSHotrun
             splitContainer1.Panel1.SuspendLayout();
             splitContainer1.Panel2.SuspendLayout();
             splitContainer1.SuspendLayout();
+            tabControl2.SuspendLayout();
+            tabPage4.SuspendLayout();
+            tabpage_HotRunInfo.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)dgvHotRunScripts).BeginInit();
             ((System.ComponentModel.ISupportInitialize)clsHotRunScriptBindingSource).BeginInit();
             tabPage2.SuspendLayout();
@@ -174,8 +181,7 @@ namespace AGVSHotrun
             // splitContainer1.Panel2
             // 
             splitContainer1.Panel2.BackColor = Color.White;
-            splitContainer1.Panel2.Controls.Add(uscMapDisplay2);
-            splitContainer1.Panel2.Controls.Add(label3);
+            splitContainer1.Panel2.Controls.Add(tabControl2);
             splitContainer1.Size = new Size(1368, 468);
             splitContainer1.SplitterDistance = 760;
             splitContainer1.TabIndex = 8;
@@ -224,6 +230,28 @@ namespace AGVSHotrun
             label1.TabIndex = 8;
             label1.Text = "AGV Status";
             // 
+            // tabControl2
+            // 
+            tabControl2.Controls.Add(tabPage4);
+            tabControl2.Controls.Add(tabpage_HotRunInfo);
+            tabControl2.Dock = DockStyle.Fill;
+            tabControl2.Location = new Point(0, 0);
+            tabControl2.Name = "tabControl2";
+            tabControl2.SelectedIndex = 0;
+            tabControl2.Size = new Size(604, 468);
+            tabControl2.TabIndex = 10;
+            // 
+            // tabPage4
+            // 
+            tabPage4.Controls.Add(uscMapDisplay2);
+            tabPage4.Location = new Point(4, 28);
+            tabPage4.Name = "tabPage4";
+            tabPage4.Padding = new Padding(3);
+            tabPage4.Size = new Size(596, 436);
+            tabPage4.TabIndex = 0;
+            tabPage4.Text = "圖資";
+            tabPage4.UseVisualStyleBackColor = true;
+            // 
             // uscMapDisplay2
             // 
             uscMapDisplay2.AllowRunTaskDispatch = false;
@@ -231,23 +259,37 @@ namespace AGVSHotrun
             uscMapDisplay2.BorderStyle = BorderStyle.FixedSingle;
             uscMapDisplay2.Dock = DockStyle.Fill;
             uscMapDisplay2.HighlightAGVName = "";
-            uscMapDisplay2.Location = new Point(0, 19);
+            uscMapDisplay2.Location = new Point(3, 3);
             uscMapDisplay2.Margin = new Padding(4);
             uscMapDisplay2.Name = "uscMapDisplay2";
+            uscMapDisplay2.OnMapPoinAddtoExceptListClick = null;
             uscMapDisplay2.OnMapPointAddToRunActionClick = null;
-            uscMapDisplay2.Size = new Size(604, 449);
+            uscMapDisplay2.Size = new Size(590, 430);
             uscMapDisplay2.TabIndex = 2;
             // 
-            // label3
+            // tabpage_HotRunInfo
             // 
-            label3.AutoSize = true;
-            label3.BackColor = Color.Transparent;
-            label3.Dock = DockStyle.Top;
-            label3.Location = new Point(0, 0);
-            label3.Name = "label3";
-            label3.Size = new Size(42, 19);
-            label3.TabIndex = 9;
-            label3.Text = "Map";
+            tabpage_HotRunInfo.Controls.Add(uscRandomHotRunningInformation1);
+            tabpage_HotRunInfo.Location = new Point(4, 28);
+            tabpage_HotRunInfo.Name = "tabpage_HotRunInfo";
+            tabpage_HotRunInfo.Padding = new Padding(3);
+            tabpage_HotRunInfo.Size = new Size(596, 436);
+            tabpage_HotRunInfo.TabIndex = 1;
+            tabpage_HotRunInfo.Text = "Hot Run 狀態";
+            tabpage_HotRunInfo.UseVisualStyleBackColor = true;
+            // 
+            // uscRandomHotRunningInformation1
+            // 
+            uscRandomHotRunningInformation1.BackColor = Color.FromArgb(51, 51, 51);
+            uscRandomHotRunningInformation1.BorderStyle = BorderStyle.FixedSingle;
+            uscRandomHotRunningInformation1.Dock = DockStyle.Fill;
+            uscRandomHotRunningInformation1.Font = new Font("Microsoft JhengHei UI", 11F, FontStyle.Bold, GraphicsUnit.Point);
+            uscRandomHotRunningInformation1.ForeColor = Color.White;
+            uscRandomHotRunningInformation1.Location = new Point(3, 3);
+            uscRandomHotRunningInformation1.Margin = new Padding(4);
+            uscRandomHotRunningInformation1.Name = "uscRandomHotRunningInformation1";
+            uscRandomHotRunningInformation1.Size = new Size(590, 430);
+            uscRandomHotRunningInformation1.TabIndex = 0;
             // 
             // dgvHotRunScripts
             // 
@@ -405,6 +447,7 @@ namespace AGVSHotrun
             uscMapDisplay1.Location = new Point(3, 3);
             uscMapDisplay1.Margin = new Padding(4);
             uscMapDisplay1.Name = "uscMapDisplay1";
+            uscMapDisplay1.OnMapPoinAddtoExceptListClick = null;
             uscMapDisplay1.OnMapPointAddToRunActionClick = null;
             uscMapDisplay1.Size = new Size(1368, 724);
             uscMapDisplay1.TabIndex = 0;
@@ -482,11 +525,27 @@ namespace AGVSHotrun
             btnCancelChargeTaskMode.Text = "測試過程中自動取消充電任務";
             btnCancelChargeTaskMode.Click += btnCancelChargeTaskWhenRunning_Click;
             // 
+            // labFieldName
+            // 
+            labFieldName.AutoSize = true;
+            labFieldName.BackColor = Color.CornflowerBlue;
+            labFieldName.BorderStyle = BorderStyle.FixedSingle;
+            labFieldName.Dock = DockStyle.Right;
+            labFieldName.Font = new Font("Microsoft JhengHei UI", 21F, FontStyle.Bold, GraphicsUnit.Point);
+            labFieldName.ForeColor = Color.Cornsilk;
+            labFieldName.Location = new Point(1253, 25);
+            labFieldName.Margin = new Padding(2);
+            labFieldName.Name = "labFieldName";
+            labFieldName.Size = new Size(129, 38);
+            labFieldName.TabIndex = 8;
+            labFieldName.Text = "場域名稱";
+            // 
             // frmMain
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(1382, 821);
+            Controls.Add(labFieldName);
             Controls.Add(toolStrip1);
             Controls.Add(tabControl1);
             Controls.Add(statusStrip1);
@@ -503,9 +562,11 @@ namespace AGVSHotrun
             splitContainer1.Panel1.ResumeLayout(false);
             splitContainer1.Panel1.PerformLayout();
             splitContainer1.Panel2.ResumeLayout(false);
-            splitContainer1.Panel2.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)splitContainer1).EndInit();
             splitContainer1.ResumeLayout(false);
+            tabControl2.ResumeLayout(false);
+            tabPage4.ResumeLayout(false);
+            tabpage_HotRunInfo.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)dgvHotRunScripts).EndInit();
             ((System.ComponentModel.ISupportInitialize)clsHotRunScriptBindingSource).EndInit();
             tabPage2.ResumeLayout(false);
@@ -535,7 +596,6 @@ namespace AGVSHotrun
         private uscAGVStatus uscagvStatus1;
         private Label label2;
         private Label label1;
-        private Label label3;
         private uscExecuteTasks uscExecuteTasks1;
         private TabPage tabPage1;
         private RichTextBox rtxbLogShow;
@@ -559,5 +619,10 @@ namespace AGVSHotrun
         private DataGridViewButtonColumn colScriptRemove;
         private ToolStripStatusLabel toolStripStatusLabel1;
         private ToolStripStatusLabel labMapNote;
+        private Label labFieldName;
+        private TabControl tabControl2;
+        private TabPage tabPage4;
+        private TabPage tabpage_HotRunInfo;
+        private UI.uscRandomHotRunningInformation uscRandomHotRunningInformation1;
     }
 }

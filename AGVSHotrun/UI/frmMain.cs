@@ -97,6 +97,7 @@ namespace AGVSHotrun
                 }
             }
             labMapNote.Text = "Map-" + Store.MapData.Note;
+            labFieldName.Text = Store.SysConfigs.Field+"";
             Logger.Info($"Map Loaded.{Store.MapData.Name}, Note:{Store.MapData.Note}");
             btnWaitTaskDoneMode.CheckState = Store.SysConfigs.WaitTaskDoneDispatchMode ? CheckState.Checked : CheckState.Unchecked;
             btnCancelChargeTaskMode.CheckState = Store.SysConfigs.CancelChargeTaskWhenHotRun ? CheckState.Checked : CheckState.Unchecked;
@@ -108,7 +109,7 @@ namespace AGVSHotrun
             labSystemInformation.Text = "資料庫連線中...";
             var dbconn_task = Task.Run(async () =>
             {
-                Store.StartAGVLocSyncProcess();
+
                 bool sql_connected = await CheckSqlServerConnection();
                 Invoke(new Action(() =>
                 {
@@ -117,8 +118,11 @@ namespace AGVSHotrun
                     {
                         Logger.Info("資料庫已連線");
                         labSystemInformation.Text = "資料庫已連線";
-                        uscExecuteTasks1.StartRender();
-                        uscagvStatus1.StartRender();
+                        //Store.StartAGVLocSyncProcess(aGVSDBHelper);
+                        Store.OnExecutingTaskUpdate += Store_OnExecutingTaskUpdate;
+                        Store.OnAGVInfosUpdate += Store_OnAGVInfosUpdate;
+
+                        Store.StartReadDataFromDataBase(aGVSDBHelper);
                     }
                     else
                     {
@@ -131,6 +135,16 @@ namespace AGVSHotrun
                     }
                 }));
             });
+        }
+
+        private void Store_OnAGVInfosUpdate(object? sender, List<AGVInfo> e)
+        {
+            uscagvStatus1.Render(e);
+        }
+
+        private void Store_OnExecutingTaskUpdate(object? sender, List<ExecutingTask> e)
+        {
+            uscExecuteTasks1.Render(e);
         }
 
         private void Logger_onLogAdded(object? sender, Logger.LogEventArgs log_args)
@@ -149,7 +163,7 @@ namespace AGVSHotrun
         {
             try
             {
-                aGVSDBHelper.Connect();
+                aGVSDBHelper.Connect(auto_create_database: Store.SysConfigs.IsDebugger);
                 aGVSDBHelper.DBConn.AGVInfos.Count();
                 return true;
             }
@@ -203,6 +217,9 @@ namespace AGVSHotrun
 
             if (script == null)
                 return;
+
+            uscRandomHotRunningInformation1.ChangeScriptToDisplay(script);
+
             if (click_column == colHotRunStart)
             {
                 if (script.IsRunning | script.IsWaitLogin)

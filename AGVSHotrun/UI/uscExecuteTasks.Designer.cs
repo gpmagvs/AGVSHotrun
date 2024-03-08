@@ -31,9 +31,6 @@
             components = new System.ComponentModel.Container();
             DataGridViewCellStyle dataGridViewCellStyle1 = new DataGridViewCellStyle();
             dataGridView1 = new DataGridView();
-            executingTaskBindingSource = new BindingSource(components);
-            timer1 = new System.Windows.Forms.Timer(components);
-            btnCancelAllTasks = new Button();
             colCancelTaskBtn = new DataGridViewButtonColumn();
             nameDataGridViewTextBoxColumn = new DataGridViewTextBoxColumn();
             actionTypeDataGridViewTextBoxColumn = new DataGridViewTextBoxColumn();
@@ -51,6 +48,8 @@
             cSTIDDataGridViewTextBoxColumn = new DataGridViewTextBoxColumn();
             assignUserNameDataGridViewTextBoxColumn = new DataGridViewTextBoxColumn();
             priorityDataGridViewTextBoxColumn = new DataGridViewTextBoxColumn();
+            executingTaskBindingSource = new BindingSource(components);
+            btnCancelAllTasks = new Button();
             ((System.ComponentModel.ISupportInitialize)dataGridView1).BeginInit();
             ((System.ComponentModel.ISupportInitialize)executingTaskBindingSource).BeginInit();
             SuspendLayout();
@@ -80,25 +79,6 @@
             dataGridView1.Size = new Size(1263, 345);
             dataGridView1.TabIndex = 0;
             dataGridView1.CellClick += dataGridView1_CellClick;
-            // 
-            // executingTaskBindingSource
-            // 
-            executingTaskBindingSource.DataSource = typeof(Models.ExecutingTask);
-            // 
-            // timer1
-            // 
-            timer1.Interval = 1000;
-            timer1.Tick += UI_Render_TIMER_Tick;
-            // 
-            // btnCancelAllTasks
-            // 
-            btnCancelAllTasks.Location = new Point(3, 3);
-            btnCancelAllTasks.Name = "btnCancelAllTasks";
-            btnCancelAllTasks.Size = new Size(91, 37);
-            btnCancelAllTasks.TabIndex = 1;
-            btnCancelAllTasks.Text = "取消所有任務";
-            btnCancelAllTasks.UseVisualStyleBackColor = true;
-            btnCancelAllTasks.Click += btnCancelAllTasks_Click;
             // 
             // colCancelTaskBtn
             // 
@@ -220,6 +200,20 @@
             priorityDataGridViewTextBoxColumn.Name = "priorityDataGridViewTextBoxColumn";
             priorityDataGridViewTextBoxColumn.ReadOnly = true;
             // 
+            // executingTaskBindingSource
+            // 
+            executingTaskBindingSource.DataSource = typeof(Models.ExecutingTask);
+            // 
+            // btnCancelAllTasks
+            // 
+            btnCancelAllTasks.Location = new Point(3, 3);
+            btnCancelAllTasks.Name = "btnCancelAllTasks";
+            btnCancelAllTasks.Size = new Size(91, 37);
+            btnCancelAllTasks.TabIndex = 1;
+            btnCancelAllTasks.Text = "取消所有任務";
+            btnCancelAllTasks.UseVisualStyleBackColor = true;
+            btnCancelAllTasks.Click += btnCancelAllTasks_Click;
+            // 
             // uscExecuteTasks
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
@@ -230,6 +224,7 @@
             Controls.Add(dataGridView1);
             Name = "uscExecuteTasks";
             Size = new Size(1263, 391);
+            Load += UscExecuteTasks_Load;
             ((System.ComponentModel.ISupportInitialize)dataGridView1).EndInit();
             ((System.ComponentModel.ISupportInitialize)executingTaskBindingSource).EndInit();
             ResumeLayout(false);
@@ -239,7 +234,6 @@
 
         private DataGridView dataGridView1;
         private BindingSource executingTaskBindingSource;
-        private System.Windows.Forms.Timer timer1;
         private Button btnCancelAllTasks;
         private DataGridViewButtonColumn colCancelTaskBtn;
         private DataGridViewTextBoxColumn nameDataGridViewTextBoxColumn;

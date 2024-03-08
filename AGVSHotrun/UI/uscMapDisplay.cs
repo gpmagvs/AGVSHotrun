@@ -51,7 +51,13 @@ namespace AGVSHotrun.UI
         {
             InitializeComponent();
             picMap.MouseWheel += PicMap_MouseWheel;
-            Store.OnAGVLocUpdate += (sedner, e) => picMap.Invalidate();
+            Store.OnAGVLocUpdate += (sedner, e) =>
+            {
+                Invoke(new Action(() =>
+                {
+                    picMap.Invalidate();
+                }));
+            };
         }
 
         private void PicMap_MouseWheel(object? sender, MouseEventArgs e)

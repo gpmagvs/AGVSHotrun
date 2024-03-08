@@ -24,7 +24,17 @@ namespace AGVSHotrun.HotRun
         public string CSTID { get; set; } = "";
         public bool MoveOnly { get; set; } = false;
         public string AGVName { get; set; } = "AGV_1";
-
+        public int AGVID
+        {
+            get
+            {
+                var _agv_name_replaced = AGVName.Replace("AGV_", "");
+                if (int.TryParse(_agv_name_replaced, out int id))
+                    return id;
+                else
+                    return -1;
+            }
+        }
         public string GetSecondaryPt(string Station)
         {
             var map_points = Store.MapData.Points.ToList();

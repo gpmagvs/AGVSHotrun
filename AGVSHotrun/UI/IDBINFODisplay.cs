@@ -10,7 +10,5 @@ namespace AGVSHotrun.UI
     internal interface IDBINFODisplay
     {
         AGVSDBHelper dbHelper { get; set; }
-        void StartRender();
-        void UI_Render_TIMER_Tick(object sender, EventArgs e);
     }
 }

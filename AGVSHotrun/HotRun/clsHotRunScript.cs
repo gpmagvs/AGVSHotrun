@@ -23,7 +23,7 @@ using ACTION_TYPE = AGVSHotrun.Models.ACTION_TYPE;
 
 namespace AGVSHotrun.HotRun
 {
-    public class clsHotRunScript
+    public partial class clsHotRunScript
     {
         public static event EventHandler<clsHotRunScript> OnHotRunStart;
         public static event EventHandler<clsHotRunScript> OnHotRunFinish;
@@ -132,6 +132,7 @@ namespace AGVSHotrun.HotRun
         }
         CancellationTokenSource AbortTestCTS = new CancellationTokenSource();
         CancellationTokenSource AbortLoginCTS = new CancellationTokenSource();
+        internal clsHotRunScriptHistory history = new clsHotRunScriptHistory();
 
         public void Abort()
         {
@@ -165,10 +166,19 @@ namespace AGVSHotrun.HotRun
                 message = $"動作 {string.Join(",", indexes)}  [目標站點_To Station] 設定有誤";
                 return false;
             }
+            history = new clsHotRunScriptHistory();
+            history.OnHistoryChanged += History_OnHistoryChanged;
             IsRunning = true;
-            Task.Run(() => _ExecutingTasksAsync());
+            Task.Run(() => _ExecutingTasksAsync(history));
             return true;
         }
+
+        private void History_OnHistoryChanged(object? sender, EventArgs e)
+        {
+            SaveHistory(sender as clsHotRunScriptHistory);
+        }
+
+
         public async Task<(bool success, bool isCanceled)> Login()
         {
             AGVS_Dispath_Emulator.ExcuteResult result = await AGVS_Dispath_Emulator.Login(AbortLoginCTS.Token);
@@ -195,7 +205,7 @@ namespace AGVSHotrun.HotRun
         /// <exception cref="TaskCanceledException">當任務被取消時拋出。</exception>
         /// <exception cref="HttpRequestException">當與派車系統的通訊發生問題時拋出。</exception>
         /// <exception cref="AuthenticationFailedException">當需要重新登入派車系統時拋出。</exception>
-        private async Task _ExecutingTasksAsync()
+        private async Task _ExecutingTasksAsync(clsHotRunScriptHistory history)
         {
             AbortTestCTS = new CancellationTokenSource();
             try
@@ -207,9 +217,11 @@ namespace AGVSHotrun.HotRun
                 EndTime = DateTime.MinValue;
                 OnHotRunStart?.Invoke(this, this);
 
+                history.StartTime = DateTime.Now;
+
                 if (IsRandomTransferTaskCreateMode)
                 {
-                    await RandomTransferTaskRun();
+                    await RandomTransferTaskRun(history);
                 }
                 else
                 {
@@ -231,7 +243,7 @@ namespace AGVSHotrun.HotRun
                             bool taskCreated, task_finish;
                             string? TaskName = "";
 
-                            int _agvid = task_action.AGVName == "自動派車" ? -1 : dbhelper.GetAGVID(task_action.AGVName);
+                            int _agvid = task_action.AGVID;
                             if (task_action.MoveOnly && task_action.Action != ACTION_TYPE.MOVE)
                             {
                                 await task_action.PostFromStationReq(task_action.AGVName, _agvid);
@@ -288,6 +300,7 @@ namespace AGVSHotrun.HotRun
             }
             catch (CIMSwitchHotRunModeFailFailException ex)
             {
+                history.EndTime = DateTime.Now;
                 IsRunning = false;
                 EndTime = DateTime.Now;
                 FailureReason = "無法切換CIM為HOT RUN模式";
@@ -296,6 +309,7 @@ namespace AGVSHotrun.HotRun
             }
             catch (CIMSwitchPortLDULDStatusFailFailException ex)
             {
+                history.EndTime = DateTime.Now;
                 IsRunning = false;
                 EndTime = DateTime.Now;
                 FailureReason = "無法切換CIM Port Load/Unload模擬狀態";
@@ -304,6 +318,7 @@ namespace AGVSHotrun.HotRun
             }
             catch (TaskCanceledException ex)
             {
+                history.EndTime = DateTime.Now;
                 IsRunning = false;
                 EndTime = DateTime.Now;
                 FailureReason = "使用者中斷測試(AGV Will Stop when current action done)";
@@ -312,6 +327,7 @@ namespace AGVSHotrun.HotRun
             }
             catch (HttpRequestException ex)
             {
+                history.EndTime = DateTime.Now;
                 IsRunning = false;
                 EndTime = DateTime.Now;
                 FailureReason = "無法與派車系統通訊";
@@ -321,6 +337,7 @@ namespace AGVSHotrun.HotRun
             }
             catch (AuthenticationFailedException ex)
             {
+                history.EndTime = DateTime.Now;
                 IsRunning = false;
                 EndTime = DateTime.Now;
                 FailureReason = "需要重新登入派車系統";
@@ -330,6 +347,7 @@ namespace AGVSHotrun.HotRun
             }
             catch (Exception ex)
             {
+                history.EndTime = DateTime.Now;
                 IsRunning = false;
                 EndTime = DateTime.Now;
                 FailureReason = ex.Message + $"\r\n{ex.StackTrace}";
@@ -344,7 +362,7 @@ namespace AGVSHotrun.HotRun
 
         }
 
-        private async Task RandomTransferTaskRun()
+        private async Task RandomTransferTaskRun(clsHotRunScriptHistory history)
         {
             IsRunning = true;
             if (UseCIMSimulation)
@@ -355,9 +373,9 @@ namespace AGVSHotrun.HotRun
                     throw new CIMSwitchHotRunModeFailFailException();
                 }
             }
-            await CreateTaskAndPostToAGVS(MaxTaskQueueSize);
+            await CreateTaskAndPostToAGVS(MaxTaskQueueSize, history);
 
-            MonitorExecutingTask();
+            MonitorExecutingTask(history);
             while (true)
             {
                 await Task.Delay(1000);
@@ -371,6 +389,7 @@ namespace AGVSHotrun.HotRun
                     break;
             }
             CancelRemainTransferTasksAsync();
+            history.EndTime = DateTime.Now;
         }
 
         private async Task CancelRemainTransferTasksAsync()
@@ -382,15 +401,15 @@ namespace AGVSHotrun.HotRun
             }
         }
 
-        private async Task CreateTaskAndPostToAGVS(int TaskNum)
+        private async Task CreateTaskAndPostToAGVS(int TaskNum, clsHotRunScriptHistory history)
         {
             for (int i = 0; i < TaskNum; i++)
             {
-                clsRunTask beginTask = CreateTransferTask();
+                clsRunTask _transfer_task = CreateTransferTask();
 
                 if (UseCIMSimulation)
                 {
-                    bool success = await CallCIMAPIToSwitchLDULDSimulationStatusOfEqPorts(beginTask);
+                    bool success = await CallCIMAPIToSwitchLDULDSimulationStatusOfEqPorts(_transfer_task);
                     if (!success)
                         throw new CIMSwitchPortLDULDStatusFailFailException();
                     await Task.Delay(500);
@@ -405,12 +424,12 @@ namespace AGVSHotrun.HotRun
                             AGVID = 1,
                             ActionType = "Transfer",
                             Status = 1,
-                            ToStationId = beginTask.ToStationID,
-                            FromStationId = beginTask.FromStationID,
-                            ToStationName = beginTask.ToStation,
-                            ToStation = beginTask.ToStation,
-                            FromStationName = beginTask.FromStation,
-                            FromStation = beginTask.FromStation,
+                            ToStationId = _transfer_task.ToStationID,
+                            FromStationId = _transfer_task.FromStationID,
+                            ToStationName = _transfer_task.ToStation,
+                            ToStation = _transfer_task.ToStation,
+                            FromStationName = _transfer_task.FromStation,
+                            FromStation = _transfer_task.FromStation,
                             Receive_Time = DateTime.Now,
                             RepeatTime = 1,
                         });
@@ -418,17 +437,18 @@ namespace AGVSHotrun.HotRun
                     }
                     else
                     {
-                        bool post_success = await beginTask.PostActionReq("自動選車", -1);
+                        bool post_success = await _transfer_task.PostActionReq("自動選車", -1);
                     }
                 }
                 catch (Exception ex)
                 {
                     throw;
                 }
+                history.AddTask(_transfer_task);
             }
         }
         List<ExecutingTask> previous_currentExecutingTransferTasks = new List<ExecutingTask>();
-        private void MonitorExecutingTask()
+        private void MonitorExecutingTask(clsHotRunScriptHistory history)
         {
             Task.Run(async () =>
             {
@@ -439,14 +459,18 @@ namespace AGVSHotrun.HotRun
                     try
                     {
                         List<ExecutingTask> currentExecutingTransferTasks = DBHelper.DBConn.ExecutingTasks.Where(tk => tk.ActionType == "Transfer").ToList();
-                        if (previous_currentExecutingTransferTasks.Count > currentExecutingTransferTasks.Count)
+                        int _running_tasks_num = currentExecutingTransferTasks.Count;
+                        history.RunningTaskNum = _running_tasks_num;
+                        if (previous_currentExecutingTransferTasks.Count > _running_tasks_num)
                         {
                             var completedTasks = previous_currentExecutingTransferTasks.Where(tk => !currentExecutingTransferTasks.Select(tk => tk.Name).Contains(tk.Name)).ToList();
                             RemovePointsFromHasTaskList(completedTasks);
                         }
+                        var task_num_to_add_new = MaxTaskQueueSize - currentExecutingTransferTasks.Count;
+                        history.FinishTaskNum += task_num_to_add_new;
                         if (currentExecutingTransferTasks.Count != MaxTaskQueueSize)//
                         {
-                            await CreateTaskAndPostToAGVS(MaxTaskQueueSize - currentExecutingTransferTasks.Count);
+                            await CreateTaskAndPostToAGVS(task_num_to_add_new, history);
                         }
                         previous_currentExecutingTransferTasks = currentExecutingTransferTasks;
 

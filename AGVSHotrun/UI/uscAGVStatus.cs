@@ -25,14 +25,10 @@ namespace AGVSHotrun
 
         private void uscAGVStatus_Load(object sender, EventArgs e)
         {
-            dbHelper.Connect();
             dataGridView1.DataSource = DataBinding;
         }
 
-        public void StartRender()
-        {
-            timer1.Enabled = true;
-        }
+      
         int selectedRow = -1;
         int selectedColumn = -1;
         private void dataGridView1_CellClick(object sender, DataGridViewCellEventArgs e)
@@ -42,21 +38,18 @@ namespace AGVSHotrun
             selectedColumn = dataGridView1.CurrentCell.ColumnIndex;
         }
 
-        public void UI_Render_TIMER_Tick(object sender, EventArgs e)
-        {
-            // 檢查目前選取的儲存格是否仍然存在
-            if (selectedRow >= 0)
-                dataGridView1.CurrentCell = dataGridView1[0, selectedRow];
 
-            if (dbHelper.DBConn == null)
-                dbHelper.Connect();
-            var agv_infos = dbHelper.DBConn.AGVInfos.ToList();
-            DataBinding.Clear();
-            foreach (var info in agv_infos)
+        internal void Render(List<AGVInfo> e)
+        {
+            Invoke(new Action(() =>
             {
-                DataBinding.Add(info);
-            }
-            DataBinding.ResetBindings();
+                DataBinding.Clear();
+                foreach (var info in e)
+                {
+                    DataBinding.Add(info);
+                }
+                DataBinding.ResetBindings();
+            }));
         }
     }
 }

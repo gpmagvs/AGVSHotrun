@@ -2,6 +2,7 @@
 using AGVSHotrun.Models;
 using AGVSHotrun.VirtualAGVSystem;
 using AGVSystemCommonNet6.MAP;
+using AGVSystemCommonNet6.Vehicle_Control.VCSDatabase;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -22,6 +23,14 @@ namespace AGVSHotrun
         const string CONFIG_FILE_NAME = "SystemConfigs.json";
         internal static event EventHandler OnScriptCreated;
         internal static event EventHandler OnAGVLocUpdate;
+
+        internal static event EventHandler<List<ExecutingTask>> OnExecutingTaskUpdate;
+        internal static event EventHandler<List<AGVInfo>> OnAGVInfosUpdate;
+
+        internal static Dictionary<AGVInfo, MapPoint> AGVlocStore = new Dictionary<AGVInfo, MapPoint>();
+        internal static List<ExecutingTask> executingTasks = new List<ExecutingTask>();
+        internal static List<AGVInfo> agv_infos = new List<AGVInfo>();
+
         public static clsSysConfigs SysConfigs = new clsSysConfigs();
         public static Map MapData { get; set; }
 
@@ -94,17 +103,44 @@ namespace AGVSHotrun
             }
         }
 
-        internal static Dictionary<AGVInfo, MapPoint> AGVlocStore = new Dictionary<AGVInfo, MapPoint>();
-        internal static void StartAGVLocSyncProcess()
+        internal static void StartReadDataFromDataBase(AGVSDBHelper dbhelper)
         {
-
-            Task.Run(() =>
+            Task.Run(async () =>
             {
-                AGVSDBHelper dbhelper = new AGVSDBHelper();
-                dbhelper.Connect();
                 while (true)
                 {
-                    Thread.Sleep(1000);
+                    await Task.Delay(1000);
+
+                    executingTasks = dbhelper.DBConn.ExecutingTasks.ToList();
+                    agv_infos = dbhelper.DBConn.AGVInfos.ToList();
+                    try
+                    {
+                        AGVlocStore = agv_infos.ToDictionary(agv => agv, agv => agv.CurrentPos == 0 ? new MapPoint
+                        {
+
+                        } : MapData.Points[(int)agv.CurrentPos]);
+
+                        OnAGVLocUpdate?.Invoke("", EventArgs.Empty);
+                    }
+                    catch (Exception ex)
+                    {
+                    }        
+                    OnAGVInfosUpdate?.Invoke("", agv_infos);
+                    OnExecutingTaskUpdate?.Invoke("", executingTasks);
+
+                }
+
+            });
+        }
+        internal static void StartAGVLocSyncProcess(AGVSDBHelper dbhelper)
+        {
+
+            Task.Run(async () =>
+            {
+
+                while (true)
+                {
+                    await Task.Delay(1000);
                     try
                     {
                         AGVlocStore = dbhelper.DBConn.AGVInfos.ToDictionary(agv => agv, agv => agv.CurrentPos == 0 ? new MapPoint
