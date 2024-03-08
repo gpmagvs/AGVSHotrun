@@ -695,8 +695,25 @@ namespace AGVSHotrun.HotRun
                 task.FromStation = sourceStation.Name;
                 task.ToStation = destineStation.Name;
 
-                task.FromSlot = sourceStation.IsSTK ? fromSlots[0] : "";
-                task.ToSlot = sourceStation.IsSTK ? destineSlots[0] : "";
+                bool _isSourceStationSTK = sourceStation.IsSTK;
+                bool _isDestineStationSTK = destineStation.IsSTK;
+
+                int _slotIndexOfSource = 0;
+                int _slotIndexOfDest = 0;
+
+                if (_isSourceStationSTK)
+                {
+                    _slotIndexOfSource = GetRandomIndex(0, fromSlots.Length);//3=> 0,1,2
+                    _slotIndexOfSource = _slotIndexOfSource >= fromSlots.Length ? 0 : _slotIndexOfSource;
+                }
+                if (_isDestineStationSTK)
+                {
+                    _slotIndexOfDest = GetRandomIndex(0, destineSlots.Length);//3=> 0,1,2
+                    _slotIndexOfDest = _slotIndexOfDest >= destineSlots.Length ? 0 : _slotIndexOfDest;
+                }
+
+                task.FromSlot = _isSourceStationSTK ? fromSlots[_slotIndexOfSource] : "";
+                task.ToSlot = _isDestineStationSTK ? destineSlots[_slotIndexOfDest] : "";
 
                 task.Action = ACTION_TYPE.TRANSFER;
                 task.MoveOnly = false;
@@ -747,6 +764,12 @@ namespace AGVSHotrun.HotRun
                 }
             }
             return numbers.ToArray();
+        }
+        private int GetRandomIndex(int from, int to)
+        {
+            Random rand = new Random((int)DateTime.Now.Ticks);
+            int num = rand.Next(from, to); // Generates a number between 0 and 20
+            return num;
         }
     }
 }
