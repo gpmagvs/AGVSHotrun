@@ -77,6 +77,7 @@ namespace AGVSHotrun
         private BindingList<clsHotRunScript> hotRunScripts;
         private void Form1_Load(object sender, EventArgs e)
         {
+            Logger.LOG_FOLDER = Store.SysConfigs.LogFolder;
             Logger.onLogAdded += Logger_onLogAdded;
             Logger.Info("SystemStart");
             if (!File.Exists(Store.SysConfigs.MapFile))
@@ -97,7 +98,7 @@ namespace AGVSHotrun
                 }
             }
             labMapNote.Text = "Map-" + Store.MapData.Note;
-            labFieldName.Text = Store.SysConfigs.Field+"";
+            labFieldName.Text = Store.SysConfigs.Field + "";
             Logger.Info($"Map Loaded.{Store.MapData.Name}, Note:{Store.MapData.Note}");
             btnWaitTaskDoneMode.CheckState = Store.SysConfigs.WaitTaskDoneDispatchMode ? CheckState.Checked : CheckState.Unchecked;
             btnCancelChargeTaskMode.CheckState = Store.SysConfigs.CancelChargeTaskWhenHotRun ? CheckState.Checked : CheckState.Unchecked;

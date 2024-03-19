@@ -29,7 +29,7 @@ namespace AGVSHotrun
                 this.exception = exception;
             }
         }
-        const string LOG_FOLDER = @"D:\HotRunLog";
+        public static string LOG_FOLDER = @"D:\HotRunLog";
         static Task LogQueueWorler = null;
         internal static event EventHandler<LogEventArgs> onLogAdded;
         static ConcurrentQueue<LogEventArgs> LogQueue = new ConcurrentQueue<LogEventArgs>();

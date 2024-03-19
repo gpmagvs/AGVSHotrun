@@ -61,6 +61,7 @@ namespace AGVSHotrun
                 RunScriptsList[index].MaxTaskQueueSize = script.MaxTaskQueueSize;
                 RunScriptsList[index].Description = script.Description;
                 RunScriptsList[index].ExceptStationIndexList = script.ExceptStationIndexList;
+                RunScriptsList[index].IsWipToWipTransferAllow = script.IsWipToWipTransferAllow;
             }
             File.WriteAllText(SysConfigs.HotRunScriptStoredFile, JsonConvert.SerializeObject(RunScriptsList, Formatting.Indented));
             OnScriptCreated?.Invoke("Store", EventArgs.Empty);

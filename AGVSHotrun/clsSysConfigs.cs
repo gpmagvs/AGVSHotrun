@@ -15,6 +15,7 @@ namespace AGVSHotrun
         public bool IsDebugger { get; set; } = false;
         public FIELD_NAME Field { get; set; } = FIELD_NAME.UMTC_3F_YELLOW;
         public string MapFile { get; set; } = "C:\\CST\\ini\\Map_UMTC_AOI.json";
+        public string LogFolder { get; set; } = "D:\\HotRunLog";
         public string AGVSHost { get; set; } = "http://127.0.0.1:6600";
         public string CIMHost { get; set; } = "http://localhost:5432/";
         public string DBConnection { get; set; } = "Server=127.0.0.1;Database=WebAGVSystem;User Id=sa;Password=12345678;Encrypt=False";

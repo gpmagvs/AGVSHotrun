@@ -270,10 +270,10 @@ namespace AGVSHotrun
             // tabpage_HotRunInfo
             // 
             tabpage_HotRunInfo.Controls.Add(uscRandomHotRunningInformation1);
-            tabpage_HotRunInfo.Location = new Point(4, 28);
+            tabpage_HotRunInfo.Location = new Point(4, 24);
             tabpage_HotRunInfo.Name = "tabpage_HotRunInfo";
             tabpage_HotRunInfo.Padding = new Padding(3);
-            tabpage_HotRunInfo.Size = new Size(596, 436);
+            tabpage_HotRunInfo.Size = new Size(596, 440);
             tabpage_HotRunInfo.TabIndex = 1;
             tabpage_HotRunInfo.Text = "Hot Run 狀態";
             tabpage_HotRunInfo.UseVisualStyleBackColor = true;
@@ -288,7 +288,7 @@ namespace AGVSHotrun
             uscRandomHotRunningInformation1.Location = new Point(3, 3);
             uscRandomHotRunningInformation1.Margin = new Padding(4);
             uscRandomHotRunningInformation1.Name = "uscRandomHotRunningInformation1";
-            uscRandomHotRunningInformation1.Size = new Size(590, 430);
+            uscRandomHotRunningInformation1.Size = new Size(590, 434);
             uscRandomHotRunningInformation1.TabIndex = 0;
             // 
             // dgvHotRunScripts

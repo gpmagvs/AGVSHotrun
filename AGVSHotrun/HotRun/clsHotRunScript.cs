@@ -56,6 +56,7 @@ namespace AGVSHotrun.HotRun
 
         public int FinishNum { get; set; } = 0;
         public string Description { get; set; } = "";
+        public bool IsWipToWipTransferAllow { get; set; } = true;
 
         public string StartStatus
         {
@@ -678,51 +679,67 @@ namespace AGVSHotrun.HotRun
             {
                 return null;
             }
-            int[] randomIndexes = GetRandomIndexs(0, eqStationPoints.Count);
 
-            try
+            bool transferEQPaired = false;
+
+            while (!transferEQPaired)
             {
-                var sourceStation = eqStationPoints[randomIndexes[0]];
-                var destineStation = eqStationPoints[randomIndexes[1]];
+                int[] randomIndexes = GetRandomIndexs(0, eqStationPoints.Count);
 
-                hasTaskPoints.Add(sourceStation);
-                hasTaskPoints.Add(destineStation);
-
-                TryGetSlotByStationName(sourceStation.Name, out string[] fromSlots);
-                TryGetSlotByStationName(destineStation.Name, out string[] destineSlots);
-
-                task.AGVName = "自動選車";
-                task.FromStation = sourceStation.Name;
-                task.ToStation = destineStation.Name;
-
-                bool _isSourceStationSTK = sourceStation.IsSTK;
-                bool _isDestineStationSTK = destineStation.IsSTK;
-
-                int _slotIndexOfSource = 0;
-                int _slotIndexOfDest = 0;
-
-                if (_isSourceStationSTK)
+                try
                 {
-                    _slotIndexOfSource = GetRandomIndex(0, fromSlots.Length);//3=> 0,1,2
-                    _slotIndexOfSource = _slotIndexOfSource >= fromSlots.Length ? 0 : _slotIndexOfSource;
+                    var sourceStation = eqStationPoints[randomIndexes[0]];
+                    var destineStation = eqStationPoints[randomIndexes[1]];
+
+
+                    if (!IsWipToWipTransferAllow && sourceStation.IsSTK && destineStation.IsSTK)
+                    {
+                        Logger.Warn($"{sourceStation.Graph.Display} 與 {destineStation.Graph.Display} 都是WIP且腳本設定不允許WIP互搬=>不產生任務");
+                        transferEQPaired = false;
+                        continue;
+                    }
+
+                    hasTaskPoints.Add(sourceStation);
+                    hasTaskPoints.Add(destineStation);
+
+                    TryGetSlotByStationName(sourceStation.Name, out string[] fromSlots);
+                    TryGetSlotByStationName(destineStation.Name, out string[] destineSlots);
+
+                    task.AGVName = "自動選車";
+                    task.FromStation = sourceStation.Name;
+                    task.ToStation = destineStation.Name;
+
+                    bool _isSourceStationSTK = sourceStation.IsSTK;
+                    bool _isDestineStationSTK = destineStation.IsSTK;
+
+                    int _slotIndexOfSource = 0;
+                    int _slotIndexOfDest = 0;
+
+                    if (_isSourceStationSTK)
+                    {
+                        _slotIndexOfSource = GetRandomIndex(0, fromSlots.Length);//3=> 0,1,2
+                        _slotIndexOfSource = _slotIndexOfSource >= fromSlots.Length ? 0 : _slotIndexOfSource;
+                    }
+                    if (_isDestineStationSTK)
+                    {
+                        _slotIndexOfDest = GetRandomIndex(0, destineSlots.Length);//3=> 0,1,2
+                        _slotIndexOfDest = _slotIndexOfDest >= destineSlots.Length ? 0 : _slotIndexOfDest;
+                    }
+
+                    task.FromSlot = _isSourceStationSTK ? fromSlots[_slotIndexOfSource] : "";
+                    task.ToSlot = _isDestineStationSTK ? destineSlots[_slotIndexOfDest] : "";
+
+                    task.Action = ACTION_TYPE.TRANSFER;
+                    task.MoveOnly = false;
+                    Logger.Info($"Created Transfer Task:\r\n{task.ToJson()}");
+                    transferEQPaired = true;
                 }
-                if (_isDestineStationSTK)
+                catch (Exception ex)
                 {
-                    _slotIndexOfDest = GetRandomIndex(0, destineSlots.Length);//3=> 0,1,2
-                    _slotIndexOfDest = _slotIndexOfDest >= destineSlots.Length ? 0 : _slotIndexOfDest;
+                    return null;
                 }
 
-                task.FromSlot = _isSourceStationSTK ? fromSlots[_slotIndexOfSource] : "";
-                task.ToSlot = _isDestineStationSTK ? destineSlots[_slotIndexOfDest] : "";
 
-                task.Action = ACTION_TYPE.TRANSFER;
-                task.MoveOnly = false;
-                Logger.Info($"Created Transfer Task:\r\n{task.ToJson()}");
-
-            }
-            catch (Exception ex)
-            {
-                return null;
             }
 
             return task;
@@ -748,20 +765,20 @@ namespace AGVSHotrun.HotRun
             }
         }
 
-        Random rand = new Random();
         private int[] GetRandomIndexs(int from, int to)
         {
             List<int> numbers = new List<int>();
             // Keep generating numbers until we have 2 unique values
             while (numbers.Count < 2)
             {
-                Thread.Sleep(400);
+                Random rand = new Random((int)DateTime.Now.Ticks);
                 int num = rand.Next(from, to); // Generates a number between 0 and 20
                 if (!numbers.Contains(num))
                 {
                     Logger.Info($"Random int Created :{num}");
                     numbers.Add(num);
                 }
+                Thread.Sleep(100);
             }
             return numbers.ToArray();
         }

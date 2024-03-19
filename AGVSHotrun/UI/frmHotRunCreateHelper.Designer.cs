@@ -41,6 +41,8 @@
             labRepeatText = new Label();
             numudTRepeatTime = new NumericUpDown();
             pnlOptionOfRandomMode = new Panel();
+            ckbWipToWip = new CheckBox();
+            label5 = new Label();
             numud_beginTaskNumber = new NumericUpDown();
             label7 = new Label();
             labCIMSimText = new Label();
@@ -83,7 +85,7 @@
             // 
             label1.AutoSize = true;
             label1.Font = new Font("Microsoft JhengHei UI", 15F, FontStyle.Regular, GraphicsUnit.Point);
-            label1.Location = new Point(3, 303);
+            label1.Location = new Point(3, 349);
             label1.Name = "label1";
             label1.Size = new Size(92, 25);
             label1.TabIndex = 4;
@@ -118,7 +120,7 @@
             // agvCombox1
             // 
             agvCombox1.AGVSelected = null;
-            agvCombox1.Location = new Point(101, 306);
+            agvCombox1.Location = new Point(101, 352);
             agvCombox1.Name = "agvCombox1";
             agvCombox1.Size = new Size(194, 29);
             agvCombox1.TabIndex = 7;
@@ -212,15 +214,38 @@
             // 
             // pnlOptionOfRandomMode
             // 
+            pnlOptionOfRandomMode.Controls.Add(ckbWipToWip);
+            pnlOptionOfRandomMode.Controls.Add(label5);
             pnlOptionOfRandomMode.Controls.Add(numud_beginTaskNumber);
             pnlOptionOfRandomMode.Controls.Add(label7);
             pnlOptionOfRandomMode.Controls.Add(labCIMSimText);
             pnlOptionOfRandomMode.Controls.Add(cmbCIMSimulationMode);
             pnlOptionOfRandomMode.Location = new Point(3, 83);
             pnlOptionOfRandomMode.Name = "pnlOptionOfRandomMode";
-            pnlOptionOfRandomMode.Size = new Size(392, 75);
+            pnlOptionOfRandomMode.Size = new Size(392, 121);
             pnlOptionOfRandomMode.TabIndex = 17;
             pnlOptionOfRandomMode.Visible = false;
+            // 
+            // ckbWipToWip
+            // 
+            ckbWipToWip.AutoSize = true;
+            ckbWipToWip.Font = new Font("Microsoft JhengHei UI", 12F, FontStyle.Regular, GraphicsUnit.Point);
+            ckbWipToWip.Location = new Point(179, 88);
+            ckbWipToWip.Name = "ckbWipToWip";
+            ckbWipToWip.Size = new Size(60, 24);
+            ckbWipToWip.TabIndex = 16;
+            ckbWipToWip.Text = "啟用";
+            ckbWipToWip.UseVisualStyleBackColor = true;
+            ckbWipToWip.CheckedChanged += ckbWipToWip_CheckedChanged;
+            // 
+            // label5
+            // 
+            label5.Font = new Font("Microsoft JhengHei UI", 15F, FontStyle.Bold, GraphicsUnit.Point);
+            label5.Location = new Point(-2, 84);
+            label5.Name = "label5";
+            label5.Size = new Size(171, 25);
+            label5.TabIndex = 15;
+            label5.Text = "WIP to WIP";
             // 
             // numud_beginTaskNumber
             // 
@@ -247,7 +272,7 @@
             // labCIMSimText
             // 
             labCIMSimText.Font = new Font("Microsoft JhengHei UI", 15F, FontStyle.Bold, GraphicsUnit.Point);
-            labCIMSimText.Location = new Point(-2, 42);
+            labCIMSimText.Location = new Point(-2, 48);
             labCIMSimText.Name = "labCIMSimText";
             labCIMSimText.Size = new Size(171, 25);
             labCIMSimText.TabIndex = 13;
@@ -258,7 +283,7 @@
             cmbCIMSimulationMode.Font = new Font("Microsoft JhengHei UI", 12F, FontStyle.Regular, GraphicsUnit.Point);
             cmbCIMSimulationMode.FormattingEnabled = true;
             cmbCIMSimulationMode.Items.AddRange(new object[] { "關閉", "啟用" });
-            cmbCIMSimulationMode.Location = new Point(179, 44);
+            cmbCIMSimulationMode.Location = new Point(179, 50);
             cmbCIMSimulationMode.Name = "cmbCIMSimulationMode";
             cmbCIMSimulationMode.Size = new Size(201, 28);
             cmbCIMSimulationMode.TabIndex = 14;
@@ -267,7 +292,7 @@
             // label4
             // 
             label4.Font = new Font("Microsoft JhengHei UI", 15F, FontStyle.Bold, GraphicsUnit.Point);
-            label4.Location = new Point(3, 161);
+            label4.Location = new Point(3, 207);
             label4.Name = "label4";
             label4.Size = new Size(171, 25);
             label4.TabIndex = 11;
@@ -276,7 +301,7 @@
             // rtxbDescription
             // 
             rtxbDescription.Font = new Font("Microsoft JhengHei UI", 12F, FontStyle.Regular, GraphicsUnit.Point);
-            rtxbDescription.Location = new Point(180, 164);
+            rtxbDescription.Location = new Point(180, 210);
             rtxbDescription.Name = "rtxbDescription";
             rtxbDescription.Size = new Size(203, 136);
             rtxbDescription.TabIndex = 12;
@@ -395,6 +420,7 @@
             flowLayoutPanel1.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)numudTRepeatTime).EndInit();
             pnlOptionOfRandomMode.ResumeLayout(false);
+            pnlOptionOfRandomMode.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)numud_beginTaskNumber).EndInit();
             panel1.ResumeLayout(false);
             panel1.PerformLayout();
@@ -435,5 +461,7 @@
         private Panel pnlRandomOptions;
         private Label label3;
         private uscStationSelectCheckboxList uscStationSelectCheckboxList1;
+        private CheckBox ckbWipToWip;
+        private Label label5;
     }
 }

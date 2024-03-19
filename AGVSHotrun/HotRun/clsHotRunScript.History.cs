@@ -12,6 +12,7 @@ namespace AGVSHotrun.HotRun
         private static string ScriptHistoryStoreFoldr => Path.Combine(Environment.CurrentDirectory, "script history");
         public string HistoryFileFullName => Path.Combine(ScriptHistoryStoreFoldr, $"{ID}-History.json");
 
+
         public List<clsHotRunScriptHistory> ReadHisotry()
         {
             Directory.CreateDirectory(ScriptHistoryStoreFoldr);

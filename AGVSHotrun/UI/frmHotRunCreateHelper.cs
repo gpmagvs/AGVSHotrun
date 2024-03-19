@@ -47,7 +47,7 @@ namespace AGVSHotrun.UI
             pnlRandomOptions.Visible = script.IsRandomTransferTaskCreateMode;
             panel1.Visible = !script.IsRandomTransferTaskCreateMode;
             uscStationSelectCheckboxList1.UpdateSelectedItems(script.ExceptStationIndexList);
-
+            ckbWipToWip.Checked = script.IsWipToWipTransferAllow;
 
         }
         bool isSaveAndExitFlag = false;
@@ -167,5 +167,9 @@ namespace AGVSHotrun.UI
             script.ExceptStationIndexList = indexList;
         }
 
+        private void ckbWipToWip_CheckedChanged(object sender, EventArgs e)
+        {
+            script.IsWipToWipTransferAllow = ckbWipToWip.Checked;
+        }
     }
 }
